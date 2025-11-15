@@ -90,7 +90,6 @@ const words = [
   'UI/UX Designer',
   'AI Builder',
   'Full-Stack Dev',
-  'Entrepreneur'
 ];
 
 const typewriterElement = document.getElementById('typewriter');
