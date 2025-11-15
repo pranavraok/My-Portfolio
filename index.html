@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pranav Rao K — Portfolio</title>
-  <meta name="description" content="Pranav Rao K — CSE undergrad portfolio with about, skills, and projects." />
+  <meta name="description" content="Pranav Rao K — CSE undergrad portfolio showcasing projects, skills, experience, and achievements in full-stack development and AI/ML." />
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 
   <!-- CSS -->
   <link rel="stylesheet" href="style.css">
@@ -20,223 +20,541 @@
     <div class="nav-inner">
       <div class="brand">PRANAV<span>.DEV</span></div>
       <button class="hamburger" id="hamburger" aria-label="Menu">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
       </button>
       <div class="menu" id="menu">
         <a class="nav-link active" href="#home">Home</a>
         <a class="nav-link" href="#about">About</a>
+        <a class="nav-link" href="#experience">Experience</a>
         <a class="nav-link" href="#skills">Skills</a>
+        <a class="nav-link" href="#achievements">Achievements</a>
         <a class="nav-link" href="#projects">Projects</a>
       </div>
     </div>
   </nav>
 
-  <!-- HERO -->
+    <!-- HERO -->
   <header class="container" id="home">
     <div class="hero">
       <div class="left reveal">
-        <h3 style="margin:0 0 .3rem; color:var(--muted)">Hello, It's Me</h3>
-        <h1 class="title" style="margin:0">Pranav Rao K</h1>
-        <h3 style="margin:.2rem 0 0; color:var(--muted)">and I'm a <span class="typewrap" id="typewriter"></span><span class="cursor" aria-hidden="true"></span></h3>
-        <p class="sub">as a coder, exploring the endless abyss of ones and zeroes!</p>
+        <div class="badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/>
+            <circle cx="12" cy="12" r="3" fill="currentColor"/>
+          </svg>
+          <span>Available for Projects</span>
+        </div>
+        <h3 class="greeting">Hello, It's Me</h3>
+        <h1 class="title">Pranav Rao K</h1>
+        <h3 class="role-text">and I'm a <span class="typewrap" id="typewriter"></span><span class="cursor" aria-hidden="true"></span></h3>
+        <p class="sub">A passionate coder exploring the endless abyss of ones and zeroes, building innovative solutions that make a difference.</p>
         <div class="cta">
-          <a class="btn btn-primary" href="resume.pdf" download>Download Resume</a>
-          <a class="btn btn-outline" href="#projects">See Projects</a>
+          <a class="btn btn-primary" href="/src/pdf/PRANAV RAO K RESUME.pdf" download>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Download Resume
+          </a>
+          <a class="btn btn-outline" href="#projects">
+            See Projects
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+        <div class="stats-grid reveal">
+          <div class="stat-item">
+            <div class="stat-value">10+</div>
+            <div class="stat-label">Projects</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">5+</div>
+            <div class="stat-label">Tech Stacks</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">2nd</div>
+            <div class="stat-label">Year Student</div>
+          </div>
         </div>
       </div>
       <div class="right reveal">
-        <img src="/src/img/Profile picture.png" alt="Profile image" class="avatar" />
-       </div>
-
+        <div class="avatar-container">
+          <div class="avatar-glow"></div>
+          <img src="/src/img/PR_with_glasses.png" alt="Pranav Rao K Profile" class="avatar" />
+          <div class="floating-card card-1">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M16 18L22 12L16 6M8 6L2 12L8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="floating-card card-2">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+              <path d="M9 12h6M12 9v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
     </div>
   </header>
 
+
   <!-- ABOUT -->
   <section class="container" id="about">
-    <div class="glass card about reveal">
-      <h2 class="title">About</h2>
+    <div class="section-header reveal">
+      <h2 class="title">About Me</h2>
       <div class="underline"></div>
-      <p>
-        I’m currently a 2nd year Computer Science & Engineering student at MS Ramaiah University Of Applied Sciences, Bangalore. I thrive on tackling complex problems through code and enjoy collaborating on hands-on projects and hackathons. My journey is one of constant learning, driven by curiosity and a passion for software development and emerging technologies.
-      </p>
-      <div class="info">
-        <div class="row"><span class="label">Education</span><span class="value">B.Tech in CSE</span></div>
-        <div class="row"><span class="label">Location</span><span class="value">Bengaluru, India</span></div>
-        <div class="row"><span class="label">Current Year</span><span class="value">2nd Year Student</span></div>
+      <p class="section-subtitle">Get to know me better</p>
+    </div>
+    <div class="glass card about reveal">
+      <div class="about-content">
+        <div class="about-text">
+          <p class="intro-text">
+            I'm currently a 2nd year Computer Science & Engineering student at MS Ramaiah University Of Applied Sciences, Bangalore. I thrive on tackling complex problems through code and enjoy collaborating on hands-on projects and hackathons.
+          </p>
+          <p>
+            My journey is one of constant learning, driven by curiosity and a passion for software development and emerging technologies. I specialize in full-stack development, AI/ML solutions, and building innovative tools that solve real-world problems.
+          </p>
+        </div>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="info-content">
+              <span class="label">Education</span>
+              <span class="value">B.Tech in CSE</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/>
+                <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="info-content">
+              <span class="label">Location</span>
+              <span class="value">Bengaluru, India</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="info-content">
+              <span class="label">Current Year</span>
+              <span class="value">2nd Year Student</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="info-content">
+              <span class="label">University</span>
+              <span class="value">MS Ramaiah University Of Applied Sciences</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
+
+  <!-- EXPERIENCE -->
+  <section class="container" id="experience">
+    <div class="section-header reveal">
+      <h2 class="title">Experience</h2>
+      <div class="underline"></div>
+      <p class="section-subtitle">My professional journey</p>
+    </div>
+    <div class="timeline">
+      
+      <div class="timeline-item glass card reveal">
+        <div class="timeline-marker"></div>
+        <div class="timeline-content">
+          <div class="timeline-header">
+            <div>
+              <h3>Machine Learning Intern</h3>
+              <h4>Fox Trading Solutions</h4>
+            </div>
+            <span class="timeline-date">Jan 2025 - April 2025</span>
+          </div>
+          <ul class="timeline-list">
+            <li>Completed a focused internship in Machine Learning, applying key ML concepts to practical problems.</li>
+            <li>YDemonstrated commitment and consistency, recognized for dedication, hard work, and diligence by the academic head.</li>
+            <li>Gained hands-on experience with data preprocessing, model training, and performance evaluation</li>
+          </ul>
+          <div class="tech-tags">
+            <span class="tech-tag">Python</span>
+            <span class="tech-tag">Pandas</span>
+            <span class="tech-tag">NumPy</span>
+            <span class="tech-tag">ML Algorithms</span>
+            <span class="tech-tag">Matplotlib</span>
+            <span class="tech-tag">Scikit-learn</span>
+          </div>
+        </div>
+      </div>
+
+      
+
+    </div>
+  </section>
+
 
   <!-- SKILLS -->
   <section class="container" id="skills">
-    <h2 class="title">Skills</h2>
-    <div class="underline"></div>
+    <div class="section-header reveal">
+      <h2 class="title">Skills & Technologies</h2>
+      <div class="underline"></div>
+      <p class="section-subtitle">Tools and technologies I work with</p>
+    </div>
     <div class="skills-grid">
       <div class="glass card skill-card reveal">
+        <div class="skill-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+            <path d="M16 18L22 12L16 6M8 6L2 12L8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
         <h3>Web/App Development</h3>
+        <div class="skill-divider"></div>
         <ul>
-          <li>HTML</li>
-          <li>CSS</li>
-          <li>UI/UX Design</li>
-          <li>n8n</li>
-          <li>Flutter</li>
-          <li>Flask</li>
-          <li>Figma</li>
-          <li>Graphic Design</li>
+          <li><span class="skill-bullet">▹</span> HTML/CSS</li>
+          <li><span class="skill-bullet">▹</span> React & Next.js</li>
+          <li><span class="skill-bullet">▹</span> TypeScript</li>
+          <li><span class="skill-bullet">▹</span> Database Management</li>
+          <li><span class="skill-bullet">▹</span> UI/UX Design</li>
+          <li><span class="skill-bullet">▹</span> n8n Automation</li>
+          <li><span class="skill-bullet">▹</span> Flutter</li>
+          <li><span class="skill-bullet">▹</span> Flask</li>
         </ul>
       </div>
+
       <div class="glass card skill-card reveal">
-        <h3>AI/ML</h3>
+        <div class="skill-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" stroke="currentColor" stroke-width="2"/>
+            <polyline points="7.5 4.21 12 6.81 16.5 4.21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="7.5 19.79 7.5 14.6 3 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="21 12 16.5 14.6 16.5 19.79" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>AI/ML & Data Science</h3>
+        <div class="skill-divider"></div>
         <ul>
-          <li>TensorFlow</li>
-          <li>Scikit-learn</li>
-          <li>ML Algorithms</li>
-          <li>Pandas</li>
-          <li>NumPy</li>
-          <li>Matplotlib</li>
-          <li>OpenCV</li>
-          <li>Seaborn</li>
+          <li><span class="skill-bullet">▹</span> TensorFlow</li>
+          <li><span class="skill-bullet">▹</span> Scikit-learn</li>
+          <li><span class="skill-bullet">▹</span> ML Algorithms</li>
+          <li><span class="skill-bullet">▹</span> Pandas & NumPy</li>
+          <li><span class="skill-bullet">▹</span> Matplotlib</li>
+          <li><span class="skill-bullet">▹</span> OpenCV</span></li>
+          <li><span class="skill-bullet">▹</span> Seaborn</li>
+          <li><span class="skill-bullet">▹</span> Data Analysis</li>
         </ul>
       </div>
+
       <div class="glass card skill-card reveal">
+        <div class="skill-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+            <polyline points="4 17 10 11 4 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="12" y1="19" x2="20" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
         <h3>Programming Languages</h3>
+        <div class="skill-divider"></div>
         <ul>
-          <li>Python</li>
-          <li>JavaScript</li>
-          <li>Dart</li>
-          <li>C</li>
-          <li>React</li>
-          <li>Java Basics</li>
+          <li><span class="skill-bullet">▹</span> Python</li>
+          <li><span class="skill-bullet">▹</span> JavaScript</li>
+          <li><span class="skill-bullet">▹</span> TypeScript</li>
+          <li><span class="skill-bullet">▹</span> Dart</li>
+          <li><span class="skill-bullet">▹</span> Java (Basics)</li>
+          <li><span class="skill-bullet">▹</span> SQL</li>
+          <li><span class="skill-bullet">▹</span> HTML/CSS</li>
         </ul>
       </div>
     </div>
   </section>
 
+    <!-- ACHIEVEMENTS -->
+  <section class="container" id="achievements">
+    <div class="section-header reveal">
+      <h2 class="title">Achievements & Highlights</h2>
+      <div class="underline"></div>
+      <p class="section-subtitle">Milestones and accomplishments</p>
+    </div>
+    <div class="achievements-grid-single">
+      <div class="glass card achievement-card-featured reveal">
+        <div class="achievement-image">
+          <img src="/src/img/hult-price.jpg" alt="Hult Prize Hackathon Winners" />
+          <div class="achievement-badge">1st Place</div>
+        </div>
+        <div class="achievement-content">
+          <div class="achievement-icon-small">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="currentColor"/>
+            </svg>
+          </div>
+          <h3>Hult Prize Hackathon Winner</h3>
+          <p class="achievement-highlight">Secured 1st Place among 170+ participants</p>
+          <p class="achievement-description">Won first place in the prestigious Hult Prize Hackathon, competing against 170+ talented participants from various institutions. Our innovative solution and presentation impressed the judges, showcasing exceptional problem-solving skills and entrepreneurial thinking.</p>
+          <div class="achievement-stats">
+            <div class="stat-box">
+              <span class="stat-number">1st</span>
+              <span class="stat-text">Position</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-number">170+</span>
+              <span class="stat-text">Participants</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-number">2025</span>
+              <span class="stat-text">Year</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
   <!-- PROJECTS -->
-<section class="container" id="projects">
-  <h2 class="title">Projects</h2>
-  <div class="underline"></div>
-  <div class="projects-grid">
-
-    <!-- Project 1 -->
-    <article class="glass card project reveal">
-      <div class="thumb">
-        <video width="100%" height="180" controls playsinline>
-          <source src="/src/vids/VA.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-      <h3 style="margin:.5rem 0 0; color:var(--white)">SAANVI - AI Based Voice Assistant</h3>
-      <p class="muted">An AI-powered voice assistant for seamless interactions like booking appointments, answering queries, and more.</p>
-      <div>
-        <span class="pill">n8n</span><span class="pill">Retell AI</span>
-      </div>
-    </article>
-
-    <!-- Project 2 -->
-    <article class="glass card project reveal">
-      <div class="thumb">
-        <video width="100%" height="180" controls playsinline>
-          <source src="/src/vids/SS.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-      <h3 style="margin:.5rem 0 0; color:var(--white)">SpeedSnare - AI Powered Vehicle Speed Detection</h3>
-      <p class="muted">An AI-based solution for real-time vehicle speed detection and monitoring.</p>
-      <div>
-        <span class="pill">OpenCV</span><span class="pill">Python</span><span class="pill">HTML/CSS</span><span class="pill">JavaScript</span><span class="pill">Flask</span>
-      </div>
-    </article>
-
-    <!-- Project 3 -->
-    <article class="glass card project reveal">
-      <div class="thumb">
-        <video width="100%" height="180" controls playsinline>
-          <source src="/src/vids/DS.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-      <h3 style="margin:.5rem 0 0; color:var(--white)">DermiScan - AI Based Skin Cancer Detection Tool</h3>
-      <p class="muted">An AI-driven tool for early detection of skin cancer through image analysis.</p>
-      <div>
-        <span class="pill">TensorFlow</span><span class="pill">HTML/CSS</span><span class="pill">Flask</span><span class="pill">JavaScript</span>
-      </div>
-    </article>
-
-    <!-- Project 4 -->
-    <article class="glass card project reveal">
-      <div class="thumb">
-        <video width="100%" height="180" controls playsinline>
-          <source src="/src/vids/KG.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-      <h3 style="margin:.5rem 0 0; color:var(--white)">KrishiGuru - AI Based Smart Crop Recommendation Tool</h3>
-      <p class="muted">An AI-driven tool for real-time crop recommendations based on various parameters.</p>
-      <div>
-        <span class="pill">ML Algorithms</span><span class="pill">NumPy</span><span class="pill">Pandas</span><span class="pill">Flask</span><span class="pill">HTML/CSS</span>
-      </div>
-    </article>
-
-    <!-- Project 5 -->
-    <article class="glass card project reveal">
-      <div class="thumb">
-        <video width="100%" height="180" controls playsinline>
-          <source src="/src/vids/AW.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-      <h3 style="margin:.5rem 0 0; color:var(--white)">AutoWorth - AI Based Vehicle Worth Estimation Tool</h3>
-      <p class="muted">An AI-driven tool for estimating the market worth of vehicles based on various parameters.</p>
-      <div>
-        <span class="pill">HTML</span><span class="pill">CSS</span><span class="pill">Scikit-learn</span><span class="pill">Matplotlib</span>
-      </div>
-    </article>
-
-    <!-- Project 6 -->
-    <article class="glass card project reveal">
-      <div class="thumb">
-        <video width="100%" height="180" controls playsinline>
-          <source src="/src/vids/RI.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-      <h3 style="margin:.5rem 0 0; color:var(--white)">RentAI - AI Based Rent Estimation Tool</h3>
-      <p class="muted">An AI-driven tool for estimating rental prices based on various parameters.</p>
-      <div>
-        <span class="pill">Python</span><span class="pill">ML Algorithms</span><span class="pill">Flask</span><span class="pill">HTML/CSS</span>
-      </div>
-    </article>
-
-  </div>
-</section>
-
-
- <footer>
-  <div class="footer-inner">
-    <div>
-      <div style="color:var(--accent);font-size:1.38em;font-weight:700;margin-bottom:2px;">Scripted By Pranav Rao K</div>
-       <span style="font-size: 13px;">All rights reserved © 2025</span>
+  <section class="container" id="projects">
+    <div class="section-header reveal">
+      <h2 class="title">Featured Projects</h2>
+      <div class="underline"></div>
+      <p class="section-subtitle">Showcasing my best work</p>
     </div>
-    <div class="footer-socials">
-  <a href="mailto:pranavraok18@gmail.com" aria-label="Email" target="_blank">
-    <svg width="40" height="40" fill="none" viewBox="0 0 22 22" >
-      <rect width="22" height="22" rx="8" fill="rgba(220,245,225,0.03)"/>
-      <path d="M6 7.2C6 6.54 6.54 6 7.2 6h7.6c.66 0 1.2.54 1.2 1.2v6.6c0 .66-.54 1.2-1.2 1.2H7.2A1.2 1.2 0 0 1 6 13.8V7.2Zm1.24.13 4.81 3.31 4.71-3.29" stroke="#46e39d" stroke-width="2" stroke-linecap="round"/>
-    </svg>
-  </a>
-  <a href="https://www.linkedin.com/in/pranav-rao-k-487532312/" aria-label="LinkedIn" target="_blank"><svg width="40" height="40" fill="none" viewBox="0 0 22 22" ><rect width="22" height="22" rx="8" fill="rgba(220,245,225,0.03)"/><path d="M8.01 7.59c0-.64-.51-1.15-1.15-1.15s-1.15.51-1.15 1.15c0 .63.51 1.14 1.15 1.14s1.15-.51 1.15-1.14Zm.41 1.99H6.47v5.42h1.95v-5.42Zm2.96 0h-1.93v5.42h1.93v-2.7c0-.75.63-1.38 1.39-1.38s1.39.63 1.39 1.38v2.7h1.93v-3.24c0-1.32-1.1-2.4-2.38-2.4-1.11 0-1.3.73-1.33 1.08h.01Z" stroke="#46e39d" stroke-width="2" stroke-linecap="round"/></svg></a>
-  <a href="https://github.com/pranavraok" aria-label="GitHub" target="_blank">
-    <svg width="40" height="40" fill="none" viewBox="0 0 22 22" >
-      <rect width="22" height="22" rx="8" fill="rgba(220,245,225,0.03)"/>
-      <path d="M11.01 4.81c-3.57 0-6.47 2.9-6.47 6.47 0 2.86 1.86 5.29 4.44 6.15.32.06.44-.14.44-.32v-1.12c-1.81.39-2.19-.79-2.19-.79-.3-.76-.74-.96-.74-.96-.6-.41.04-.4.04-.4.66.04 1 .68 1 .68.59 1.01 1.55.72 1.93.55.06-.43.23-.72.41-.89-1.44-.16-2.96-.72-2.96-3.21 0-.71.25-1.28.67-1.74-.07-.16-.29-.83.07-1.74 0 0 .54-.17 1.75.67.52-.14 1.08-.21 1.64-.21.56 0 1.12.07 1.64.21 1.21-.84 1.75-.67 1.75-.67.36.91.14 1.58.07 1.74.42.46.67 1.03.67 1.74 0 2.5-1.53 3.05-2.97 3.21.24.21.45.63.45 1.27v1.87c0 .18.11.39.45.32A6.48 6.48 0 0 0 17.5 11.3c0-3.57-2.9-6.47-6.49-6.47Z" stroke="#46e39d" stroke-width="2" stroke-linecap="round"/>
-    </svg>
-  </a>
-</div>
+    <div class="projects-grid">
+      
+      <!-- Project 1 -->
+      <article class="glass card project reveal">
+        <div class="project-badge">Featured</div>
+        <div class="thumb">
+          <video width="100%" height="240" controls playsinline>
+            <source src="/src/vids/SA.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="project-content">
+          <h3>Stock Analysis Pro</h3>
+          <p class="project-subtitle">Equity Research Platform</p>
+          <p class="muted">A full-stack web application delivering AI-powered stock market analysis for Indian equity investors with comprehensive reports and ML predictions.</p>
+          <div class="project-pills">
+            <span class="pill">Fintech</span>
+            <span class="pill">Python</span>
+            <span class="pill">FPDF</span>
+            <span class="pill">ML</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Project 2 -->
+      <article class="glass card project reveal">
+        <div class="project-badge">AI</div>
+        <div class="thumb">
+          <video width="100%" height="240" controls playsinline>
+            <source src="/src/vids/GSD.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="project-content">
+          <h3>Email Classification System</h3>
+          <p class="project-subtitle">AI-Powered Management</p>
+          <p class="muted">An AI-driven email management workflow using n8n to automatically classify incoming emails into Important, Spam, or Nothing categories.</p>
+          <div class="project-pills">
+            <span class="pill">n8n</span>
+            <span class="pill">Gemini API</span>
+            <span class="pill">Gmail</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Project 3 -->
+      <article class="glass card project reveal">
+        <div class="project-badge">AI</div>
+        <div class="thumb">
+          <video width="100%" height="240" controls playsinline>
+            <source src="/src/vids/VA.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="project-content">
+          <h3>SAANVI</h3>
+          <p class="project-subtitle">AI Voice Assistant</p>
+          <p class="muted">An AI-powered voice assistant for seamless interactions like booking appointments, answering queries, and automated customer support.</p>
+          <div class="project-pills">
+            <span class="pill">n8n</span>
+            <span class="pill">Retell AI</span>
+            <span class="pill">Automation</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Project 4 -->
+      <article class="glass card project reveal">
+        <div class="project-badge">Computer Vision</div>
+        <div class="thumb">
+          <video width="100%" height="240" controls playsinline>
+            <source src="/src/vids/SS.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="project-content">
+          <h3>SpeedSnare</h3>
+          <p class="project-subtitle">Vehicle Speed Detection</p>
+          <p class="muted">An AI-based solution for real-time vehicle speed detection and monitoring using advanced computer vision techniques.</p>
+          <div class="project-pills">
+            <span class="pill">OpenCV</span>
+            <span class="pill">Python</span>
+            <span class="pill">Flask</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Project 5 -->
+      <article class="glass card project reveal">
+        <div class="project-badge">Healthcare</div>
+        <div class="thumb">
+          <video width="100%" height="240" controls playsinline>
+            <source src="/src/vids/DS.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="project-content">
+          <h3>DermiScan</h3>
+          <p class="project-subtitle">Skin Cancer Detection</p>
+          <p class="muted">An AI-driven tool for early detection of skin cancer through image analysis using deep learning and TensorFlow.</p>
+          <div class="project-pills">
+            <span class="pill">TensorFlow</span>
+            <span class="pill">Deep Learning</span>
+            <span class="pill">Flask</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Project 6 -->
+      <article class="glass card project reveal">
+        <div class="project-badge">AgriTech</div>
+        <div class="thumb">
+          <video width="100%" height="240" controls playsinline>
+            <source src="/src/vids/KG.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="project-content">
+          <h3>KrishiGuru</h3>
+          <p class="project-subtitle">Smart Crop Recommendation</p>
+          <p class="muted">An AI-driven tool for real-time crop recommendations based on soil parameters, weather conditions, and historical data.</p>
+          <div class="project-pills">
+            <span class="pill">ML</span>
+            <span class="pill">Pandas</span>
+            <span class="pill">Flask</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Project 7 -->
+      <article class="glass card project reveal">
+        <div class="thumb">
+          <video width="100%" height="240" controls playsinline>
+            <source src="/src/vids/AW.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="project-content">
+          <h3>AutoWorth</h3>
+          <p class="project-subtitle">Vehicle Worth Estimation</p>
+          <p class="muted">An AI-driven tool for estimating the market worth of vehicles based on various parameters using regression models.</p>
+          <div class="project-pills">
+            <span class="pill">Scikit-learn</span>
+            <span class="pill">ML</span>
+            <span class="pill">Matplotlib</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Project 8 -->
+      <article class="glass card project reveal">
+        <div class="thumb">
+          <video width="100%" height="240" controls playsinline>
+            <source src="/src/vids/RI.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="project-content">
+          <h3>RentAI</h3>
+          <p class="project-subtitle">Rent Estimation Tool</p>
+          <p class="muted">An AI-driven tool for estimating rental prices based on location, property features, and market trends using ML algorithms.</p>
+          <div class="project-pills">
+            <span class="pill">Python</span>
+            <span class="pill">ML</span>
+            <span class="pill">Flask</span>
+          </div>
+        </div>
+      </article>
 
     </div>
-  </div>
-</footer>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-left">
+        <div class="footer-brand">PRANAV<span>.DEV</span></div>
+        <p class="footer-desc">Building innovative solutions through code</p>
+        <span class="footer-copyright">© 2025 All rights reserved</span>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigation</h4>
+          <a href="#home">Home</a>
+          <a href="#about">About</a>
+          <a href="#experience">Experience</a>
+          <a href="#skills">Skills</a>
+        </div>
+        <div class="footer-col">
+          <h4>More</h4>
+          <a href="#achievements">Achievements</a>
+          <a href="#projects">Projects</a>
+          <a href="/src/pdf/PRANAV RAO K RESUME.pdf" download>Resume</a>
+        </div>
+      </div>
+      <div class="footer-socials">
+        <h4>Connect</h4>
+        <div class="social-links">
+          <a href="mailto:pranavraok18@gmail.com" aria-label="Email" target="_blank">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a href="https://www.linkedin.com/in/pranav-rao-k/" aria-label="LinkedIn" target="_blank">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="4" cy="4" r="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a href="https://github.com/pranavraok" aria-label="GitHub" target="_blank">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
 
   <!-- JavaScript -->
   <script src="script.js"></script>
