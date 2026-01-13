@@ -287,46 +287,520 @@
     </div>
   </section>
 
-    <!-- ACHIEVEMENTS -->
-  <section class="container" id="achievements">
-    <div class="section-header reveal">
-      <h2 class="title">Achievements & Highlights</h2>
-      <div class="underline"></div>
-      <p class="section-subtitle">Milestones and accomplishments</p>
-    </div>
-    <div class="achievements-grid-single">
-      <div class="glass card achievement-card-featured reveal">
-        <div class="achievement-image">
-          <img src="/src/img/hult-price.jpg" alt="Hult Prize Hackathon Winners" />
-          <div class="achievement-badge">1st Place</div>
+<!-- ACHIEVEMENTS -->
+<section class="container" id="achievements">
+  <div class="section-header reveal">
+    <h2 class="title">Achievements & Highlights</h2>
+    <div class="underline"></div>
+    <p class="section-subtitle">Milestones and accomplishments</p>
+  </div>
+  
+  <div class="achievements-carousel-wrapper reveal">
+    <button class="carousel-btn carousel-btn-prev" onclick="scrollAchievements('left')" aria-label="Previous achievement">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <div class="achievements-track">
+      <!-- Achievement 1 (Trikaya HackToHire Winner) -->
+      <article class="glass achievement-card" data-index="0">
+        <div class="achievement-visual">
+          <img src="/src/img/trikaya-prize.png" alt="Achievement 1" loading="lazy" />
+          <span class="achievement-tag">Top 10</span>
         </div>
-        <div class="achievement-content">
-          <div class="achievement-icon-small">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+        <div class="achievement-body">
+          <div class="achievement-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
               <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="currentColor"/>
             </svg>
           </div>
-          <h3>Hult Prize Hackathon Winner</h3>
-          <p class="achievement-highlight">Secured 1st Place among 170+ participants</p>
-          <p class="achievement-description">Won first place in the prestigious Hult Prize Hackathon, competing against 170+ talented participants from various institutions. Our innovative solution and presentation impressed the judges, showcasing exceptional problem-solving skills and entrepreneurial thinking.</p>
-          <div class="achievement-stats">
-            <div class="stat-box">
-              <span class="stat-number">1st</span>
-              <span class="stat-text">Position</span>
+          <h3 class="achievement-title">Trikaya HackToHire Winner</h3>
+          <p class="achievement-subtitle">Top 10 among 4000+ teams</p>
+          <p class="achievement-text">Selected for the final showcase at Radisson Blu after advancing through three rigorous stages ideation, build phase, and live presentation. Pitched our innovative solution to industry experts and hiring partners.</p>
+          <div class="achievement-metrics">
+            <div class="metric">
+              <span class="metric-value">Top 10</span>
+              <span class="metric-label">Position</span>
             </div>
-            <div class="stat-box">
-              <span class="stat-number">170+</span>
-              <span class="stat-text">Participants</span>
+            <div class="metric">
+              <span class="metric-value">4000+</span>
+              <span class="metric-label">Teams</span>
             </div>
-            <div class="stat-box">
-              <span class="stat-number">2025</span>
-              <span class="stat-text">Year</span>
+            <div class="metric">
+              <span class="metric-value">2025</span>
+              <span class="metric-label">Year</span>
             </div>
           </div>
         </div>
-      </div>
+      </article>
+
+      <!-- Achievement 2 - Hult Prize (Featured) -->
+      <article class="glass achievement-card active" data-index="1">
+        <div class="achievement-visual">
+          <img src="/src/img/hult-price.jpg" alt="Hult Prize Hackathon Winners" loading="lazy" />
+          <span class="achievement-tag gold">1st Place</span>
+        </div>
+        <div class="achievement-body">
+          <div class="achievement-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="currentColor"/>
+            </svg>
+          </div>
+          <h3 class="achievement-title">Hult Prize Hackathon Winner</h3>
+          <p class="achievement-subtitle">Secured 1st Place among 170+ participants</p>
+          <p class="achievement-text">Won first place in the prestigious Hult Prize Hackathon, competing against 170+ talented participants from various institutions. Our innovative solution and presentation impressed the judges, showcasing exceptional problem-solving skills.</p>
+          <div class="achievement-metrics">
+            <div class="metric">
+              <span class="metric-value">1st</span>
+              <span class="metric-label">Position</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">170+</span>
+              <span class="metric-label">Participants</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">2025</span>
+              <span class="metric-label">Year</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Achievement 3 -->
+      <article class="glass achievement-card" data-index="2">
+        <div class="achievement-visual">
+          <img src="/src/img/hackspace-prize.jpeg" alt="Achievement 3" loading="lazy" />
+          <span class="achievement-tag">Winner</span>
+        </div>
+        <div class="achievement-body">
+          <div class="achievement-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="currentColor"/>
+            </svg>
+          </div>
+          <h3 class="achievement-title">Hack Space 2025 Winner</h3>
+          <p class="achievement-subtitle">Generative AI Track Champion among 1250+ participants</p>
+          <p class="achievement-text">Won the Generative AI track with MENTORA, a cross-platform EdTech application. Marked the third consecutive hackathon victory, demonstrating consistent innovation and execution excellence across problem-solving, concept clarity.</p>
+          <div class="achievement-metrics">
+            <div class="metric">
+              <span class="metric-value">1st</span>
+              <span class="metric-label">Label</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">1250+</span>
+              <span class="metric-label">Participants</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">2026</span>
+              <span class="metric-label">Year</span>
+            </div>
+          </div>
+        </div>
+      </article>
     </div>
-  </section>
+
+    <button class="carousel-btn carousel-btn-next" onclick="scrollAchievements('right')" aria-label="Next achievement">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Carousel Indicators -->
+  <div class="carousel-indicators">
+    <button class="indicator active" onclick="setActiveAchievement(0)" aria-label="Go to achievement 1"></button>
+    <button class="indicator" onclick="setActiveAchievement(1)" aria-label="Go to achievement 2"></button>
+    <button class="indicator" onclick="setActiveAchievement(2)" aria-label="Go to achievement 3"></button>
+  </div>
+</section>
+
+<style>
+/* Achievements Carousel */
+.achievements-carousel-wrapper {
+  position: relative;
+  max-width: 1400px;
+  margin: 3rem auto 2rem;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.achievements-track {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  width: 100%;
+  perspective: 1000px;
+}
+
+/* Achievement Cards */
+.achievement-card {
+  flex: 0 0 340px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  opacity: 0.5;
+  transform: scale(0.88) translateY(10px);
+  filter: grayscale(0.3) blur(1px);
+  pointer-events: auto;
+}
+
+.achievement-card.active {
+  flex: 0 0 520px;
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  filter: grayscale(0) blur(0);
+  z-index: 10;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+}
+
+.achievement-card:not(.active):hover {
+  opacity: 0.75;
+  transform: scale(0.92) translateY(5px);
+  filter: grayscale(0.1) blur(0.5px);
+}
+
+/* Visual Section */
+.achievement-visual {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+}
+
+.achievement-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.achievement-card:hover .achievement-visual img {
+  transform: scale(1.05);
+}
+
+.achievement-tag {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.achievement-tag.gold {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #000;
+}
+
+/* Card Body */
+.achievement-body {
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  flex: 1;
+}
+
+.achievement-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+  border-radius: 12px;
+  color: var(--clr-primary);
+}
+
+.achievement-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0;
+  color: var(--clr-fg);
+}
+
+.achievement-card:not(.active) .achievement-title {
+  font-size: 1.15rem;
+}
+
+.achievement-subtitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--clr-primary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.achievement-text {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--clr-fg-alt);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.achievement-card.active .achievement-text {
+  -webkit-line-clamp: 4;
+}
+
+/* Metrics */
+.achievement-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.25rem;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--clr-primary);
+  line-height: 1;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  color: var(--clr-fg-alt);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+/* Carousel Buttons */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 20;
+  color: var(--clr-fg);
+}
+
+.carousel-btn-prev {
+  left: -140px;
+}
+
+.carousel-btn-next {
+  right: -140px;
+}
+
+.carousel-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.carousel-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+/* Carousel Indicators */
+.carousel-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 2.5rem;
+}
+
+.indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.indicator.active {
+  width: 32px;
+  border-radius: 5px;
+  background: var(--clr-primary);
+}
+
+.indicator:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.2);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .achievement-card {
+    flex: 0 0 300px;
+  }
+  
+  .achievement-card.active {
+    flex: 0 0 460px;
+  }
+  
+  .carousel-btn-prev {
+    left: -60px;
+  }
+  
+  .carousel-btn-next {
+    right: -60px;
+  }
+}
+
+@media (max-width: 968px) {
+  .achievements-track {
+    gap: 1rem;
+  }
+  
+  .achievement-card:not(.active) {
+    flex: 0 0 180px;
+    opacity: 0.3;
+  }
+  
+  .achievement-card.active {
+    flex: 0 0 400px;
+  }
+  
+  .achievement-visual {
+    height: 200px;
+  }
+  
+  .achievement-body {
+    padding: 1.25rem;
+  }
+  
+  .carousel-btn {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .carousel-btn-prev {
+    left: -50px;
+  }
+  
+  .carousel-btn-next {
+    right: -50px;
+  }
+}
+
+@media (max-width: 768px) {
+  .achievement-card:not(.active) {
+    display: none;
+  }
+  
+  .achievement-card.active {
+    flex: 0 0 100%;
+    max-width: 500px;
+  }
+  
+  .carousel-btn-prev {
+    left: -10px;
+  }
+  
+  .carousel-btn-next {
+    right: -10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .achievement-metrics {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .metric-value {
+    font-size: 1.25rem;
+  }
+  
+  .carousel-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .carousel-btn-prev {
+    left: -5px;
+  }
+  
+  .carousel-btn-next {
+    right: -5px;
+  }
+}
+</style>
+
+<script>
+let currentAchievement = 1;
+
+function setActiveAchievement(index) {
+  const cards = document.querySelectorAll('.achievement-card');
+  const indicators = document.querySelectorAll('.indicator');
+  
+  cards.forEach((card, i) => {
+    card.classList.toggle('active', i === index);
+  });
+  
+  indicators.forEach((indicator, i) => {
+    indicator.classList.toggle('active', i === index);
+  });
+  
+  currentAchievement = index;
+}
+
+function scrollAchievements(direction) {
+  const totalCards = document.querySelectorAll('.achievement-card').length;
+  
+  if (direction === 'left') {
+    currentAchievement = (currentAchievement - 1 + totalCards) % totalCards;
+  } else {
+    currentAchievement = (currentAchievement + 1) % totalCards;
+  }
+  
+  setActiveAchievement(currentAchievement);
+}
+
+// Click on cards to activate
+document.querySelectorAll('.achievement-card').forEach((card, index) => {
+  card.addEventListener('click', () => setActiveAchievement(index));
+});
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft') scrollAchievements('left');
+  if (e.key === 'ArrowRight') scrollAchievements('right');
+});
+</script>
+
 
 
   <!-- PROJECTS -->
