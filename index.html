@@ -3,947 +3,542 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PRANAV-OS v2.4.0 — Boot Into Pranav</title>
-  <meta name="description" content="Pranav Rao K — Scroll into a developer's PC monitor and explore a living OS portfolio." />
-
-  <!-- Fonts -->
+  <title>PRANAV-OS v2.4.0</title>
+  <meta name="description" content="Pranav Rao K portfolio - Developer as Art">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-
-  <!-- CSS -->
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700;800&family=Playfair+Display:ital,wght@0,500;0,700;1,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-
-  <!-- Scripts (head) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-  <script src="https://unpkg.com/@studio-freight/lenis@1.0.35/dist/lenis.min.js"></script>
-  <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/bundled/lenis.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/typed.js@2.1.0/dist/typed.umd.js" defer></script>
+  <script src="script.js" defer></script>
 </head>
 <body>
-  <!-- CRT Global Overlays -->
-  <div class="scanlines"></div>
-  <div class="screen-vignette"></div>
+  <div class="crt-noise" aria-hidden="true"></div>
+  <div class="crt-scan" aria-hidden="true"></div>
+  <div class="crt-vignette" aria-hidden="true"></div>
 
-    <!-- HERO -->
-  <header class="container" id="home">
-    <div class="hero">
-      <div class="left reveal">
-        <div class="badge">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/>
-            <circle cx="12" cy="12" r="3" fill="currentColor"/>
-          </svg>
-          <span>Available for Projects</span>
-        </div>
-        <h3 class="greeting">Hello, It's Me</h3>
-        <h1 class="title">Pranav Rao K</h1>
-        <h3 class="role-text">and I'm a <span class="typewrap" id="typewriter"></span><span class="cursor" aria-hidden="true"></span></h3>
-        <p class="sub">A passionate coder exploring the endless abyss of ones and zeroes, building innovative solutions that make a difference.</p>
-        <div class="cta">
-          <a class="btn btn-primary" href="/src/pdf/PRANAV RAO K RESUME.pdf" download>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Download Resume
-          </a>
-          <a class="btn btn-outline" href="#projects">
-            See Projects
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
-        </div>
-        <div class="stats-grid reveal">
-          <div class="stat-item">
-            <div class="stat-value">10+</div>
-            <div class="stat-label">Projects</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">5+</div>
-            <div class="stat-label">Tech Stacks</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">2nd</div>
-            <div class="stat-label">Year Student</div>
-          </div>
-        </div>
+  <div class="cursor-layer" aria-hidden="true">
+    <span class="cursor-main" id="cursor-main">_</span>
+    <span class="cursor-ghost" id="cursor-ghost-1">_</span>
+    <span class="cursor-ghost" id="cursor-ghost-2">_</span>
+    <span class="cursor-ghost" id="cursor-ghost-3">_</span>
+  </div>
+
+  <div class="boot-screen" id="boot-screen">
+    <div class="boot-wrap">
+      <pre class="boot-log" id="boot-log"></pre>
+      <div class="boot-progress-track">
+        <div class="boot-progress-fill" id="boot-progress-fill"></div>
       </div>
-      <div class="right reveal">
-        <div class="avatar-container">
-          <div class="avatar-glow"></div>
-          <img src="/src/img/PR.png" alt="Pranav Rao K Profile" class="avatar" />
-          <div class="floating-card card-1">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M16 18L22 12L16 6M8 6L2 12L8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="floating-card card-2">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
-              <path d="M9 12h6M12 9v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-        </div>
-      </div>
+      <div class="boot-cursor">_</div>
     </div>
+  </div>
+
+  <header class="mobile-nav-shell">
+    <button class="menu-toggle" id="menu-toggle" aria-label="Open menu">$ cd ./menu</button>
+    <nav class="mobile-nav" id="mobile-nav">
+      <a href="#hero">Home</a>
+      <a href="#about">About</a>
+      <a href="#experience">Experience</a>
+      <a href="#skills">Skills</a>
+      <a href="#achievements">Achievements</a>
+      <a href="#projects">Projects</a>
+      <a href="src/pdf/PRANAV RAO K RESUME.pdf" download>./resume.pdf</a>
+    </nav>
   </header>
 
-
-  <!-- ABOUT -->
-  <section class="container" id="about">
-    <div class="section-header reveal">
-      <h2 class="title">About Me</h2>
-      <div class="underline"></div>
-      <p class="section-subtitle">Get to know me better</p>
-    </div>
-    <div class="glass card about reveal">
-      <div class="about-content">
-        <div class="about-text">
-          <p class="intro-text">
-            I'm currently a 2nd year Computer Science & Engineering student at MS Ramaiah University Of Applied Sciences, Bangalore. I thrive on tackling complex problems through code and enjoy collaborating on hands-on projects and hackathons.
-          </p>
-          <p>
-            My journey is one of constant learning, driven by curiosity and a passion for software development and emerging technologies. I specialize in full-stack development, AI/ML solutions, and building innovative tools that solve real-world problems.
-          </p>
-        </div>
-        <div class="info-grid">
-          <div class="info-item">
-            <div class="info-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M6 12v5c3 3 9 3 12 0v-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="info-content">
-              <span class="label">Education</span>
-              <span class="value">B.Tech in CSE</span>
-            </div>
-          </div>
-          <div class="info-item">
-            <div class="info-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/>
-                <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
-              </svg>
-            </div>
-            <div class="info-content">
-              <span class="label">Location</span>
-              <span class="value">Bengaluru, India</span>
-            </div>
-          </div>
-          <div class="info-item">
-            <div class="info-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
-                <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="info-content">
-              <span class="label">Current Year</span>
-              <span class="value">2nd Year Student</span>
-            </div>
-          </div>
-          <div class="info-item">
-            <div class="info-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
-              </svg>
-            </div>
-            <div class="info-content">
-              <span class="label">University</span>
-              <span class="value">MS Ramaiah University Of Applied Sciences</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- EXPERIENCE -->
-  <section class="container" id="experience">
-    <div class="section-header reveal">
-      <h2 class="title">Experience</h2>
-      <div class="underline"></div>
-      <p class="section-subtitle">My professional journey</p>
-    </div>
-    <div class="timeline">
-      
-      <div class="timeline-item glass card reveal">
-        <div class="timeline-marker"></div>
-        <div class="timeline-content">
-          <div class="timeline-header">
-            <div>
-              <h3>Machine Learning Intern</h3>
-              <h4>Fox Trading Solutions</h4>
-            </div>
-            <span class="timeline-date">Jan 2025 - April 2025</span>
-          </div>
-          <ul class="timeline-list">
-            <li>Completed a focused internship in Machine Learning, applying key ML concepts to practical problems.</li>
-            <li>YDemonstrated commitment and consistency, recognized for dedication, hard work, and diligence by the academic head.</li>
-            <li>Gained hands-on experience with data preprocessing, model training, and performance evaluation</li>
-          </ul>
-          <div class="tech-tags">
-            <span class="tech-tag">Python</span>
-            <span class="tech-tag">Pandas</span>
-            <span class="tech-tag">NumPy</span>
-            <span class="tech-tag">ML Algorithms</span>
-            <span class="tech-tag">Matplotlib</span>
-            <span class="tech-tag">Scikit-learn</span>
-          </div>
-        </div>
+  <main id="app" class="app hidden-until-boot">
+    <section id="hero" class="panel hero-panel">
+      <div class="section-head">
+        <p class="section-label">$ section --open hero</p>
+        <h2 class="section-name">System Loaded</h2>
       </div>
 
-      
-
-    </div>
-  </section>
-
-
-  <!-- SKILLS -->
-  <section class="container" id="skills">
-    <div class="section-header reveal">
-      <h2 class="title">Skills & Technologies</h2>
-      <div class="underline"></div>
-      <p class="section-subtitle">Tools and technologies I work with</p>
-    </div>
-    <div class="skills-grid">
-      <div class="glass card skill-card reveal">
-        <div class="skill-icon">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-            <path d="M16 18L22 12L16 6M8 6L2 12L8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <h3>Web/App Development</h3>
-        <div class="skill-divider"></div>
-        <ul>
-          <li><span class="skill-bullet">▹</span> HTML/CSS</li>
-          <li><span class="skill-bullet">▹</span> React & Next.js</li>
-          <li><span class="skill-bullet">▹</span> TypeScript</li>
-          <li><span class="skill-bullet">▹</span> Database Management</li>
-          <li><span class="skill-bullet">▹</span> UI/UX Design</li>
-          <li><span class="skill-bullet">▹</span> n8n Automation</li>
-          <li><span class="skill-bullet">▹</span> Flutter</li>
-          <li><span class="skill-bullet">▹</span> Flask</li>
-        </ul>
+      <div class="matrix-bg" aria-hidden="true">
+        <span>f32a91</span><span>101101</span><span>git</span><span>ml</span><span>react</span>
+        <span>kernel</span><span>dart</span><span>sudo</span><span>n8n</span><span>build</span>
+        <span>os</span><span>python</span><span>node</span><span>ship</span><span>deploy</span>
       </div>
 
-      <div class="glass card skill-card reveal">
-        <div class="skill-icon">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" stroke="currentColor" stroke-width="2"/>
-            <polyline points="7.5 4.21 12 6.81 16.5 4.21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <polyline points="7.5 19.79 7.5 14.6 3 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <polyline points="21 12 16.5 14.6 16.5 19.79" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+      <div class="terminal-window hero-terminal">
+        <div class="term-title">
+          <div class="term-dots"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span></div>
+          <p>pranav@universe: ~ - zsh</p>
+          <p class="availability"><span class="blink-dot"></span> Available for Projects</p>
         </div>
-        <h3>AI/ML & Data Science</h3>
-        <div class="skill-divider"></div>
-        <ul>
-          <li><span class="skill-bullet">▹</span> TensorFlow</li>
-          <li><span class="skill-bullet">▹</span> Scikit-learn</li>
-          <li><span class="skill-bullet">▹</span> ML Algorithms</li>
-          <li><span class="skill-bullet">▹</span> Pandas & NumPy</li>
-          <li><span class="skill-bullet">▹</span> Matplotlib</li>
-          <li><span class="skill-bullet">▹</span> OpenCV</span></li>
-          <li><span class="skill-bullet">▹</span> Seaborn</li>
-          <li><span class="skill-bullet">▹</span> Data Analysis</li>
-        </ul>
-      </div>
 
-      <div class="glass card skill-card reveal">
-        <div class="skill-icon">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-            <polyline points="4 17 10 11 4 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <line x1="12" y1="19" x2="20" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <h3>Programming Languages</h3>
-        <div class="skill-divider"></div>
-        <ul>
-          <li><span class="skill-bullet">▹</span> Python</li>
-          <li><span class="skill-bullet">▹</span> JavaScript</li>
-          <li><span class="skill-bullet">▹</span> TypeScript</li>
-          <li><span class="skill-bullet">▹</span> Dart</li>
-          <li><span class="skill-bullet">▹</span> Java (Basics)</li>
-          <li><span class="skill-bullet">▹</span> SQL</li>
-          <li><span class="skill-bullet">▹</span> HTML/CSS</li>
-        </ul>
-      </div>
-    </div>
-  </section>
+        <div class="term-body">
+          <div class="term-leftline" aria-hidden="true">|</div>
 
-<!-- ACHIEVEMENTS -->
-<section class="container" id="achievements">
-  <div class="section-header reveal">
-    <h2 class="title">Achievements & Highlights</h2>
-    <div class="underline"></div>
-    <p class="section-subtitle">Milestones and accomplishments</p>
-  </div>
-  
-  <div class="achievements-carousel-wrapper reveal">
-    <button class="carousel-btn carousel-btn-prev" onclick="scrollAchievements('left')" aria-label="Previous achievement">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
+          <div class="hero-copy">
+            <p class="prompt muted">$ whoami</p>
+            <h1 class="hero-name">PRANAV RAO</h1>
 
-    <div class="achievements-track">
-      <!-- Achievement 1 (Trikaya HackToHire Winner) -->
-      <article class="glass achievement-card" data-index="0">
-        <div class="achievement-visual">
-          <img src="/src/img/trikaya-prize.png" alt="Achievement 1" loading="lazy" />
-          <span class="achievement-tag">Top 10</span>
-        </div>
-        <div class="achievement-body">
-          <div class="achievement-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="currentColor"/>
-            </svg>
-          </div>
-          <h3 class="achievement-title">Trikaya HackToHire Winner</h3>
-          <p class="achievement-subtitle">Top 10 among 4000+ teams</p>
-          <p class="achievement-text">Selected for the final showcase at Radisson Blu after advancing through three rigorous stages ideation, build phase, and live presentation. Pitched our innovative solution to industry experts and hiring partners.</p>
-          <div class="achievement-metrics">
-            <div class="metric">
-              <span class="metric-value">Top 10</span>
-              <span class="metric-label">Position</span>
+            <p class="prompt muted">$ cat ./identity.txt</p>
+            <p class="output-line">and I'm a <span id="role-typed" class="accent-green"></span></p>
+
+            <p class="prompt muted">$ cat ./bio.txt</p>
+            <p class="hero-bio">A passionate coder exploring the endless abyss of ones and zeroes, building innovative solutions that make a difference.</p>
+
+            <div class="hero-actions">
+              <a class="cmd-btn" href="src/pdf/PRANAV RAO K RESUME.pdf" download>$ ./download-resume.sh <span>[Enter]</span></a>
+              <a class="cmd-btn" href="#projects">$ cd ./projects <span>[Enter]</span></a>
             </div>
-            <div class="metric">
-              <span class="metric-value">4000+</span>
-              <span class="metric-label">Teams</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">2025</span>
-              <span class="metric-label">Year</span>
+
+            <p class="rule">--------------------------------------------------------------------</p>
+
+            <div class="hero-stats">
+              <div><span class="stat-led"></span> PROCESSES COMPLETED <strong>10+</strong></div>
+              <div><span class="stat-led"></span> STACKS MASTERED <strong>5+</strong></div>
+              <div><span class="stat-led"></span> CURRENT BUILD <strong>v2.0 (Year 2)</strong></div>
             </div>
           </div>
+
+          <aside class="hero-portrait">
+            <p class="img-meta">[img: PR.png | 340x340px | RGB]</p>
+            <div class="photo-wrap">
+              <img src="src/img/PR.png" alt="Pranav Rao K portrait">
+              <span class="photo-scan" id="photo-scan" aria-hidden="true"></span>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="panel about-panel">
+      <div class="section-head">
+        <p class="section-label">$ section --open about</p>
+        <h2 class="section-name">README.md</h2>
+      </div>
+
+      <article class="editor-shell">
+        <header class="editor-title">o README.md - pranav-rao-k - Cursor 3.0</header>
+        <div class="editor-grid">
+          <aside class="editor-tree">
+            <p>&gt; src/</p>
+            <p class="active-file">README.md</p>
+            <p>experience.json</p>
+            <p>skills.ts</p>
+          </aside>
+
+          <div class="editor-raw">
+            <ol class="line-numbers" aria-hidden="true"></ol>
+            <pre class="raw-content" id="about-raw"># Pranav Rao K
+
+&gt; A passionate coder exploring the endless
+&gt; abyss of ones and zeroes.
+
+## About
+
+I'm currently a **2nd year CSE student** at
+MS Ramaiah University Of Applied Sciences,
+Bangalore.
+
+I thrive on tackling complex problems through
+code and enjoy collaborating on hackathons.
+
+My journey is driven by curiosity and a
+passion for software development and
+emerging technologies.
+
+## Details
+
+- Education: B.Tech in CSE
+- Location: Bengaluru, India
+- Year: 2nd Year Student
+- University: MS Ramaiah University of Applied Sciences</pre>
+          </div>
+
+          <div class="editor-render" id="about-render">
+            <h2>Pranav Rao K</h2>
+            <blockquote>A passionate coder exploring the endless abyss of ones and zeroes.</blockquote>
+            <h3>About</h3>
+            <p>I'm currently a <strong>2nd year CSE student</strong> at MS Ramaiah University Of Applied Sciences, Bangalore.</p>
+            <p>I thrive on tackling complex problems through code and enjoy collaborating on hackathons.</p>
+            <p>My journey is driven by curiosity and a passion for software development and emerging technologies.</p>
+            <h3>Details</h3>
+            <ul>
+              <li>Education: B.Tech in CSE</li>
+              <li>Location: Bengaluru, India</li>
+              <li>Year: 2nd Year Student</li>
+              <li>University: MS Ramaiah University of Applied Sciences</li>
+            </ul>
+          </div>
+        </div>
+        <footer class="editor-status">o main | Ln 42, Col 1 | UTF-8 | Markdown | Bengaluru, India | Copyright Pranav Rao K</footer>
+      </article>
+
+      <div class="ticker-wrap">
+        <p class="ticker-text">Python - React - Next.js - Flutter - TensorFlow - n8n - OpenCV - TypeScript - Dart - Scikit-learn - Pandas - NumPy - Matplotlib - Seaborn - Flask - Supabase - Firebase - Figma -</p>
+      </div>
+    </section>
+
+    <section id="experience" class="panel experience-panel">
+      <div class="section-head">
+        <p class="section-label">$ section --open experience</p>
+        <h2 class="section-name">Git Log</h2>
+      </div>
+
+      <p class="prompt">$ git log --all --author="Pranav" --format="%h %ad %s" --date=short</p>
+      <div class="git-log-wrap">
+        <svg class="git-path" viewBox="0 0 2 100" preserveAspectRatio="none" aria-hidden="true">
+          <line class="git-line" x1="1" y1="0" x2="1" y2="100"></line>
+        </svg>
+
+        <article class="commit-item">
+          <header>
+            <span class="hash">* a1f2c3</span>
+            <span class="branch">(HEAD -&gt; main, origin/main)</span>
+          </header>
+          <p class="commit-title">2025-01 - Machine Learning Intern @ Fox Trading Solutions</p>
+          <div class="commit-body">
+            <p>Role: Machine Learning Intern</p>
+            <p>Company: Fox Trading Solutions</p>
+            <p>Period: Jan 2025 - April 2025</p>
+            <p>Completed focused ML internship, applying key ML concepts to practical problems.</p>
+            <p>Recognized for dedication and diligence by academic head.</p>
+            <p>Hands-on: data preprocessing, model training, performance evaluation.</p>
+            <p>Tags: <span>[Python]</span> <span>[Pandas]</span> <span>[NumPy]</span> <span>[Scikit-learn]</span> <span>[Matplotlib]</span> <span>[ML Algorithms]</span></p>
+          </div>
+        </article>
+
+        <article class="commit-item">
+          <header>
+            <span class="hash">* b9e1d2</span>
+          </header>
+          <p class="commit-title">2023-07 - Started B.Tech CSE @ MS Ramaiah University</p>
+        </article>
+
+        <article class="commit-item">
+          <header>
+            <span class="hash">* init</span>
+          </header>
+          <p class="commit-title">2006-01 - Initial commit: Pranav Rao K</p>
+          <p class="muted">"First build. No bugs yet."</p>
+        </article>
+      </div>
+      <p class="status-line">1 internship | 1 commit authored | Career in progress... <span class="cursor-blk">█</span></p>
+    </section>
+
+    <section id="skills" class="panel skills-panel">
+      <div class="section-head">
+        <p class="section-label">$ section --open skills</p>
+        <h2 class="section-name">System Monitor</h2>
+      </div>
+
+      <p class="prompt">$ htop --user=pranav</p>
+      <article class="htop-shell">
+        <header class="htop-head">
+          <p>CPU[<span class="meter meter-cpu" data-level="94.2"></span> 94.2%] Tasks: 24 running</p>
+          <p>MEM[<span class="meter meter-mem" data-level="71"></span> 71.0%] Load: 10+ projects</p>
+          <p class="muted">PID USER      SKILL                 PROFICIENCY    STATUS</p>
+        </header>
+
+        <div class="skill-group">
+          <h3>-------------------- WEB / APP DEVELOPMENT ----------------------</h3>
+          <div class="skill-row" data-level="95" data-tip="Skill: HTML/CSS | Level: Expert | Used in: 10 projects"><span>001</span><span>pranav</span><span>HTML/CSS</span><div class="skill-track"><b class="skill-fill"></b></div><span>95%</span><span>running</span></div>
+          <div class="skill-row" data-level="90" data-tip="Skill: React & Next.js | Level: Advanced | Used in: 6 projects"><span>002</span><span>pranav</span><span>React & Next.js</span><div class="skill-track"><b class="skill-fill"></b></div><span>90%</span><span>running</span></div>
+          <div class="skill-row" data-level="78" data-tip="Skill: TypeScript | Level: Advanced | Used in: 5 projects"><span>003</span><span>pranav</span><span>TypeScript</span><div class="skill-track"><b class="skill-fill"></b></div><span>78%</span><span>running</span></div>
+          <div class="skill-row" data-level="85" data-tip="Skill: Flutter | Level: Advanced | Used in: 4 projects"><span>004</span><span>pranav</span><span>Flutter</span><div class="skill-track"><b class="skill-fill"></b></div><span>85%</span><span>running</span></div>
+          <div class="skill-row" data-level="75" data-tip="Skill: Flask | Level: Intermediate | Used in: 4 projects"><span>005</span><span>pranav</span><span>Flask</span><div class="skill-track"><b class="skill-fill"></b></div><span>75%</span><span>running</span></div>
+          <div class="skill-row" data-level="88" data-tip="Skill: n8n Automation | Level: Advanced | Used in: 3 projects"><span>006</span><span>pranav</span><span>n8n Automation</span><div class="skill-track"><b class="skill-fill"></b></div><span>88%</span><span>running</span></div>
+          <div class="skill-row" data-level="72" data-tip="Skill: UI/UX Design | Level: Intermediate | Used in: 8 projects"><span>007</span><span>pranav</span><span>UI/UX Design</span><div class="skill-track"><b class="skill-fill"></b></div><span>72%</span><span>running</span></div>
+          <div class="skill-row" data-level="80" data-tip="Skill: Database Mgmt | Level: Advanced | Used in: 7 projects"><span>008</span><span>pranav</span><span>Database Mgmt</span><div class="skill-track"><b class="skill-fill"></b></div><span>80%</span><span>running</span></div>
+        </div>
+
+        <div class="skill-group">
+          <h3>-------------------- AI/ML & DATA SCIENCE -----------------------</h3>
+          <div class="skill-row" data-level="95" data-tip="Skill: Python | Level: Expert | Used in: 8 projects"><span>009</span><span>pranav</span><span>Python</span><div class="skill-track"><b class="skill-fill"></b></div><span>95%</span><span>running</span></div>
+          <div class="skill-row" data-level="82" data-tip="Skill: TensorFlow | Level: Advanced | Used in: 3 projects"><span>010</span><span>pranav</span><span>TensorFlow</span><div class="skill-track"><b class="skill-fill"></b></div><span>82%</span><span>running</span></div>
+          <div class="skill-row" data-level="88" data-tip="Skill: Scikit-learn | Level: Advanced | Used in: 6 projects"><span>011</span><span>pranav</span><span>Scikit-learn</span><div class="skill-track"><b class="skill-fill"></b></div><span>88%</span><span>running</span></div>
+          <div class="skill-row" data-level="70" data-tip="Skill: OpenCV | Level: Intermediate | Used in: 2 projects"><span>012</span><span>pranav</span><span>OpenCV</span><div class="skill-track"><b class="skill-fill"></b></div><span>70%</span><span>running</span></div>
+          <div class="skill-row" data-level="93" data-tip="Skill: Pandas & NumPy | Level: Expert | Used in: 8 projects"><span>013</span><span>pranav</span><span>Pandas & NumPy</span><div class="skill-track"><b class="skill-fill"></b></div><span>93%</span><span>running</span></div>
+          <div class="skill-row" data-level="87" data-tip="Skill: ML Algorithms | Level: Advanced | Used in: 6 projects"><span>014</span><span>pranav</span><span>ML Algorithms</span><div class="skill-track"><b class="skill-fill"></b></div><span>87%</span><span>running</span></div>
+        </div>
+
+        <div class="skill-group">
+          <h3>-------------------- PROGRAMMING LANGUAGES ----------------------</h3>
+          <div class="skill-row" data-level="95" data-tip="Skill: Python | Level: Expert | Used in: 8 projects"><span>015</span><span>pranav</span><span>Python</span><div class="skill-track"><b class="skill-fill"></b></div><span>95%</span><span>running</span></div>
+          <div class="skill-row" data-level="90" data-tip="Skill: JavaScript | Level: Advanced | Used in: 7 projects"><span>016</span><span>pranav</span><span>JavaScript</span><div class="skill-track"><b class="skill-fill"></b></div><span>90%</span><span>running</span></div>
+          <div class="skill-row" data-level="82" data-tip="Skill: Dart | Level: Advanced | Used in: 4 projects"><span>017</span><span>pranav</span><span>Dart</span><div class="skill-track"><b class="skill-fill"></b></div><span>82%</span><span>running</span></div>
+          <div class="skill-row" data-level="80" data-tip="Skill: TypeScript | Level: Advanced | Used in: 5 projects"><span>018</span><span>pranav</span><span>TypeScript</span><div class="skill-track"><b class="skill-fill"></b></div><span>80%</span><span>running</span></div>
+          <div class="skill-row" data-level="74" data-tip="Skill: SQL | Level: Intermediate | Used in: 6 projects"><span>019</span><span>pranav</span><span>SQL</span><div class="skill-track"><b class="skill-fill"></b></div><span>74%</span><span>running</span></div>
+          <div class="skill-row" data-level="55" data-tip="Skill: Java (Basics) | Level: Basic | Used in: 2 projects"><span>020</span><span>pranav</span><span>Java (Basics)</span><div class="skill-track"><b class="skill-fill"></b></div><span>55%</span><span>running</span></div>
+        </div>
+
+        <footer class="htop-foot">
+          <p>F1Help F2Setup F3Search F4Filter F5Tree F9Kill F10Quit</p>
+          <p>[ All systems: operational ] [ Pranav@universe ] [ 2026-01-01 ]</p>
+        </footer>
+      </article>
+    </section>
+
+    <section id="achievements" class="panel achievements-panel">
+      <div class="section-head">
+        <p class="section-label">$ section --open achievements</p>
+        <h2 class="section-name">Build Success</h2>
+      </div>
+
+      <article class="ach-card" data-splash="TOP 10">
+        <img src="src/img/trikaya-prize.png" alt="Trikaya achievement" class="ach-img">
+        <div class="ach-overlay"></div>
+        <div class="ach-content">
+          <p>BUILD SUCCESSFUL [2025]</p>
+          <p>Pipeline: TRIKAYA HACKTOHIRE</p>
+          <p>Result: TOP 10 / 4000+ TEAMS</p>
+          <p>Stage: Final Showcase @ Radisson Blu</p>
+          <p>Duration: 3 stages - Ideation - Build - Live Pitch</p>
+          <p>Artifacts: [pitch-deck.pdf] [prototype.apk] [certificate.png]</p>
         </div>
       </article>
 
-      <!-- Achievement 2 - Hult Prize (Featured) -->
-      <article class="glass achievement-card active" data-index="1">
-        <div class="achievement-visual">
-          <img src="/src/img/hult-price.jpg" alt="Hult Prize Hackathon Winners" loading="lazy" />
-          <span class="achievement-tag gold">1st Place</span>
-        </div>
-        <div class="achievement-body">
-          <div class="achievement-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="currentColor"/>
-            </svg>
-          </div>
-          <h3 class="achievement-title">Hult Prize Hackathon Winner</h3>
-          <p class="achievement-subtitle">Secured 1st Place among 170+ participants</p>
-          <p class="achievement-text">Won first place in the prestigious Hult Prize Hackathon, competing against 170+ talented participants from various institutions. Our innovative solution and presentation impressed the judges, showcasing exceptional problem-solving skills.</p>
-          <div class="achievement-metrics">
-            <div class="metric">
-              <span class="metric-value">1st</span>
-              <span class="metric-label">Position</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">170+</span>
-              <span class="metric-label">Participants</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">2025</span>
-              <span class="metric-label">Year</span>
-            </div>
-          </div>
+      <article class="ach-card" data-splash="1ST">
+        <img src="src/img/hult-price.jpg" alt="Hult Prize achievement" class="ach-img">
+        <div class="ach-overlay"></div>
+        <div class="ach-content">
+          <p>BUILD SUCCESSFUL [2025]</p>
+          <p>Pipeline: HULT PRIZE HACKATHON</p>
+          <p>Result: 1ST PLACE / 170+ PARTICIPANTS</p>
+          <p>Stage: Final Judging Round</p>
+          <p>Impact: Exceptional problem-solving, impressed judges</p>
+          <p>Artifacts: [solution.pdf] [presentation.pptx] [trophy.png]</p>
         </div>
       </article>
 
-      <!-- Achievement 3 -->
-      <article class="glass achievement-card" data-index="2">
-        <div class="achievement-visual">
-          <img src="/src/img/hackspace-prize.jpeg" alt="Achievement 3" loading="lazy" />
-          <span class="achievement-tag">Winner</span>
-        </div>
-        <div class="achievement-body">
-          <div class="achievement-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="currentColor"/>
-            </svg>
-          </div>
-          <h3 class="achievement-title">Hack Space 2025 Winner</h3>
-          <p class="achievement-subtitle">Generative AI Track Champion among 1250+ participants</p>
-          <p class="achievement-text">Won the Generative AI track with MENTORA, a cross-platform EdTech application. Marked the third consecutive hackathon victory, demonstrating consistent innovation and execution excellence across problem-solving, concept clarity.</p>
-          <div class="achievement-metrics">
-            <div class="metric">
-              <span class="metric-value">1st</span>
-              <span class="metric-label">Label</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">1250+</span>
-              <span class="metric-label">Participants</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">2026</span>
-              <span class="metric-label">Year</span>
-            </div>
-          </div>
+      <article class="ach-card" data-splash="WINNER">
+        <img src="src/img/hackspace-prize.jpeg" alt="Hack Space achievement" class="ach-img">
+        <div class="ach-overlay"></div>
+        <div class="ach-content">
+          <p>BUILD SUCCESSFUL [2026]</p>
+          <p>Pipeline: HACK SPACE 2025 - GENERATIVE AI TRACK</p>
+          <p>Result: WINNER / 1250+ PARTICIPANTS</p>
+          <p>Project: MENTORA - Cross-Platform EdTech App</p>
+          <p>Streak: 3rd Consecutive Hackathon Win</p>
+          <p>Artifacts: [mentora.apk] [demo.mp4] [certificate.jpg]</p>
         </div>
       </article>
-    </div>
 
-    <button class="carousel-btn carousel-btn-next" onclick="scrollAchievements('right')" aria-label="Next achievement">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-  </div>
-
-  <!-- OS Taskbar (hidden initially) -->
-  <div class="os-taskbar" id="os-taskbar">
-    <div class="taskbar-left">
-      <span class="taskbar-icon">⌘</span>
-      <span class="taskbar-brand">PRANAV-OS</span>
-      <span class="taskbar-sep">│</span>
-      <span class="taskbar-item">≡ Menu</span>
-    </div>
-    <div class="taskbar-center" id="taskbar-windows"></div>
-    <div class="taskbar-right">
-      <span class="taskbar-indicator">●●●</span>
-      <span class="taskbar-clock" id="taskbar-clock">23:47</span>
-      <span class="taskbar-item">WiFi</span>
-      <span class="taskbar-item">Vol</span>
-    </div>
-  </div>
-
-  <!-- Particle Constellation Canvas -->
-  <canvas id="particles-canvas"></canvas>
-
-  <!-- ============================================================
-       PHASE 1: ZOOM — Real Desk Photo
-  ============================================================= -->
-  <div class="zoom-wrapper" id="zoom-wrapper">
-    <div class="zoom-stage">
-      <!-- Real bright desk photo -->
-      <img 
-        src="https://images.unsplash.com/photo-1616763355548-1b606f439f86?w=1920&q=90"
-        alt="Colorful developer desk setup"
-        class="desk-photo"
-        id="desk-photo"
-      />
-      <!-- Monitor screen overlay — positioned over the monitor in the photo -->
-      <div class="monitor-screen-overlay" id="monitor-screen-overlay">
-        <span class="monitor-text">PRANAV.DEV</span>
-      </div>
-      <!-- Vignette overlay — radial gradient with monitor-shaped hole -->
-      <div class="vignette-overlay" id="vignette-overlay"></div>
-      <!-- Desk foreground blur (slower parallax for depth) -->
-      <div class="desk-foreground-blur" id="desk-foreground-blur"></div>
-      <!-- Monitor glint sweep -->
-      <div class="monitor-glint" id="monitor-glint"></div>
-      <!-- Scroll prompt -->
-      <div class="scroll-prompt" id="scroll-prompt">
-        <span>scroll to boot in</span>
-        <div class="scroll-arrow">↓</div>
-      </div>
-
-      <!-- OS Screen (fades in as photo fades out) -->
-      <div class="os-screen" id="os-screen">
-
-        <!-- ========== SECTION A: HERO DESKTOP ========== -->
-        <section class="os-section hero-desktop" id="hero">
-          <!-- Terminal Window (center-left, 60%) -->
-          <div class="os-window terminal-window" id="win-hero">
-            <div class="win-titlebar">
-              <div class="win-dots">
-                <span class="dot dot-red"></span>
-                <span class="dot dot-yellow"></span>
-                <span class="dot dot-green"></span>
-              </div>
-              <div class="win-title">pranav@universe: ~</div>
-              <div class="win-actions">
-                <span>─</span><span>□</span><span>✕</span>
-              </div>
-            </div>
-            <div class="win-body terminal-body">
-              <div class="term-line dim">Last login: Sun Mar 15 2026 from universe.local</div>
-              <div class="term-line dim">PRANAV-OS v2.4.0 — Build 2026</div>
-              <br>
-              <div class="term-line"><span class="prompt">$</span> whoami</div>
-              <br>
-              <div class="hero-name-box">
-                <div class="name-border">╔══════════════════════════════════════════════════════════════╗</div>
-                <div class="name-inner">
-                  <span class="name-pipe">║</span>
-                  <div class="hero-name-display">PRANAV RAO K</div>
-                  <span class="name-pipe">║</span>
-                </div>
-                <div class="name-sub-inner">
-                  <span class="name-pipe">║</span>
-                  <div class="hero-sub">2nd Year CSE · MS Ramaiah · Bengaluru 🇮🇳</div>
-                  <span class="name-pipe">║</span>
-                </div>
-                <div class="name-border">╚══════════════════════════════════════════════════════════════╝</div>
-              </div>
-              <br>
-              <div class="term-line"><span class="prompt">$</span> cat ./role.txt</div>
-              <div class="term-line text-green">> <span id="hero-typewriter"></span></div>
-              <br>
-              <div class="term-line"><span class="prompt">$</span> cat ./bio.txt</div>
-              <div class="term-line text-green">> "A passionate coder exploring the endless abyss of</div>
-              <div class="term-line text-green">&nbsp;&nbsp;&nbsp;ones and zeroes. Building things that think."</div>
-              <br>
-              <div class="term-line"><span class="prompt">$</span> ls ./stats/</div>
-              <div class="term-line text-green">> 10+ Projects&nbsp;&nbsp;&nbsp;&nbsp;5+ Tech Stacks&nbsp;&nbsp;&nbsp;&nbsp;3 Hackathon Wins</div>
-              <br>
-              <div class="term-line"><span class="prompt">$</span> ./download-resume.sh&nbsp;&nbsp;&nbsp;<a href="./src/pdf/PRANAV RAO K RESUME.pdf" download class="inline-link">[↵ Enter]</a></div>
-              <div class="term-line"><span class="prompt">$</span> cd ./projects/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#projects" class="inline-link">[↵ Enter]</a></div>
-              <br>
-              <div class="term-line"><span class="prompt">$</span> <span class="blink">_</span></div>
-            </div>
-          </div>
-
-          <!-- Image Viewer Window (right, 35%) -->
-          <div class="os-window image-viewer-win" id="win-preview">
-            <div class="win-titlebar">
-              <div class="win-dots">
-                <span class="dot dot-red"></span>
-                <span class="dot dot-yellow"></span>
-                <span class="dot dot-green"></span>
-              </div>
-              <div class="win-title">Preview — PR.png</div>
-            </div>
-            <div class="win-body preview-body">
-              <div class="preview-photo-wrap">
-                <img src="./src/img/PR.png" alt="Pranav Rao K" class="preview-photo">
-                <div class="photo-scanline"></div>
-              </div>
-              <div class="preview-meta dim">340 × 340px &nbsp;|&nbsp; RGB &nbsp;|&nbsp; 2.1MB</div>
-              <div class="available-badge">
-                <div class="available-dot"></div>
-                <span>Available for Projects</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Desktop Shortcut Icons (bottom-right) -->
-          <div class="desktop-icons">
-            <a href="./src/pdf/PRANAV RAO K RESUME.pdf" download class="desktop-icon">
-              <div class="icon-img">📄</div>
-              <div class="icon-label">Resume.pdf</div>
-            </a>
-            <a href="#projects" class="desktop-icon">
-              <div class="icon-img">📁</div>
-              <div class="icon-label">Projects/</div>
-            </a>
-          </div>
-        </section>
-
-      </div><!-- /.os-screen -->
-    </div><!-- /.zoom-stage -->
-  </div><!-- /.zoom-wrapper -->
-
-  <!-- ============================================================
-       PHASE 2: OS SECTIONS (scrolled normally after zoom)
-  ============================================================= -->
-  <main class="os-content" id="os-content">
-
-    <!-- ========== SECTION B: ABOUT — VS Code Editor ========== -->
-    <section class="os-section" id="about">
-      <div class="os-window editor-win" id="win-about">
-        <div class="win-titlebar">
-          <div class="win-dots">
-            <span class="dot dot-red"></span>
-            <span class="dot dot-yellow"></span>
-            <span class="dot dot-green"></span>
-          </div>
-          <div class="win-title">README.md — pranav-rao-k — CURSOR 3.0</div>
-        </div>
-        <div class="win-body editor-body">
-          <div class="editor-sidebar hidden-mobile">
-            <div class="sidebar-icons">
-              <div class="sb-icon active">📁</div>
-              <div class="sb-icon">🔍</div>
-              <div class="sb-icon">🔀</div>
-              <div class="sb-icon">🐛</div>
-              <div class="sb-icon">⚙️</div>
-            </div>
-            <div class="file-tree">
-              <div class="tree-header">▶ PRANAV-RAO-K</div>
-              <div class="tree-item active">📄 README.md <span class="unsaved">●</span></div>
-              <div class="tree-item">📄 experience.json</div>
-              <div class="tree-item">📄 skills.ts</div>
-              <div class="tree-item">📁 projects/</div>
-              <div class="tree-item">📁 achievements/</div>
-            </div>
-          </div>
-          <div class="editor-main">
-            <div class="editor-tabs">
-              <div class="ed-tab active">README.md ×</div>
-              <div class="ed-tab">experience.json</div>
-            </div>
-            <div class="editor-content">
-              <div class="line-numbers">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20</div>
-              <div class="code-text">
-<span class="syn-blue"># Pranav Rao K</span><br><br>
-<span class="syn-green">> A passionate coder exploring the</span><br>
-<span class="syn-green">> endless abyss of ones and zeroes.</span><br><br>
-<span class="syn-blue">## About</span><br><br>
-<span class="syn-text">I'm currently a <span class="syn-yellow">**2nd year CSE student**</span> at</span><br>
-<span class="syn-text">MS Ramaiah University of Applied</span><br>
-<span class="syn-text">Sciences, Bangalore.</span><br><br>
-<span class="syn-text">I thrive on tackling complex problems</span><br>
-<span class="syn-text">through code and enjoy hackathons +</span><br>
-<span class="syn-text">hands-on builds.</span><br><br>
-<span class="syn-blue">## Details</span><br><br>
-<span class="syn-purple">-</span> 🎓 <span class="syn-yellow">**Education:**</span> <span class="syn-text">B.Tech in CSE</span><br>
-<span class="syn-purple">-</span> 📍 <span class="syn-yellow">**Location:**</span> <span class="syn-text">Bengaluru, India</span><br>
-<span class="syn-purple">-</span> 📅 <span class="syn-yellow">**Year:**</span> <span class="syn-text">2nd Year</span><br>
-<span class="syn-purple">-</span> 🏛️ <span class="syn-yellow">**University:**</span> <span class="syn-text">MS Ramaiah University</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="editor-statusbar">
-          <span>● main</span>
-          <span>Ln 28, Col 1</span>
-          <span>UTF-8</span>
-          <span>Markdown</span>
-          <span class="statusbar-right">Bengaluru, India 🇮🇳</span>
-        </div>
-        <div class="ticker-bar">
-          <div class="ticker-track">
-            <span>Python · React · Next.js · Flutter · TensorFlow · n8n · TypeScript · Dart · OpenCV · Scikit-learn · Pandas · Flask · Supabase · Firebase · </span>
-            <span>Python · React · Next.js · Flutter · TensorFlow · n8n · TypeScript · Dart · OpenCV · Scikit-learn · Pandas · Flask · Supabase · Firebase · </span>
-          </div>
-        </div>
+      <div class="ach-final">
+        <p>$ echo "3 hackathons. 3 wins. No failed builds."</p>
+        <p>&gt; 3 hackathons. 3 wins. No failed builds.</p>
       </div>
     </section>
 
-    <!-- ========== SECTION C: EXPERIENCE — Git Bash ========== -->
-    <section class="os-section" id="experience">
-      <div class="os-window git-win" id="win-exp">
-        <div class="win-titlebar">
-          <div class="win-dots">
-            <span class="dot dot-red"></span>
-            <span class="dot dot-yellow"></span>
-            <span class="dot dot-green"></span>
+    <section id="projects" class="panel projects-panel">
+      <div class="section-head">
+        <p class="section-label">$ section --open projects</p>
+        <h2 class="section-name">Running Processes</h2>
+      </div>
+
+      <p class="prompt">$ ps aux | grep pranav</p>
+      <p class="run-label">RUNNING</p>
+
+      <div class="project-explorer" id="project-explorer">
+        <aside class="project-list" aria-label="Project process list">
+          <button class="project-item active" data-project="001"><span class="project-item-name">mentora.apk</span><span class="project-item-tag">Mobile App</span></button>
+          <button class="project-item" data-project="002"><span class="project-item-name">electrotech.apk</span><span class="project-item-tag">Mobile App</span></button>
+          <button class="project-item" data-project="003"><span class="project-item-name">nutrigo.web</span><span class="project-item-tag">PWA</span></button>
+          <button class="project-item" data-project="004"><span class="project-item-name">stock-analysis.py</span><span class="project-item-tag">Fintech/ML</span></button>
+          <button class="project-item" data-project="005"><span class="project-item-name">email-classifier.n8n</span><span class="project-item-tag">AI Agent</span></button>
+          <button class="project-item" data-project="006"><span class="project-item-name">saanvi.n8n</span><span class="project-item-tag">AI Auto</span></button>
+          <button class="project-item" data-project="007"><span class="project-item-name">speedsnare.cv</span><span class="project-item-tag">CV</span></button>
+          <button class="project-item" data-project="008"><span class="project-item-name">dermiscan.tf</span><span class="project-item-tag">Health AI</span></button>
+          <button class="project-item" data-project="009"><span class="project-item-name">autoworth.ml</span><span class="project-item-tag">ML</span></button>
+        </aside>
+
+        <div class="project-stage">
+          <div class="project-grid">
+            <article class="proc-card project-001" data-project="001">
+          <header>
+            <p class="proc-headline"><span class="proc-pid">[PID: 001]</span> mentora.flutter</p>
+            <span class="proc-state">[RUNNING o]</span>
+          </header>
+          <div class="media"><video muted loop preload="metadata" src="src/vids/MR.mp4"></video><div class="media-overlay"></div></div>
+          <footer class="proc-meta">
+            <p class="proc-titleline"><span class="proc-name">&gt; MENTORA</span><span class="proc-tag">[Mobile App]</span></p>
+            <p class="proc-desc">AI Learning & Career App</p>
+            <p class="proc-stack">Flutter · AI/ML · Supabase · Dart</p>
+            <a class="proc-open" href="#">[open ./mentora]</a>
+          </footer>
+            </article>
+
+            <article class="proc-card project-002" data-project="002">
+          <header>
+            <p class="proc-headline"><span class="proc-pid">[PID: 002]</span> electrotech.flutter</p>
+            <span class="proc-state">[RUNNING o]</span>
+          </header>
+          <div class="media"><video muted loop preload="metadata" src="src/vids/ET.mp4"></video><div class="media-overlay"></div></div>
+          <footer class="proc-meta">
+            <p class="proc-titleline"><span class="proc-name">&gt; ELECTROTECH</span><span class="proc-tag">[Mobile App]</span></p>
+            <p class="proc-desc">Smart Electronics Store</p>
+            <p class="proc-stack">Flutter · Dart · Firebase · Figma</p>
+            <a class="proc-open" href="#">[open ./electrotech]</a>
+          </footer>
+            </article>
+
+            <article class="proc-card featured project-003" data-project="003">
+          <header>
+            <p class="proc-headline"><span class="proc-pid">[PID: 003]</span> nutrigo.react</p>
+            <span class="proc-state">[RUNNING o]</span>
+          </header>
+          <div class="media"><video muted loop preload="metadata" src="src/vids/NG.mp4"></video><div class="media-overlay"></div></div>
+          <footer class="proc-meta">
+            <p class="proc-titleline"><span class="proc-name">&gt; NUTRIGO</span><span class="proc-tag">[Progressive Web App]</span></p>
+            <p class="proc-desc">AI Nutrition Tracker</p>
+            <p class="proc-stack">React · TypeScript · Next.js · LangChain</p>
+            <a class="proc-open" href="#">[open ./nutrigo]</a>
+          </footer>
+            </article>
+
+            <article class="proc-card featured project-004" data-project="004">
+          <header>
+            <p class="proc-headline"><span class="proc-pid">[PID: 004]</span> stockanalysis.py</p>
+            <span class="proc-state">[RUNNING o]</span>
+          </header>
+          <div class="media"><video muted loop preload="metadata" src="src/vids/SA.mp4"></video><div class="media-overlay"></div></div>
+          <footer class="proc-meta">
+            <p class="proc-titleline"><span class="proc-name">&gt; STOCK ANALYSIS PRO</span><span class="proc-tag">[Fintech / ML]</span></p>
+            <p class="proc-desc">Market Trend Predictor</p>
+            <p class="proc-stack">Python · FPDF · ML · Fintech</p>
+            <a class="proc-open" href="#">[open ./stockanalysis]</a>
+          </footer>
+            </article>
+
+            <article class="proc-card project-005" data-project="005">
+          <header>
+            <p class="proc-headline"><span class="proc-pid">[PID: 005]</span> email-classifier.n8n</p>
+            <span class="proc-state">[RUNNING o]</span>
+          </header>
+          <div class="media"><video muted loop preload="metadata" src="src/vids/GSD.mp4"></video><div class="media-overlay"></div></div>
+          <footer class="proc-meta">
+            <p class="proc-titleline"><span class="proc-name">&gt; EMAIL CLASSIFIER</span><span class="proc-tag">[AI Agents]</span></p>
+            <p class="proc-desc">Smart Inbox Management</p>
+            <p class="proc-stack">n8n · Gemini API · Gmail</p>
+            <a class="proc-open" href="#">[open ./email-classifier]</a>
+          </footer>
+            </article>
+
+            <article class="proc-card project-006" data-project="006">
+          <header>
+            <p class="proc-headline"><span class="proc-pid">[PID: 006]</span> saanvi.n8n</p>
+            <span class="proc-state">[RUNNING o]</span>
+          </header>
+          <div class="media"><video muted loop preload="metadata" src="src/vids/VA.mp4"></video><div class="media-overlay"></div></div>
+          <footer class="proc-meta">
+            <p class="proc-titleline"><span class="proc-name">&gt; SAANVI</span><span class="proc-tag">[AI Automation]</span></p>
+            <p class="proc-desc">Voice AI Assistant</p>
+            <p class="proc-stack">n8n · Retell AI · Automation</p>
+            <a class="proc-open" href="#">[open ./saanvi]</a>
+          </footer>
+            </article>
+
+            <article class="proc-card project-007" data-project="007">
+          <header>
+            <p class="proc-headline"><span class="proc-pid">[PID: 007]</span> speedsnare.cv</p>
+            <span class="proc-state">[RUNNING o]</span>
+          </header>
+          <div class="media"><video muted loop preload="metadata" src="src/vids/SS.mp4"></video><div class="media-overlay"></div></div>
+          <footer class="proc-meta">
+            <p class="proc-titleline"><span class="proc-name">&gt; SPEEDSNARE</span><span class="proc-tag">[Computer Vision]</span></p>
+            <p class="proc-desc">Traffic Monitoring</p>
+            <p class="proc-stack">OpenCV · Python · Flask</p>
+            <a class="proc-open" href="#">[open ./speedsnare]</a>
+          </footer>
+            </article>
+
+            <article class="proc-card project-008" data-project="008">
+          <header>
+            <p class="proc-headline"><span class="proc-pid">[PID: 008]</span> dermiscan.tf</p>
+            <span class="proc-state">[RUNNING o]</span>
+          </header>
+          <div class="media"><video muted loop preload="metadata" src="src/vids/DS.mp4"></video><div class="media-overlay"></div></div>
+          <footer class="proc-meta">
+            <p class="proc-titleline"><span class="proc-name">&gt; DERMISCAN</span><span class="proc-tag">[Healthcare AI]</span></p>
+            <p class="proc-desc">Skin Disease Classifier</p>
+            <p class="proc-stack">TensorFlow · Deep Learning · Flask</p>
+            <a class="proc-open" href="#">[open ./dermiscan]</a>
+          </footer>
+            </article>
+
+            <article class="proc-card project-009" data-project="009">
+          <header>
+            <p class="proc-headline"><span class="proc-pid">[PID: 009]</span> autoworth.ml</p>
+            <span class="proc-state">[RUNNING o]</span>
+          </header>
+          <div class="media"><video muted loop preload="metadata" src="src/vids/AW.mp4"></video><div class="media-overlay"></div></div>
+          <footer class="proc-meta">
+            <p class="proc-titleline"><span class="proc-name">&gt; AUTOWORTH</span><span class="proc-tag">[Machine Learning]</span></p>
+            <p class="proc-desc">Vehicle Price Predictor</p>
+            <p class="proc-stack">Scikit-learn · ML · Matplotlib</p>
+            <a class="proc-open" href="#">[open ./autoworth]</a>
+          </footer>
+            </article>
           </div>
-          <div class="win-title">Git Bash — pranav-rao-k</div>
-        </div>
-        <div class="win-body git-body">
-          <div class="term-line dim">$ git log --all --author="Pranav" --format="%h %ad %s" --date=short</div>
-          <br>
-          <div class="git-graph">
-            <svg class="git-svg" preserveAspectRatio="none">
-              <line x1="12" y1="0" x2="12" y2="100%" class="git-line-draw"/>
-            </svg>
-            <div class="git-commits">
-              <div class="git-commit">
-                <div class="commit-dot"></div>
-                <div class="commit-header"><span class="hash">* a1f2c3</span> <span class="tag">(HEAD → main)</span></div>
-                <div class="commit-date dim">2025-01 ← Machine Learning Intern @ Fox Trading Solutions</div>
-                <div class="commit-card">
-                  <div class="cc-line">commit a1f2c3</div>
-                  <div class="cc-line">Author: Pranav Rao K &lt;pranav@universe.dev&gt;</div>
-                  <div class="cc-line">Date: &nbsp;&nbsp;Jan 2025 – April 2025</div>
-                  <br>
-                  <div class="cc-line">&nbsp;&nbsp;&nbsp;&nbsp;Machine Learning Internship @ Fox Trading Solutions</div>
-                  <br>
-                  <div class="cc-line">&nbsp;&nbsp;&nbsp;&nbsp;Applied ML concepts to real-world problems.</div>
-                  <div class="cc-line">&nbsp;&nbsp;&nbsp;&nbsp;Recognized for dedication by academic head.</div>
-                  <div class="cc-line">&nbsp;&nbsp;&nbsp;&nbsp;Data preprocessing, model training, eval pipelines.</div>
-                  <br>
-                  <div class="cc-line cc-diff">&nbsp;&nbsp;&nbsp;&nbsp;Diff: <span class="diff-add">+Python</span> <span class="diff-add">+Pandas</span> <span class="diff-add">+NumPy</span> <span class="diff-add">+Scikit-learn</span></div>
-                </div>
-                <div class="commit-tags">
-                  <span class="git-tag">[Python]</span>
-                  <span class="git-tag">[Pandas]</span>
-                  <span class="git-tag">[NumPy]</span>
-                  <span class="git-tag">[Scikit-learn]</span>
-                </div>
+
+          <article class="project-detail" id="project-detail" aria-live="polite">
+            <header class="project-detail-head">
+              <p id="detail-process">[PID: 001] mentora.flutter</p>
+              <div class="project-detail-actions">
+                <span id="detail-status">[RUNNING o]</span>
+                <button type="button" id="detail-back" class="detail-back">[Back to All]</button>
               </div>
-              <div class="git-commit">
-                <div class="commit-dot"></div>
-                <div class="commit-header"><span class="hash">* b9e1d2</span></div>
-                <div class="commit-date dim">2023-07 ← Started B.Tech CSE @ MS Ramaiah University</div>
+            </header>
+            <div class="project-detail-body">
+              <div class="project-detail-video-wrap">
+                <video id="detail-video" muted loop controls playsinline preload="metadata"></video>
               </div>
-              <div class="git-commit">
-                <div class="commit-dot"></div>
-                <div class="commit-header"><span class="hash">* init</span></div>
-                <div class="commit-date dim">2006 ← Initial commit: Pranav Rao K</div>
-                <div class="commit-date dim">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"First build. No bugs yet."</div>
+              <div class="project-detail-copy">
+                <p class="project-detail-title" id="detail-title">MENTORA</p>
+                <p class="project-detail-tag" id="detail-tag">[Mobile App]</p>
+                <p class="project-detail-desc" id="detail-desc">AI Learning & Career App</p>
+                <p class="project-detail-stack" id="detail-stack">Flutter · AI/ML · Supabase · Dart</p>
               </div>
             </div>
-          </div>
-          <br>
-          <div class="term-line"><span class="prompt">$</span> <span class="blink">_</span></div>
+          </article>
         </div>
+      </div>
+
+      <div class="process-summary">
+        <p>$ ps aux | wc -l</p>
+        <p>&gt; 9 processes running. All healthy. 0 crashes.</p>
       </div>
     </section>
 
-    <!-- ========== SECTION D: SKILLS — htop Task Manager ========== -->
-    <section class="os-section" id="skills">
-      <div class="os-window htop-win" id="win-skills">
-        <div class="win-titlebar">
-          <div class="win-dots">
-            <span class="dot dot-red"></span>
-            <span class="dot dot-yellow"></span>
-            <span class="dot dot-green"></span>
-          </div>
-          <div class="win-title">Task Manager — Pranav's Skill Processes</div>
-        </div>
-        <div class="win-body htop-body">
-          <div class="htop-metrics">
-            <div class="metric-row">
-              <span class="m-label">CPU</span> [<span class="m-bar-gradient">████████████████████</span> <span>94.2%</span>]
-              <span class="m-info dim hidden-mobile">Processes: 20 &nbsp;&nbsp;Uptime: 19yrs</span>
-            </div>
-            <div class="metric-row">
-              <span class="m-label">MEM</span> [<span class="m-bar-gradient">████████████████</span>&nbsp;&nbsp;&nbsp;&nbsp; <span>82.0%</span>]
-              <span class="m-info dim hidden-mobile">Projects: 10+ &nbsp;&nbsp;Build: v2.0</span>
-            </div>
-          </div>
-          <div class="htop-header">
-            <span class="hc-pid">PID</span>
-            <span class="hc-user hidden-mobile">USER</span>
-            <span class="hc-skill">SKILL</span>
-            <span class="hc-prof">PROFICIENCY</span>
-            <span class="hc-status hidden-mobile">STATUS</span>
-          </div>
-          <div class="htop-rows">
-            <div class="htop-group">── WEB / APP DEVELOPMENT ──</div>
-            <div class="htop-row"><span class="hc-pid">001</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">HTML/CSS</span><span class="hc-prof"><div class="skill-bar" data-level="95"></div><span class="skill-pct">95%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">002</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">React &amp; Next.js</span><span class="hc-prof"><div class="skill-bar" data-level="90"></div><span class="skill-pct">90%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">003</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Flutter</span><span class="hc-prof"><div class="skill-bar" data-level="85"></div><span class="skill-pct">85%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">004</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">TypeScript</span><span class="hc-prof"><div class="skill-bar" data-level="80"></div><span class="skill-pct">80%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">005</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">n8n Automation</span><span class="hc-prof"><div class="skill-bar" data-level="88"></div><span class="skill-pct">88%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">006</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Flask</span><span class="hc-prof"><div class="skill-bar" data-level="75"></div><span class="skill-pct">75%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">007</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">UI/UX Design</span><span class="hc-prof"><div class="skill-bar" data-level="72"></div><span class="skill-pct">72%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">008</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Database Mgmt</span><span class="hc-prof"><div class="skill-bar" data-level="80"></div><span class="skill-pct">80%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-group">── AI/ML &amp; DATA SCIENCE ──</div>
-            <div class="htop-row"><span class="hc-pid">009</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Python</span><span class="hc-prof"><div class="skill-bar" data-level="95"></div><span class="skill-pct">95%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">010</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">TensorFlow</span><span class="hc-prof"><div class="skill-bar" data-level="82"></div><span class="skill-pct">82%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">011</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Scikit-learn</span><span class="hc-prof"><div class="skill-bar" data-level="88"></div><span class="skill-pct">88%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">012</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Pandas &amp; NumPy</span><span class="hc-prof"><div class="skill-bar" data-level="93"></div><span class="skill-pct">93%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">013</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">OpenCV</span><span class="hc-prof"><div class="skill-bar" data-level="70"></div><span class="skill-pct">70%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">014</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">ML Algorithms</span><span class="hc-prof"><div class="skill-bar" data-level="87"></div><span class="skill-pct">87%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-group">── LANGUAGES ──</div>
-            <div class="htop-row"><span class="hc-pid">015</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Python</span><span class="hc-prof"><div class="skill-bar" data-level="95"></div><span class="skill-pct">95%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">016</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">JavaScript</span><span class="hc-prof"><div class="skill-bar" data-level="90"></div><span class="skill-pct">90%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">017</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Dart</span><span class="hc-prof"><div class="skill-bar" data-level="82"></div><span class="skill-pct">82%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">018</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">TypeScript</span><span class="hc-prof"><div class="skill-bar" data-level="80"></div><span class="skill-pct">80%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">019</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">SQL</span><span class="hc-prof"><div class="skill-bar" data-level="74"></div><span class="skill-pct">74%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-            <div class="htop-row"><span class="hc-pid">020</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Java (Basics)</span><span class="hc-prof"><div class="skill-bar" data-level="55"></div><span class="skill-pct">55%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
-          </div>
-          <div class="htop-footer dim">
-            <span class="hidden-mobile">F1 Help &nbsp;&nbsp;F2 Setup &nbsp;&nbsp;F5 Refresh &nbsp;&nbsp;F9 Kill &nbsp;&nbsp;F10 Quit</span>
-            <span class="text-green">[ All systems: operational ]</span>
-          </div>
-        </div>
+    <footer id="footer" class="panel footer-panel">
+      <div class="section-head">
+        <p class="section-label">$ section --open footer</p>
+        <h2 class="section-name">Shutdown Sequence</h2>
       </div>
-    </section>
 
-    <!-- ========== SECTION E: ACHIEVEMENTS — Build Monitor ========== -->
-    <section class="os-section" id="achievements">
-      <div class="os-window build-win" id="win-achieve">
-        <div class="win-titlebar">
-          <div class="win-dots">
-            <span class="dot dot-red"></span>
-            <span class="dot dot-yellow"></span>
-            <span class="dot dot-green"></span>
-          </div>
-          <div class="win-title">Build Monitor — CI/CD Pipeline Results</div>
-        </div>
-        <div class="win-body build-body">
-          <!-- Banner 1 -->
-          <div class="build-banner slam-banner">
-            <div class="banner-accent green"></div>
-            <div class="banner-ghost-text">TOP 10</div>
-            <div class="banner-content">
-              <div class="b-header">✔ BUILD SUCCESSFUL <span class="dim float-right">TRIKAYA HACKTOHIRE 2025</span></div>
-              <div class="b-divider"></div>
-              <div class="b-row"><span class="dim b-label">Result:</span> <span class="text-green">TOP 10 / 4000+ TEAMS</span></div>
-              <div class="b-row"><span class="dim b-label">Venue:</span> Radisson Blu (Final Showcase)</div>
-              <div class="b-row"><span class="dim b-label">Stages:</span> Ideation → Build Phase → Live Pitch</div>
-              <div class="b-row"><span class="dim b-label">Note:</span> Pitched to industry experts + hiring partners</div>
-            </div>
-            <div class="banner-photo"><img src="./src/img/trikaya-prize.png" alt="Trikaya Prize"></div>
-          </div>
-          <!-- Banner 2 -->
-          <div class="build-banner slam-banner">
-            <div class="banner-accent amber"></div>
-            <div class="banner-ghost-text amber-ghost">1ST</div>
-            <div class="banner-content">
-              <div class="b-header text-amber">✔ BUILD SUCCESSFUL <span class="dim float-right">HULT PRIZE 2025</span></div>
-              <div class="b-divider"></div>
-              <div class="b-row"><span class="dim b-label">Result:</span> <span class="text-amber">1ST PLACE / 170+ PARTICIPANTS</span></div>
-              <div class="b-row"><span class="dim b-label">Category:</span> Prestigious International Hackathon</div>
-              <div class="b-row"><span class="dim b-label">Impact:</span> Exceptional problem-solving, won judges over</div>
-              <div class="b-row"><span class="dim b-label">Streak:</span> ← Hackathon win #2</div>
-            </div>
-            <div class="banner-photo"><img src="./src/img/hult-price.jpg" alt="Hult Prize"></div>
-          </div>
-          <!-- Banner 3 -->
-          <div class="build-banner slam-banner">
-            <div class="banner-accent cyan"></div>
-            <div class="banner-ghost-text cyan-ghost">WIN</div>
-            <div class="banner-content">
-              <div class="b-header text-cyan">✔ BUILD SUCCESSFUL <span class="dim float-right">HACK SPACE 2025</span></div>
-              <div class="b-divider"></div>
-              <div class="b-row"><span class="dim b-label">Result:</span> <span class="text-cyan">WINNER — GEN AI TRACK / 1250+ TEAMS</span></div>
-              <div class="b-row"><span class="dim b-label">Project:</span> MENTORA (Cross-Platform EdTech App)</div>
-              <div class="b-row"><span class="dim b-label">Streak:</span> ← 3rd Consecutive Hackathon Win</div>
-              <div class="b-row"><span class="dim b-label">Status:</span> No failed builds. Ever.</div>
-            </div>
-            <div class="banner-photo"><img src="./src/img/hackspace-prize.jpeg" alt="HackSpace Prize"></div>
-          </div>
-          <div class="build-summary">
-            <div class="dim">$ echo "3 pipelines. 3 exits. Zero crashes."</div>
-            <div class="text-green">> 3 pipelines. 3 exits. Zero crashes.</div>
-          </div>
-        </div>
+      <div class="shutdown">
+        <p>$ shutdown --message="Thanks for visiting" --reboot-at=next-project</p>
+        <pre id="shutdown-typed"></pre>
       </div>
-    </section>
 
-    <!-- ========== SECTION F: PROJECTS — File Explorer ========== -->
-    <section class="os-section" id="projects">
-      <div class="os-window finder-win" id="win-projects">
-        <div class="win-titlebar">
-          <div class="win-dots">
-            <span class="dot dot-red"></span>
-            <span class="dot dot-yellow"></span>
-            <span class="dot dot-green"></span>
-          </div>
-          <div class="win-title">Finder — /pranav/projects/ &nbsp;[9 items]</div>
+      <div class="footer-grid">
+        <div>
+          <h3>PRANAV.DEV</h3>
+          <p>B.Tech CSE · MS Ramaiah · Bengaluru</p>
         </div>
-        <div class="win-body finder-body">
-          <div class="finder-sidebar" id="finder-sidebar">
-            <div class="finder-path dim">📁 pranav/projects/</div>
-            <div class="file-row active" data-project="0">
-              <span class="fi-icon">📱</span>
-              <span class="fi-name">mentora.apk</span>
-              <span class="file-type-tag tag-mobile">Mobile App</span>
-            </div>
-            <div class="file-row" data-project="1">
-              <span class="fi-icon">📱</span>
-              <span class="fi-name">electrotech.apk</span>
-              <span class="file-type-tag tag-mobile">Mobile App</span>
-            </div>
-            <div class="file-row" data-project="2">
-              <span class="fi-icon">🌐</span>
-              <span class="fi-name">nutrigo.web</span>
-              <span class="file-type-tag tag-pwa">PWA</span>
-            </div>
-            <div class="file-row" data-project="3">
-              <span class="fi-icon">📈</span>
-              <span class="fi-name">stock-analysis.py</span>
-              <span class="file-type-tag tag-ml">Fintech/ML</span>
-            </div>
-            <div class="file-row" data-project="4">
-              <span class="fi-icon">🤖</span>
-              <span class="fi-name">email-classifier.n8n</span>
-              <span class="file-type-tag tag-ai">AI Agents</span>
-            </div>
-            <div class="file-row" data-project="5">
-              <span class="fi-icon">🎙️</span>
-              <span class="fi-name">saanvi.n8n</span>
-              <span class="file-type-tag tag-ai">AI Auto</span>
-            </div>
-            <div class="file-row" data-project="6">
-              <span class="fi-icon">👁️</span>
-              <span class="fi-name">speedsnare.cv</span>
-              <span class="file-type-tag tag-cv">CV</span>
-            </div>
-            <div class="file-row" data-project="7">
-              <span class="fi-icon">🏥</span>
-              <span class="fi-name">dermiscan.tf</span>
-              <span class="file-type-tag tag-health">Healthcare AI</span>
-            </div>
-            <div class="file-row" data-project="8">
-              <span class="fi-icon">🚗</span>
-              <span class="fi-name">autoworth.ml</span>
-              <span class="file-type-tag tag-ml">ML</span>
-            </div>
-          </div>
-          <div class="finder-preview" id="finder-preview">
-            <div class="preview-panel" id="preview-panel">
-              <div class="pd-video-wrap">
-                <video id="pd-video" muted loop playsinline src="./src/vids/MR.mp4"></video>
-                <div class="pd-playing-badge">▶ playing</div>
-                <div class="pd-scanline-overlay"></div>
-              </div>
-              <div class="pd-info">
-                <div class="pd-name text-green" id="pd-name">> MENTORA</div>
-                <div class="pd-type" id="pd-type">[Mobile App]</div>
-                <div class="pd-desc dim" id="pd-desc">AI Learning & Career App — AI-powered career guidance and personalized learning roadmaps.</div>
-                <br>
-                <div class="dim">$ cat ./stack.txt</div>
-                <div class="text-green" id="pd-stack">> Flutter · AI/ML · Supabase · Dart</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- ========== SECTION G: FOOTER — Shutdown Dialog ========== -->
-    <section class="os-section footer-desktop" id="footer">
-      <div class="desktop-dim"></div>
-      <div class="shutdown-dialog" id="shutdown-dialog">
-        <div class="win-titlebar">
-          <div class="win-dots">
-            <span class="dot dot-red"></span>
-            <span class="dot dot-yellow"></span>
-            <span class="dot dot-green"></span>
-          </div>
-          <div class="win-title">PRANAV-OS — System Shutdown</div>
+        <div>
+          <p>[ NAVIGATE ]</p>
+          <p><a href="#hero">Home</a> · <a href="#about">About</a> · <a href="#experience">Experience</a> · <a href="#skills">Skills</a></p>
+          <p><a href="#achievements">Achievements</a> · <a href="#projects">Projects</a> · <a href="src/pdf/PRANAV RAO K RESUME.pdf" download>./resume.pdf</a></p>
         </div>
-        <div class="dialog-body">
-          <p>Are you sure you want to shut down PRANAV-OS?</p>
-          <br>
-          <div class="dialog-stats">
-            <div>Current uptime: <span class="text-green">19 years, 0 months</span></div>
-            <div>Unsaved work: <span class="text-amber">Building the future.</span></div>
-            <div>Sessions active: <span class="text-cyan">10+ projects, 3 hackathon wins</span></div>
-          </div>
-          <div class="dialog-divider"></div>
-          <div class="dialog-progress">
-            <span>Saving session...</span>
-            <span class="progress-track"><span class="progress-fill">██████████</span></span>
-            <span>100%</span>
-          </div>
-          <br>
-          <div class="dialog-quote">"Building innovative solutions through code."</div>
-          <div class="dialog-divider"></div>
-          <div class="dialog-buttons">
-            <a href="#hero" class="dialog-btn">[ Cancel ]</a>
-            <span class="dialog-btn dim">[ Sleep ]</span>
-            <span class="dialog-btn text-green">[ Reboot with idea ]</span>
-          </div>
-        </div>
-      </div>
-      <div class="footer-icons" id="footer-icons">
-        <a href="./src/pdf/PRANAV RAO K RESUME.pdf" download class="desktop-icon">
-          <div class="icon-img">📄</div>
-          <div class="icon-label">Resume.pdf</div>
-        </a>
-        <a href="https://github.com/pranavraok" target="_blank" class="desktop-icon">
-          <div class="icon-img">💻</div>
-          <div class="icon-label">GitHub</div>
-        </a>
-        <a href="https://www.linkedin.com/in/pranav-rao-k-4824352ba/" target="_blank" class="desktop-icon">
-          <div class="icon-img">👔</div>
-          <div class="icon-label">LinkedIn</div>
-        </a>
-        <a href="mailto:pranavraok@gmail.com" class="desktop-icon">
-          <div class="icon-img">✉️</div>
-          <div class="icon-label">Email</div>
-        </a>
-      </div>
-      <div class="footer-copyright">© 2025 Pranav Rao K · PRANAV-OS v2.4.0 · Bengaluru, India 🇮🇳 · Built with obsession</div>
-    </section>
 
+        <div>
+          <p>[ CONNECT ]</p>
+          <p><a href="https://github.com/pranavraok" target="_blank" rel="noreferrer">ssh github.com/pranavraok</a></p>
+          <p><a href="https://linkedin.com" target="_blank" rel="noreferrer">ssh linkedin.com/in/pranavraok</a></p>
+        </div>
+      </div>
+
+      <p class="footer-status">Copyright 2026 Pranav Rao K · Designed & Built with obsession · No LLMs were harmed · Bengaluru, India</p>
+    </footer>
   </main>
-
-  <script src="script.js"></script>
 </body>
 </html>
