@@ -25,10 +25,376 @@
   <div class="scanlines"></div>
   <div class="screen-vignette"></div>
 
-  <!-- Monitor Bezel (hidden initially, revealed at zoom snap) -->
-  <div class="monitor-bezel" id="monitor-bezel">
-    <div class="bezel-led"></div>
-    <div class="bezel-label">PRANAV.DEV</div>
+    <!-- HERO -->
+  <header class="container" id="home">
+    <div class="hero">
+      <div class="left reveal">
+        <div class="badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/>
+            <circle cx="12" cy="12" r="3" fill="currentColor"/>
+          </svg>
+          <span>Available for Projects</span>
+        </div>
+        <h3 class="greeting">Hello, It's Me</h3>
+        <h1 class="title">Pranav Rao K</h1>
+        <h3 class="role-text">and I'm a <span class="typewrap" id="typewriter"></span><span class="cursor" aria-hidden="true"></span></h3>
+        <p class="sub">A passionate coder exploring the endless abyss of ones and zeroes, building innovative solutions that make a difference.</p>
+        <div class="cta">
+          <a class="btn btn-primary" href="/src/pdf/PRANAV RAO K RESUME.pdf" download>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Download Resume
+          </a>
+          <a class="btn btn-outline" href="#projects">
+            See Projects
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+        <div class="stats-grid reveal">
+          <div class="stat-item">
+            <div class="stat-value">10+</div>
+            <div class="stat-label">Projects</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">5+</div>
+            <div class="stat-label">Tech Stacks</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">2nd</div>
+            <div class="stat-label">Year Student</div>
+          </div>
+        </div>
+      </div>
+      <div class="right reveal">
+        <div class="avatar-container">
+          <div class="avatar-glow"></div>
+          <img src="/src/img/PR.png" alt="Pranav Rao K Profile" class="avatar" />
+          <div class="floating-card card-1">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M16 18L22 12L16 6M8 6L2 12L8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="floating-card card-2">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+              <path d="M9 12h6M12 9v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- ABOUT -->
+  <section class="container" id="about">
+    <div class="section-header reveal">
+      <h2 class="title">About Me</h2>
+      <div class="underline"></div>
+      <p class="section-subtitle">Get to know me better</p>
+    </div>
+    <div class="glass card about reveal">
+      <div class="about-content">
+        <div class="about-text">
+          <p class="intro-text">
+            I'm currently a 2nd year Computer Science & Engineering student at MS Ramaiah University Of Applied Sciences, Bangalore. I thrive on tackling complex problems through code and enjoy collaborating on hands-on projects and hackathons.
+          </p>
+          <p>
+            My journey is one of constant learning, driven by curiosity and a passion for software development and emerging technologies. I specialize in full-stack development, AI/ML solutions, and building innovative tools that solve real-world problems.
+          </p>
+        </div>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="info-content">
+              <span class="label">Education</span>
+              <span class="value">B.Tech in CSE</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/>
+                <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="info-content">
+              <span class="label">Location</span>
+              <span class="value">Bengaluru, India</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="info-content">
+              <span class="label">Current Year</span>
+              <span class="value">2nd Year Student</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="info-content">
+              <span class="label">University</span>
+              <span class="value">MS Ramaiah University Of Applied Sciences</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section class="container" id="experience">
+    <div class="section-header reveal">
+      <h2 class="title">Experience</h2>
+      <div class="underline"></div>
+      <p class="section-subtitle">My professional journey</p>
+    </div>
+    <div class="timeline">
+      
+      <div class="timeline-item glass card reveal">
+        <div class="timeline-marker"></div>
+        <div class="timeline-content">
+          <div class="timeline-header">
+            <div>
+              <h3>Machine Learning Intern</h3>
+              <h4>Fox Trading Solutions</h4>
+            </div>
+            <span class="timeline-date">Jan 2025 - April 2025</span>
+          </div>
+          <ul class="timeline-list">
+            <li>Completed a focused internship in Machine Learning, applying key ML concepts to practical problems.</li>
+            <li>YDemonstrated commitment and consistency, recognized for dedication, hard work, and diligence by the academic head.</li>
+            <li>Gained hands-on experience with data preprocessing, model training, and performance evaluation</li>
+          </ul>
+          <div class="tech-tags">
+            <span class="tech-tag">Python</span>
+            <span class="tech-tag">Pandas</span>
+            <span class="tech-tag">NumPy</span>
+            <span class="tech-tag">ML Algorithms</span>
+            <span class="tech-tag">Matplotlib</span>
+            <span class="tech-tag">Scikit-learn</span>
+          </div>
+        </div>
+      </div>
+
+      
+
+    </div>
+  </section>
+
+
+  <!-- SKILLS -->
+  <section class="container" id="skills">
+    <div class="section-header reveal">
+      <h2 class="title">Skills & Technologies</h2>
+      <div class="underline"></div>
+      <p class="section-subtitle">Tools and technologies I work with</p>
+    </div>
+    <div class="skills-grid">
+      <div class="glass card skill-card reveal">
+        <div class="skill-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+            <path d="M16 18L22 12L16 6M8 6L2 12L8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>Web/App Development</h3>
+        <div class="skill-divider"></div>
+        <ul>
+          <li><span class="skill-bullet">▹</span> HTML/CSS</li>
+          <li><span class="skill-bullet">▹</span> React & Next.js</li>
+          <li><span class="skill-bullet">▹</span> TypeScript</li>
+          <li><span class="skill-bullet">▹</span> Database Management</li>
+          <li><span class="skill-bullet">▹</span> UI/UX Design</li>
+          <li><span class="skill-bullet">▹</span> n8n Automation</li>
+          <li><span class="skill-bullet">▹</span> Flutter</li>
+          <li><span class="skill-bullet">▹</span> Flask</li>
+        </ul>
+      </div>
+
+      <div class="glass card skill-card reveal">
+        <div class="skill-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" stroke="currentColor" stroke-width="2"/>
+            <polyline points="7.5 4.21 12 6.81 16.5 4.21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="7.5 19.79 7.5 14.6 3 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="21 12 16.5 14.6 16.5 19.79" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>AI/ML & Data Science</h3>
+        <div class="skill-divider"></div>
+        <ul>
+          <li><span class="skill-bullet">▹</span> TensorFlow</li>
+          <li><span class="skill-bullet">▹</span> Scikit-learn</li>
+          <li><span class="skill-bullet">▹</span> ML Algorithms</li>
+          <li><span class="skill-bullet">▹</span> Pandas & NumPy</li>
+          <li><span class="skill-bullet">▹</span> Matplotlib</li>
+          <li><span class="skill-bullet">▹</span> OpenCV</span></li>
+          <li><span class="skill-bullet">▹</span> Seaborn</li>
+          <li><span class="skill-bullet">▹</span> Data Analysis</li>
+        </ul>
+      </div>
+
+      <div class="glass card skill-card reveal">
+        <div class="skill-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+            <polyline points="4 17 10 11 4 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="12" y1="19" x2="20" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>Programming Languages</h3>
+        <div class="skill-divider"></div>
+        <ul>
+          <li><span class="skill-bullet">▹</span> Python</li>
+          <li><span class="skill-bullet">▹</span> JavaScript</li>
+          <li><span class="skill-bullet">▹</span> TypeScript</li>
+          <li><span class="skill-bullet">▹</span> Dart</li>
+          <li><span class="skill-bullet">▹</span> Java (Basics)</li>
+          <li><span class="skill-bullet">▹</span> SQL</li>
+          <li><span class="skill-bullet">▹</span> HTML/CSS</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+<!-- ACHIEVEMENTS -->
+<section class="container" id="achievements">
+  <div class="section-header reveal">
+    <h2 class="title">Achievements & Highlights</h2>
+    <div class="underline"></div>
+    <p class="section-subtitle">Milestones and accomplishments</p>
+  </div>
+  
+  <div class="achievements-carousel-wrapper reveal">
+    <button class="carousel-btn carousel-btn-prev" onclick="scrollAchievements('left')" aria-label="Previous achievement">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <div class="achievements-track">
+      <!-- Achievement 1 (Trikaya HackToHire Winner) -->
+      <article class="glass achievement-card" data-index="0">
+        <div class="achievement-visual">
+          <img src="/src/img/trikaya-prize.png" alt="Achievement 1" loading="lazy" />
+          <span class="achievement-tag">Top 10</span>
+        </div>
+        <div class="achievement-body">
+          <div class="achievement-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="currentColor"/>
+            </svg>
+          </div>
+          <h3 class="achievement-title">Trikaya HackToHire Winner</h3>
+          <p class="achievement-subtitle">Top 10 among 4000+ teams</p>
+          <p class="achievement-text">Selected for the final showcase at Radisson Blu after advancing through three rigorous stages ideation, build phase, and live presentation. Pitched our innovative solution to industry experts and hiring partners.</p>
+          <div class="achievement-metrics">
+            <div class="metric">
+              <span class="metric-value">Top 10</span>
+              <span class="metric-label">Position</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">4000+</span>
+              <span class="metric-label">Teams</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">2025</span>
+              <span class="metric-label">Year</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Achievement 2 - Hult Prize (Featured) -->
+      <article class="glass achievement-card active" data-index="1">
+        <div class="achievement-visual">
+          <img src="/src/img/hult-price.jpg" alt="Hult Prize Hackathon Winners" loading="lazy" />
+          <span class="achievement-tag gold">1st Place</span>
+        </div>
+        <div class="achievement-body">
+          <div class="achievement-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="currentColor"/>
+            </svg>
+          </div>
+          <h3 class="achievement-title">Hult Prize Hackathon Winner</h3>
+          <p class="achievement-subtitle">Secured 1st Place among 170+ participants</p>
+          <p class="achievement-text">Won first place in the prestigious Hult Prize Hackathon, competing against 170+ talented participants from various institutions. Our innovative solution and presentation impressed the judges, showcasing exceptional problem-solving skills.</p>
+          <div class="achievement-metrics">
+            <div class="metric">
+              <span class="metric-value">1st</span>
+              <span class="metric-label">Position</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">170+</span>
+              <span class="metric-label">Participants</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">2025</span>
+              <span class="metric-label">Year</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Achievement 3 -->
+      <article class="glass achievement-card" data-index="2">
+        <div class="achievement-visual">
+          <img src="/src/img/hackspace-prize.jpeg" alt="Achievement 3" loading="lazy" />
+          <span class="achievement-tag">Winner</span>
+        </div>
+        <div class="achievement-body">
+          <div class="achievement-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="currentColor"/>
+            </svg>
+          </div>
+          <h3 class="achievement-title">Hack Space 2025 Winner</h3>
+          <p class="achievement-subtitle">Generative AI Track Champion among 1250+ participants</p>
+          <p class="achievement-text">Won the Generative AI track with MENTORA, a cross-platform EdTech application. Marked the third consecutive hackathon victory, demonstrating consistent innovation and execution excellence across problem-solving, concept clarity.</p>
+          <div class="achievement-metrics">
+            <div class="metric">
+              <span class="metric-value">1st</span>
+              <span class="metric-label">Label</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">1250+</span>
+              <span class="metric-label">Participants</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">2026</span>
+              <span class="metric-label">Year</span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <button class="carousel-btn carousel-btn-next" onclick="scrollAchievements('right')" aria-label="Next achievement">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
   </div>
 
   <!-- OS Taskbar (hidden initially) -->
