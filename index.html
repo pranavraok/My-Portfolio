@@ -1,1068 +1,583 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pranav Rao K — Portfolio</title>
-  <meta name="description" content="Pranav Rao K — CSE undergrad portfolio showcasing projects, skills, experience, and achievements in full-stack development and AI/ML." />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PRANAV-OS v2.4.0 — Boot Into Pranav</title>
+  <meta name="description" content="Pranav Rao K — Scroll into a developer's PC monitor and explore a living OS portfolio." />
 
-  <!-- Google Fonts -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 
   <!-- CSS -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Scripts (head) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/@studio-freight/lenis@1.0.35/dist/lenis.min.js"></script>
+  <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
 </head>
 <body>
-  <!-- NAV -->
-  <nav class="nav">
-    <div class="nav-inner">
-      <div class="brand">PRANAV<span>.DEV</span></div>
-      <button class="hamburger" id="hamburger" aria-label="Menu">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </button>
-      <div class="menu" id="menu">
-        <a class="nav-link active" href="#home">Home</a>
-        <a class="nav-link" href="#about">About</a>
-        <a class="nav-link" href="#experience">Experience</a>
-        <a class="nav-link" href="#skills">Skills</a>
-        <a class="nav-link" href="#achievements">Achievements</a>
-        <a class="nav-link" href="#projects">Projects</a>
-      </div>
-    </div>
-  </nav>
+  <!-- CRT Global Overlays -->
+  <div class="scanlines"></div>
+  <div class="screen-vignette"></div>
 
-    <!-- HERO -->
-  <header class="container" id="home">
-    <div class="hero">
-      <div class="left reveal">
-        <div class="badge">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/>
-            <circle cx="12" cy="12" r="3" fill="currentColor"/>
-          </svg>
-          <span>Available for Projects</span>
-        </div>
-        <h3 class="greeting">Hello, It's Me</h3>
-        <h1 class="title">Pranav Rao K</h1>
-        <h3 class="role-text">and I'm a <span class="typewrap" id="typewriter"></span><span class="cursor" aria-hidden="true"></span></h3>
-        <p class="sub">A passionate coder exploring the endless abyss of ones and zeroes, building innovative solutions that make a difference.</p>
-        <div class="cta">
-          <a class="btn btn-primary" href="/src/pdf/PRANAV RAO K RESUME.pdf" download>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Download Resume
-          </a>
-          <a class="btn btn-outline" href="#projects">
-            See Projects
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
-        </div>
-        <div class="stats-grid reveal">
-          <div class="stat-item">
-            <div class="stat-value">10+</div>
-            <div class="stat-label">Projects</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">5+</div>
-            <div class="stat-label">Tech Stacks</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">2nd</div>
-            <div class="stat-label">Year Student</div>
-          </div>
-        </div>
-      </div>
-      <div class="right reveal">
-        <div class="avatar-container">
-          <div class="avatar-glow"></div>
-          <img src="/src/img/PR_with_glasses.png" alt="Pranav Rao K Profile" class="avatar" />
-          <div class="floating-card card-1">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M16 18L22 12L16 6M8 6L2 12L8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="floating-card card-2">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
-              <path d="M9 12h6M12 9v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
-
-
-  <!-- ABOUT -->
-  <section class="container" id="about">
-    <div class="section-header reveal">
-      <h2 class="title">About Me</h2>
-      <div class="underline"></div>
-      <p class="section-subtitle">Get to know me better</p>
-    </div>
-    <div class="glass card about reveal">
-      <div class="about-content">
-        <div class="about-text">
-          <p class="intro-text">
-            I'm currently a 2nd year Computer Science & Engineering student at MS Ramaiah University Of Applied Sciences, Bangalore. I thrive on tackling complex problems through code and enjoy collaborating on hands-on projects and hackathons.
-          </p>
-          <p>
-            My journey is one of constant learning, driven by curiosity and a passion for software development and emerging technologies. I specialize in full-stack development, AI/ML solutions, and building innovative tools that solve real-world problems.
-          </p>
-        </div>
-        <div class="info-grid">
-          <div class="info-item">
-            <div class="info-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M6 12v5c3 3 9 3 12 0v-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="info-content">
-              <span class="label">Education</span>
-              <span class="value">B.Tech in CSE</span>
-            </div>
-          </div>
-          <div class="info-item">
-            <div class="info-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/>
-                <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
-              </svg>
-            </div>
-            <div class="info-content">
-              <span class="label">Location</span>
-              <span class="value">Bengaluru, India</span>
-            </div>
-          </div>
-          <div class="info-item">
-            <div class="info-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
-                <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="info-content">
-              <span class="label">Current Year</span>
-              <span class="value">2nd Year Student</span>
-            </div>
-          </div>
-          <div class="info-item">
-            <div class="info-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
-              </svg>
-            </div>
-            <div class="info-content">
-              <span class="label">University</span>
-              <span class="value">MS Ramaiah University Of Applied Sciences</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- EXPERIENCE -->
-  <section class="container" id="experience">
-    <div class="section-header reveal">
-      <h2 class="title">Experience</h2>
-      <div class="underline"></div>
-      <p class="section-subtitle">My professional journey</p>
-    </div>
-    <div class="timeline">
-      
-      <div class="timeline-item glass card reveal">
-        <div class="timeline-marker"></div>
-        <div class="timeline-content">
-          <div class="timeline-header">
-            <div>
-              <h3>Machine Learning Intern</h3>
-              <h4>Fox Trading Solutions</h4>
-            </div>
-            <span class="timeline-date">Jan 2025 - April 2025</span>
-          </div>
-          <ul class="timeline-list">
-            <li>Completed a focused internship in Machine Learning, applying key ML concepts to practical problems.</li>
-            <li>YDemonstrated commitment and consistency, recognized for dedication, hard work, and diligence by the academic head.</li>
-            <li>Gained hands-on experience with data preprocessing, model training, and performance evaluation</li>
-          </ul>
-          <div class="tech-tags">
-            <span class="tech-tag">Python</span>
-            <span class="tech-tag">Pandas</span>
-            <span class="tech-tag">NumPy</span>
-            <span class="tech-tag">ML Algorithms</span>
-            <span class="tech-tag">Matplotlib</span>
-            <span class="tech-tag">Scikit-learn</span>
-          </div>
-        </div>
-      </div>
-
-      
-
-    </div>
-  </section>
-
-
-  <!-- SKILLS -->
-  <section class="container" id="skills">
-    <div class="section-header reveal">
-      <h2 class="title">Skills & Technologies</h2>
-      <div class="underline"></div>
-      <p class="section-subtitle">Tools and technologies I work with</p>
-    </div>
-    <div class="skills-grid">
-      <div class="glass card skill-card reveal">
-        <div class="skill-icon">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-            <path d="M16 18L22 12L16 6M8 6L2 12L8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <h3>Web/App Development</h3>
-        <div class="skill-divider"></div>
-        <ul>
-          <li><span class="skill-bullet">▹</span> HTML/CSS</li>
-          <li><span class="skill-bullet">▹</span> React & Next.js</li>
-          <li><span class="skill-bullet">▹</span> TypeScript</li>
-          <li><span class="skill-bullet">▹</span> Database Management</li>
-          <li><span class="skill-bullet">▹</span> UI/UX Design</li>
-          <li><span class="skill-bullet">▹</span> n8n Automation</li>
-          <li><span class="skill-bullet">▹</span> Flutter</li>
-          <li><span class="skill-bullet">▹</span> Flask</li>
-        </ul>
-      </div>
-
-      <div class="glass card skill-card reveal">
-        <div class="skill-icon">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" stroke="currentColor" stroke-width="2"/>
-            <polyline points="7.5 4.21 12 6.81 16.5 4.21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <polyline points="7.5 19.79 7.5 14.6 3 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <polyline points="21 12 16.5 14.6 16.5 19.79" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <h3>AI/ML & Data Science</h3>
-        <div class="skill-divider"></div>
-        <ul>
-          <li><span class="skill-bullet">▹</span> TensorFlow</li>
-          <li><span class="skill-bullet">▹</span> Scikit-learn</li>
-          <li><span class="skill-bullet">▹</span> ML Algorithms</li>
-          <li><span class="skill-bullet">▹</span> Pandas & NumPy</li>
-          <li><span class="skill-bullet">▹</span> Matplotlib</li>
-          <li><span class="skill-bullet">▹</span> OpenCV</span></li>
-          <li><span class="skill-bullet">▹</span> Seaborn</li>
-          <li><span class="skill-bullet">▹</span> Data Analysis</li>
-        </ul>
-      </div>
-
-      <div class="glass card skill-card reveal">
-        <div class="skill-icon">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-            <polyline points="4 17 10 11 4 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <line x1="12" y1="19" x2="20" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <h3>Programming Languages</h3>
-        <div class="skill-divider"></div>
-        <ul>
-          <li><span class="skill-bullet">▹</span> Python</li>
-          <li><span class="skill-bullet">▹</span> JavaScript</li>
-          <li><span class="skill-bullet">▹</span> TypeScript</li>
-          <li><span class="skill-bullet">▹</span> Dart</li>
-          <li><span class="skill-bullet">▹</span> Java (Basics)</li>
-          <li><span class="skill-bullet">▹</span> SQL</li>
-          <li><span class="skill-bullet">▹</span> HTML/CSS</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-<!-- ACHIEVEMENTS -->
-<section class="container" id="achievements">
-  <div class="section-header reveal">
-    <h2 class="title">Achievements & Highlights</h2>
-    <div class="underline"></div>
-    <p class="section-subtitle">Milestones and accomplishments</p>
-  </div>
-  
-  <div class="achievements-carousel-wrapper reveal">
-    <button class="carousel-btn carousel-btn-prev" onclick="scrollAchievements('left')" aria-label="Previous achievement">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-
-    <div class="achievements-track">
-      <!-- Achievement 1 (Trikaya HackToHire Winner) -->
-      <article class="glass achievement-card" data-index="0">
-        <div class="achievement-visual">
-          <img src="/src/img/trikaya-prize.png" alt="Achievement 1" loading="lazy" />
-          <span class="achievement-tag">Top 10</span>
-        </div>
-        <div class="achievement-body">
-          <div class="achievement-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="currentColor"/>
-            </svg>
-          </div>
-          <h3 class="achievement-title">Trikaya HackToHire Winner</h3>
-          <p class="achievement-subtitle">Top 10 among 4000+ teams</p>
-          <p class="achievement-text">Selected for the final showcase at Radisson Blu after advancing through three rigorous stages ideation, build phase, and live presentation. Pitched our innovative solution to industry experts and hiring partners.</p>
-          <div class="achievement-metrics">
-            <div class="metric">
-              <span class="metric-value">Top 10</span>
-              <span class="metric-label">Position</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">4000+</span>
-              <span class="metric-label">Teams</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">2025</span>
-              <span class="metric-label">Year</span>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <!-- Achievement 2 - Hult Prize (Featured) -->
-      <article class="glass achievement-card active" data-index="1">
-        <div class="achievement-visual">
-          <img src="/src/img/hult-price.jpg" alt="Hult Prize Hackathon Winners" loading="lazy" />
-          <span class="achievement-tag gold">1st Place</span>
-        </div>
-        <div class="achievement-body">
-          <div class="achievement-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="currentColor"/>
-            </svg>
-          </div>
-          <h3 class="achievement-title">Hult Prize Hackathon Winner</h3>
-          <p class="achievement-subtitle">Secured 1st Place among 170+ participants</p>
-          <p class="achievement-text">Won first place in the prestigious Hult Prize Hackathon, competing against 170+ talented participants from various institutions. Our innovative solution and presentation impressed the judges, showcasing exceptional problem-solving skills.</p>
-          <div class="achievement-metrics">
-            <div class="metric">
-              <span class="metric-value">1st</span>
-              <span class="metric-label">Position</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">170+</span>
-              <span class="metric-label">Participants</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">2025</span>
-              <span class="metric-label">Year</span>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <!-- Achievement 3 -->
-      <article class="glass achievement-card" data-index="2">
-        <div class="achievement-visual">
-          <img src="/src/img/hackspace-prize.jpeg" alt="Achievement 3" loading="lazy" />
-          <span class="achievement-tag">Winner</span>
-        </div>
-        <div class="achievement-body">
-          <div class="achievement-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="currentColor"/>
-            </svg>
-          </div>
-          <h3 class="achievement-title">Hack Space 2025 Winner</h3>
-          <p class="achievement-subtitle">Generative AI Track Champion among 1250+ participants</p>
-          <p class="achievement-text">Won the Generative AI track with MENTORA, a cross-platform EdTech application. Marked the third consecutive hackathon victory, demonstrating consistent innovation and execution excellence across problem-solving, concept clarity.</p>
-          <div class="achievement-metrics">
-            <div class="metric">
-              <span class="metric-value">1st</span>
-              <span class="metric-label">Label</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">1250+</span>
-              <span class="metric-label">Participants</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">2026</span>
-              <span class="metric-label">Year</span>
-            </div>
-          </div>
-        </div>
-      </article>
-    </div>
-
-    <button class="carousel-btn carousel-btn-next" onclick="scrollAchievements('right')" aria-label="Next achievement">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
+  <!-- Monitor Bezel (hidden initially, revealed at zoom snap) -->
+  <div class="monitor-bezel" id="monitor-bezel">
+    <div class="bezel-led"></div>
+    <div class="bezel-label">PRANAV.DEV</div>
   </div>
 
-  <!-- Carousel Indicators -->
-  <div class="carousel-indicators">
-    <button class="indicator active" onclick="setActiveAchievement(0)" aria-label="Go to achievement 1"></button>
-    <button class="indicator" onclick="setActiveAchievement(1)" aria-label="Go to achievement 2"></button>
-    <button class="indicator" onclick="setActiveAchievement(2)" aria-label="Go to achievement 3"></button>
-  </div>
-</section>
-
-<style>
-/* Achievements Carousel */
-.achievements-carousel-wrapper {
-  position: relative;
-  max-width: 1400px;
-  margin: 3rem auto 2rem;
-  padding: 0 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.achievements-track {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2rem;
-  width: 100%;
-  perspective: 1000px;
-}
-
-/* Achievement Cards */
-.achievement-card {
-  flex: 0 0 340px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-  cursor: pointer;
-  opacity: 0.5;
-  transform: scale(0.88) translateY(10px);
-  filter: grayscale(0.3) blur(1px);
-  pointer-events: auto;
-}
-
-.achievement-card.active {
-  flex: 0 0 520px;
-  opacity: 1;
-  transform: scale(1) translateY(0);
-  filter: grayscale(0) blur(0);
-  z-index: 10;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
-}
-
-.achievement-card:not(.active):hover {
-  opacity: 0.75;
-  transform: scale(0.92) translateY(5px);
-  filter: grayscale(0.1) blur(0.5px);
-}
-
-/* Visual Section */
-.achievement-visual {
-  position: relative;
-  width: 100%;
-  height: 240px;
-  overflow: hidden;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
-}
-
-.achievement-visual img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.6s ease;
-}
-
-.achievement-card:hover .achievement-visual img {
-  transform: scale(1.05);
-}
-
-.achievement-tag {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
-  color: #fff;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-
-.achievement-tag.gold {
-  background: linear-gradient(135deg, #ffd700, #ffed4e);
-  color: #000;
-}
-
-/* Card Body */
-.achievement-body {
-  padding: 1.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.875rem;
-  flex: 1;
-}
-
-.achievement-icon {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
-  border-radius: 12px;
-  color: var(--clr-primary);
-}
-
-.achievement-title {
-  font-size: 1.35rem;
-  font-weight: 700;
-  line-height: 1.3;
-  margin: 0;
-  color: var(--clr-fg);
-}
-
-.achievement-card:not(.active) .achievement-title {
-  font-size: 1.15rem;
-}
-
-.achievement-subtitle {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--clr-primary);
-  margin: 0;
-  line-height: 1.4;
-}
-
-.achievement-text {
-  font-size: 0.95rem;
-  line-height: 1.65;
-  color: var(--clr-fg-alt);
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.achievement-card.active .achievement-text {
-  -webkit-line-clamp: 4;
-}
-
-/* Metrics */
-.achievement-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-top: auto;
-  padding-top: 1.25rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.metric {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 0.25rem;
-}
-
-.metric-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--clr-primary);
-  line-height: 1;
-}
-
-.metric-label {
-  font-size: 0.75rem;
-  color: var(--clr-fg-alt);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 500;
-}
-
-/* Carousel Buttons */
-.carousel-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 20;
-  color: var(--clr-fg);
-}
-
-.carousel-btn-prev {
-  left: -140px;
-}
-
-.carousel-btn-next {
-  right: -140px;
-}
-
-.carousel-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-50%) scale(1.08);
-}
-
-.carousel-btn:active {
-  transform: translateY(-50%) scale(0.95);
-}
-
-/* Carousel Indicators */
-.carousel-indicators {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 2.5rem;
-}
-
-.indicator {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 0;
-}
-
-.indicator.active {
-  width: 32px;
-  border-radius: 5px;
-  background: var(--clr-primary);
-}
-
-.indicator:hover:not(.active) {
-  background: rgba(255, 255, 255, 0.4);
-  transform: scale(1.2);
-}
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-  .achievement-card {
-    flex: 0 0 300px;
-  }
-  
-  .achievement-card.active {
-    flex: 0 0 460px;
-  }
-  
-  .carousel-btn-prev {
-    left: -60px;
-  }
-  
-  .carousel-btn-next {
-    right: -60px;
-  }
-}
-
-@media (max-width: 968px) {
-  .achievements-track {
-    gap: 1rem;
-  }
-  
-  .achievement-card:not(.active) {
-    flex: 0 0 180px;
-    opacity: 0.3;
-  }
-  
-  .achievement-card.active {
-    flex: 0 0 400px;
-  }
-  
-  .achievement-visual {
-    height: 200px;
-  }
-  
-  .achievement-body {
-    padding: 1.25rem;
-  }
-  
-  .carousel-btn {
-    width: 44px;
-    height: 44px;
-  }
-  
-  .carousel-btn-prev {
-    left: -50px;
-  }
-  
-  .carousel-btn-next {
-    right: -50px;
-  }
-}
-
-@media (max-width: 768px) {
-  .achievement-card:not(.active) {
-    display: none;
-  }
-  
-  .achievement-card.active {
-    flex: 0 0 100%;
-    max-width: 500px;
-  }
-  
-  .carousel-btn-prev {
-    left: -10px;
-  }
-  
-  .carousel-btn-next {
-    right: -10px;
-  }
-}
-
-@media (max-width: 480px) {
-  .achievement-metrics {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
-  }
-  
-  .metric-value {
-    font-size: 1.25rem;
-  }
-  
-  .carousel-btn {
-    width: 40px;
-    height: 40px;
-  }
-  
-  .carousel-btn-prev {
-    left: -5px;
-  }
-  
-  .carousel-btn-next {
-    right: -5px;
-  }
-}
-</style>
-
-<script>
-let currentAchievement = 1;
-
-function setActiveAchievement(index) {
-  const cards = document.querySelectorAll('.achievement-card');
-  const indicators = document.querySelectorAll('.indicator');
-  
-  cards.forEach((card, i) => {
-    card.classList.toggle('active', i === index);
-  });
-  
-  indicators.forEach((indicator, i) => {
-    indicator.classList.toggle('active', i === index);
-  });
-  
-  currentAchievement = index;
-}
-
-function scrollAchievements(direction) {
-  const totalCards = document.querySelectorAll('.achievement-card').length;
-  
-  if (direction === 'left') {
-    currentAchievement = (currentAchievement - 1 + totalCards) % totalCards;
-  } else {
-    currentAchievement = (currentAchievement + 1) % totalCards;
-  }
-  
-  setActiveAchievement(currentAchievement);
-}
-
-// Click on cards to activate
-document.querySelectorAll('.achievement-card').forEach((card, index) => {
-  card.addEventListener('click', () => setActiveAchievement(index));
-});
-
-// Keyboard navigation
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowLeft') scrollAchievements('left');
-  if (e.key === 'ArrowRight') scrollAchievements('right');
-});
-</script>
-
-
-
-  <!-- PROJECTS -->
-  <section class="container" id="projects">
-    <div class="section-header reveal">
-      <h2 class="title">Featured Projects</h2>
-      <div class="underline"></div>
-      <p class="section-subtitle">Showcasing my best work</p>
+  <!-- OS Taskbar (hidden initially) -->
+  <div class="os-taskbar" id="os-taskbar">
+    <div class="taskbar-left">
+      <span class="taskbar-icon">⌘</span>
+      <span class="taskbar-brand">PRANAV-OS</span>
+      <span class="taskbar-sep">│</span>
+      <span class="taskbar-item">≡ Menu</span>
     </div>
-    <div class="projects-grid">
-
-      <!-- Project 1 - Mentora -->
-<article class="glass card project reveal">
-  <div class="project-badge">Mobile App</div>
-  <div class="thumb">
-    <video width="100%" height="240" controls playsinline>
-      <source src="/src/vids/MR.mp4" type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
-  </div>
-  <div class="project-content">
-    <h3>Mentora</h3>
-    <p class="project-subtitle">AI Learning & Career App</p>
-    <p class="muted">A mobile application that provides AI-powered career guidance and personalized learning roadmaps with gamification features to help students and professionals achieve their career goals.</p>
-    <div class="project-pills">
-      <span class="pill">Flutter</span>
-      <span class="pill">AI/ML</span>
-      <span class="pill">Supabase</span>
-      <span class="pill">Dart</span>
+    <div class="taskbar-center" id="taskbar-windows"></div>
+    <div class="taskbar-right">
+      <span class="taskbar-indicator">●●●</span>
+      <span class="taskbar-clock" id="taskbar-clock">23:47</span>
+      <span class="taskbar-item">WiFi</span>
+      <span class="taskbar-item">Vol</span>
     </div>
   </div>
-</article>
 
-<!-- Project 2 - ElectroTech -->
-<article class="glass card project reveal">
-  <div class="project-badge">Mobile App</div>
-  <div class="thumb">
-    <video width="100%" height="240" controls playsinline>
-      <source src="/src/vids/ET.mp4" type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
-  </div>
-  <div class="project-content">
-    <h3>ElectroTech Services</h3>
-    <p class="project-subtitle">Electronics E-Commerce App</p>
-    <p class="muted">A cross-platform mobile app for electronics procurement and component marketplace, enabling seamless browsing, ordering, and vendor management for technology products.</p>
-    <div class="project-pills">
-      <span class="pill">Flutter</span>
-      <span class="pill">Dart</span>
-      <span class="pill">Firebase</span>
-      <span class="pill">Figma</span>
-    </div>
-  </div>
-</article>
+  <!-- Particle Constellation Canvas -->
+  <canvas id="particles-canvas"></canvas>
 
-<!-- Project - NutriGo -->
-<article class="glass card project reveal">
-  <div class="project-badge">Progressive Web App</div>
-  <div class="thumb">
-    <video width="100%" height="240" controls playsinline>
-      <source src="/src/vids/NG.mp4" type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
-  </div>
-  <div class="project-content">
-    <h3>NutriGo</h3>
-    <p class="project-subtitle">AI-Powered Food Scanner</p>
-    <p class="muted">AI-powered web platform for scanning packaged foods to reveal nutrition facts, health scores, and smart alternatives for healthier choices.</p>
-    <div class="project-pills">
-      <span class="pill">React</span>
-      <span class="pill">TypeScript</span>
-      <span class="pill">Next.js</span>
-      <span class="pill">LangChain</span>
-    </div>
-  </div>
-</article>
-
-
-
-
-      
-      <!-- Project 1 -->
-      <article class="glass card project reveal">
-        <div class="project-badge">Featured</div>
-        <div class="thumb">
-          <video width="100%" height="240" controls playsinline>
-            <source src="/src/vids/SA.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        </div>
-        <div class="project-content">
-          <h3>Stock Analysis Pro</h3>
-          <p class="project-subtitle">Equity Research Platform</p>
-          <p class="muted">A full-stack web application delivering AI-powered stock market analysis for Indian equity investors with comprehensive reports and ML predictions.</p>
-          <div class="project-pills">
-            <span class="pill">Fintech</span>
-            <span class="pill">Python</span>
-            <span class="pill">FPDF</span>
-            <span class="pill">ML</span>
-          </div>
-        </div>
-      </article>
-
-      <!-- Project 2 -->
-      <article class="glass card project reveal">
-        <div class="project-badge">AI Agents</div>
-        <div class="thumb">
-          <video width="100%" height="240" controls playsinline>
-            <source src="/src/vids/GSD.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        </div>
-        <div class="project-content">
-          <h3>Email Classification System</h3>
-          <p class="project-subtitle">AI-Powered Management</p>
-          <p class="muted">An AI-driven email management workflow using n8n to automatically classify incoming emails into Important, Spam, or Nothing categories.</p>
-          <div class="project-pills">
-            <span class="pill">n8n</span>
-            <span class="pill">Gemini API</span>
-            <span class="pill">Gmail</span>
-          </div>
-        </div>
-      </article>
-
-      <!-- Project 3 -->
-      <article class="glass card project reveal">
-        <div class="project-badge">AI Automation</div>
-        <div class="thumb">
-          <video width="100%" height="240" controls playsinline>
-            <source src="/src/vids/VA.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        </div>
-        <div class="project-content">
-          <h3>SAANVI</h3>
-          <p class="project-subtitle">AI Voice Assistant</p>
-          <p class="muted">An AI-powered voice assistant for seamless interactions like booking appointments, answering queries, and automated customer support.</p>
-          <div class="project-pills">
-            <span class="pill">n8n</span>
-            <span class="pill">Retell AI</span>
-            <span class="pill">Automation</span>
-          </div>
-        </div>
-      </article>
-
-      <!-- Project 4 -->
-      <article class="glass card project reveal">
-        <div class="project-badge">Computer Vision</div>
-        <div class="thumb">
-          <video width="100%" height="240" controls playsinline>
-            <source src="/src/vids/SS.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        </div>
-        <div class="project-content">
-          <h3>SpeedSnare</h3>
-          <p class="project-subtitle">Vehicle Speed Detection</p>
-          <p class="muted">An AI-based solution for real-time vehicle speed detection and monitoring using advanced computer vision techniques.</p>
-          <div class="project-pills">
-            <span class="pill">OpenCV</span>
-            <span class="pill">Python</span>
-            <span class="pill">Flask</span>
-          </div>
-        </div>
-      </article>
-
-      <!-- Project 5 -->
-      <article class="glass card project reveal">
-        <div class="project-badge">Healthcare</div>
-        <div class="thumb">
-          <video width="100%" height="240" controls playsinline>
-            <source src="/src/vids/DS.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        </div>
-        <div class="project-content">
-          <h3>DermiScan</h3>
-          <p class="project-subtitle">Skin Cancer Detection</p>
-          <p class="muted">An AI-driven tool for early detection of skin cancer through image analysis using deep learning and TensorFlow.</p>
-          <div class="project-pills">
-            <span class="pill">TensorFlow</span>
-            <span class="pill">Deep Learning</span>
-            <span class="pill">Flask</span>
-          </div>
-        </div>
-      </article>
-
-      <!-- Project 7 -->
-      <article class="glass card project reveal">
-        <div class="project-badge">Machine Learning</div>
-        <div class="thumb">
-          <video width="100%" height="240" controls playsinline>
-            <source src="/src/vids/AW.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        </div>
-        <div class="project-content">
-          <h3>AutoWorth</h3>
-          <p class="project-subtitle">Vehicle Worth Estimation</p>
-          <p class="muted">An AI-driven tool for estimating the market worth of vehicles based on various parameters using regression models.</p>
-          <div class="project-pills">
-            <span class="pill">Scikit-learn</span>
-            <span class="pill">ML</span>
-            <span class="pill">Matplotlib</span>
-          </div>
-        </div>
-      </article>
-
-
-
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer>
-    <div class="footer-inner">
-      <div class="footer-left">
-        <div class="footer-brand">PRANAV<span>.DEV</span></div>
-        <p class="footer-desc">Building innovative solutions through code</p>
-        <span class="footer-copyright">© 2025 All rights reserved</span>
+  <!-- ============================================================
+       PHASE 1: ZOOM — Real Desk Photo
+  ============================================================= -->
+  <div class="zoom-wrapper" id="zoom-wrapper">
+    <div class="zoom-stage">
+      <!-- Real bright desk photo -->
+      <img 
+        src="https://images.unsplash.com/photo-1616763355548-1b606f439f86?w=1920&q=90"
+        alt="Colorful developer desk setup"
+        class="desk-photo"
+        id="desk-photo"
+      />
+      <!-- Monitor screen overlay — positioned over the monitor in the photo -->
+      <div class="monitor-screen-overlay" id="monitor-screen-overlay">
+        <span class="monitor-text">PRANAV.DEV</span>
       </div>
-      <div class="footer-links">
-        <div class="footer-col">
-          <h4>Navigation</h4>
-          <a href="#home">Home</a>
-          <a href="#about">About</a>
-          <a href="#experience">Experience</a>
-          <a href="#skills">Skills</a>
+      <!-- Vignette overlay — radial gradient with monitor-shaped hole -->
+      <div class="vignette-overlay" id="vignette-overlay"></div>
+      <!-- Desk foreground blur (slower parallax for depth) -->
+      <div class="desk-foreground-blur" id="desk-foreground-blur"></div>
+      <!-- Monitor glint sweep -->
+      <div class="monitor-glint" id="monitor-glint"></div>
+      <!-- Scroll prompt -->
+      <div class="scroll-prompt" id="scroll-prompt">
+        <span>scroll to boot in</span>
+        <div class="scroll-arrow">↓</div>
+      </div>
+
+      <!-- OS Screen (fades in as photo fades out) -->
+      <div class="os-screen" id="os-screen">
+
+        <!-- ========== SECTION A: HERO DESKTOP ========== -->
+        <section class="os-section hero-desktop" id="hero">
+          <!-- Terminal Window (center-left, 60%) -->
+          <div class="os-window terminal-window" id="win-hero">
+            <div class="win-titlebar">
+              <div class="win-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+              </div>
+              <div class="win-title">pranav@universe: ~</div>
+              <div class="win-actions">
+                <span>─</span><span>□</span><span>✕</span>
+              </div>
+            </div>
+            <div class="win-body terminal-body">
+              <div class="term-line dim">Last login: Sun Mar 15 2026 from universe.local</div>
+              <div class="term-line dim">PRANAV-OS v2.4.0 — Build 2026</div>
+              <br>
+              <div class="term-line"><span class="prompt">$</span> whoami</div>
+              <br>
+              <div class="hero-name-box">
+                <div class="name-border">╔══════════════════════════════════════════════════════════════╗</div>
+                <div class="name-inner">
+                  <span class="name-pipe">║</span>
+                  <div class="hero-name-display">PRANAV RAO K</div>
+                  <span class="name-pipe">║</span>
+                </div>
+                <div class="name-sub-inner">
+                  <span class="name-pipe">║</span>
+                  <div class="hero-sub">2nd Year CSE · MS Ramaiah · Bengaluru 🇮🇳</div>
+                  <span class="name-pipe">║</span>
+                </div>
+                <div class="name-border">╚══════════════════════════════════════════════════════════════╝</div>
+              </div>
+              <br>
+              <div class="term-line"><span class="prompt">$</span> cat ./role.txt</div>
+              <div class="term-line text-green">> <span id="hero-typewriter"></span></div>
+              <br>
+              <div class="term-line"><span class="prompt">$</span> cat ./bio.txt</div>
+              <div class="term-line text-green">> "A passionate coder exploring the endless abyss of</div>
+              <div class="term-line text-green">&nbsp;&nbsp;&nbsp;ones and zeroes. Building things that think."</div>
+              <br>
+              <div class="term-line"><span class="prompt">$</span> ls ./stats/</div>
+              <div class="term-line text-green">> 10+ Projects&nbsp;&nbsp;&nbsp;&nbsp;5+ Tech Stacks&nbsp;&nbsp;&nbsp;&nbsp;3 Hackathon Wins</div>
+              <br>
+              <div class="term-line"><span class="prompt">$</span> ./download-resume.sh&nbsp;&nbsp;&nbsp;<a href="./src/pdf/PRANAV RAO K RESUME.pdf" download class="inline-link">[↵ Enter]</a></div>
+              <div class="term-line"><span class="prompt">$</span> cd ./projects/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#projects" class="inline-link">[↵ Enter]</a></div>
+              <br>
+              <div class="term-line"><span class="prompt">$</span> <span class="blink">_</span></div>
+            </div>
+          </div>
+
+          <!-- Image Viewer Window (right, 35%) -->
+          <div class="os-window image-viewer-win" id="win-preview">
+            <div class="win-titlebar">
+              <div class="win-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+              </div>
+              <div class="win-title">Preview — PR.png</div>
+            </div>
+            <div class="win-body preview-body">
+              <div class="preview-photo-wrap">
+                <img src="./src/img/PR.png" alt="Pranav Rao K" class="preview-photo">
+                <div class="photo-scanline"></div>
+              </div>
+              <div class="preview-meta dim">340 × 340px &nbsp;|&nbsp; RGB &nbsp;|&nbsp; 2.1MB</div>
+              <div class="available-badge">
+                <div class="available-dot"></div>
+                <span>Available for Projects</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Desktop Shortcut Icons (bottom-right) -->
+          <div class="desktop-icons">
+            <a href="./src/pdf/PRANAV RAO K RESUME.pdf" download class="desktop-icon">
+              <div class="icon-img">📄</div>
+              <div class="icon-label">Resume.pdf</div>
+            </a>
+            <a href="#projects" class="desktop-icon">
+              <div class="icon-img">📁</div>
+              <div class="icon-label">Projects/</div>
+            </a>
+          </div>
+        </section>
+
+      </div><!-- /.os-screen -->
+    </div><!-- /.zoom-stage -->
+  </div><!-- /.zoom-wrapper -->
+
+  <!-- ============================================================
+       PHASE 2: OS SECTIONS (scrolled normally after zoom)
+  ============================================================= -->
+  <main class="os-content" id="os-content">
+
+    <!-- ========== SECTION B: ABOUT — VS Code Editor ========== -->
+    <section class="os-section" id="about">
+      <div class="os-window editor-win" id="win-about">
+        <div class="win-titlebar">
+          <div class="win-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <div class="win-title">README.md — pranav-rao-k — CURSOR 3.0</div>
         </div>
-        <div class="footer-col">
-          <h4>More</h4>
-          <a href="#achievements">Achievements</a>
-          <a href="#projects">Projects</a>
-          <a href="/src/pdf/PRANAV RAO K RESUME.pdf" download>Resume</a>
+        <div class="win-body editor-body">
+          <div class="editor-sidebar hidden-mobile">
+            <div class="sidebar-icons">
+              <div class="sb-icon active">📁</div>
+              <div class="sb-icon">🔍</div>
+              <div class="sb-icon">🔀</div>
+              <div class="sb-icon">🐛</div>
+              <div class="sb-icon">⚙️</div>
+            </div>
+            <div class="file-tree">
+              <div class="tree-header">▶ PRANAV-RAO-K</div>
+              <div class="tree-item active">📄 README.md <span class="unsaved">●</span></div>
+              <div class="tree-item">📄 experience.json</div>
+              <div class="tree-item">📄 skills.ts</div>
+              <div class="tree-item">📁 projects/</div>
+              <div class="tree-item">📁 achievements/</div>
+            </div>
+          </div>
+          <div class="editor-main">
+            <div class="editor-tabs">
+              <div class="ed-tab active">README.md ×</div>
+              <div class="ed-tab">experience.json</div>
+            </div>
+            <div class="editor-content">
+              <div class="line-numbers">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20</div>
+              <div class="code-text">
+<span class="syn-blue"># Pranav Rao K</span><br><br>
+<span class="syn-green">> A passionate coder exploring the</span><br>
+<span class="syn-green">> endless abyss of ones and zeroes.</span><br><br>
+<span class="syn-blue">## About</span><br><br>
+<span class="syn-text">I'm currently a <span class="syn-yellow">**2nd year CSE student**</span> at</span><br>
+<span class="syn-text">MS Ramaiah University of Applied</span><br>
+<span class="syn-text">Sciences, Bangalore.</span><br><br>
+<span class="syn-text">I thrive on tackling complex problems</span><br>
+<span class="syn-text">through code and enjoy hackathons +</span><br>
+<span class="syn-text">hands-on builds.</span><br><br>
+<span class="syn-blue">## Details</span><br><br>
+<span class="syn-purple">-</span> 🎓 <span class="syn-yellow">**Education:**</span> <span class="syn-text">B.Tech in CSE</span><br>
+<span class="syn-purple">-</span> 📍 <span class="syn-yellow">**Location:**</span> <span class="syn-text">Bengaluru, India</span><br>
+<span class="syn-purple">-</span> 📅 <span class="syn-yellow">**Year:**</span> <span class="syn-text">2nd Year</span><br>
+<span class="syn-purple">-</span> 🏛️ <span class="syn-yellow">**University:**</span> <span class="syn-text">MS Ramaiah University</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="editor-statusbar">
+          <span>● main</span>
+          <span>Ln 28, Col 1</span>
+          <span>UTF-8</span>
+          <span>Markdown</span>
+          <span class="statusbar-right">Bengaluru, India 🇮🇳</span>
+        </div>
+        <div class="ticker-bar">
+          <div class="ticker-track">
+            <span>Python · React · Next.js · Flutter · TensorFlow · n8n · TypeScript · Dart · OpenCV · Scikit-learn · Pandas · Flask · Supabase · Firebase · </span>
+            <span>Python · React · Next.js · Flutter · TensorFlow · n8n · TypeScript · Dart · OpenCV · Scikit-learn · Pandas · Flask · Supabase · Firebase · </span>
+          </div>
         </div>
       </div>
-      <div class="footer-socials">
-        <h4>Connect</h4>
-        <div class="social-links">
-          <a href="mailto:pranavraok18@gmail.com" aria-label="Email" target="_blank">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </section>
+
+    <!-- ========== SECTION C: EXPERIENCE — Git Bash ========== -->
+    <section class="os-section" id="experience">
+      <div class="os-window git-win" id="win-exp">
+        <div class="win-titlebar">
+          <div class="win-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <div class="win-title">Git Bash — pranav-rao-k</div>
+        </div>
+        <div class="win-body git-body">
+          <div class="term-line dim">$ git log --all --author="Pranav" --format="%h %ad %s" --date=short</div>
+          <br>
+          <div class="git-graph">
+            <svg class="git-svg" preserveAspectRatio="none">
+              <line x1="12" y1="0" x2="12" y2="100%" class="git-line-draw"/>
             </svg>
-          </a>
-          <a href="https://www.linkedin.com/in/pranav-rao-k/" aria-label="LinkedIn" target="_blank">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="4" cy="4" r="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
-          <a href="https://github.com/pranavraok" aria-label="GitHub" target="_blank">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
+            <div class="git-commits">
+              <div class="git-commit">
+                <div class="commit-dot"></div>
+                <div class="commit-header"><span class="hash">* a1f2c3</span> <span class="tag">(HEAD → main)</span></div>
+                <div class="commit-date dim">2025-01 ← Machine Learning Intern @ Fox Trading Solutions</div>
+                <div class="commit-card">
+                  <div class="cc-line">commit a1f2c3</div>
+                  <div class="cc-line">Author: Pranav Rao K &lt;pranav@universe.dev&gt;</div>
+                  <div class="cc-line">Date: &nbsp;&nbsp;Jan 2025 – April 2025</div>
+                  <br>
+                  <div class="cc-line">&nbsp;&nbsp;&nbsp;&nbsp;Machine Learning Internship @ Fox Trading Solutions</div>
+                  <br>
+                  <div class="cc-line">&nbsp;&nbsp;&nbsp;&nbsp;Applied ML concepts to real-world problems.</div>
+                  <div class="cc-line">&nbsp;&nbsp;&nbsp;&nbsp;Recognized for dedication by academic head.</div>
+                  <div class="cc-line">&nbsp;&nbsp;&nbsp;&nbsp;Data preprocessing, model training, eval pipelines.</div>
+                  <br>
+                  <div class="cc-line cc-diff">&nbsp;&nbsp;&nbsp;&nbsp;Diff: <span class="diff-add">+Python</span> <span class="diff-add">+Pandas</span> <span class="diff-add">+NumPy</span> <span class="diff-add">+Scikit-learn</span></div>
+                </div>
+                <div class="commit-tags">
+                  <span class="git-tag">[Python]</span>
+                  <span class="git-tag">[Pandas]</span>
+                  <span class="git-tag">[NumPy]</span>
+                  <span class="git-tag">[Scikit-learn]</span>
+                </div>
+              </div>
+              <div class="git-commit">
+                <div class="commit-dot"></div>
+                <div class="commit-header"><span class="hash">* b9e1d2</span></div>
+                <div class="commit-date dim">2023-07 ← Started B.Tech CSE @ MS Ramaiah University</div>
+              </div>
+              <div class="git-commit">
+                <div class="commit-dot"></div>
+                <div class="commit-header"><span class="hash">* init</span></div>
+                <div class="commit-date dim">2006 ← Initial commit: Pranav Rao K</div>
+                <div class="commit-date dim">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"First build. No bugs yet."</div>
+              </div>
+            </div>
+          </div>
+          <br>
+          <div class="term-line"><span class="prompt">$</span> <span class="blink">_</span></div>
         </div>
       </div>
-    </div>
-  </footer>
+    </section>
 
-  <!-- JavaScript -->
+    <!-- ========== SECTION D: SKILLS — htop Task Manager ========== -->
+    <section class="os-section" id="skills">
+      <div class="os-window htop-win" id="win-skills">
+        <div class="win-titlebar">
+          <div class="win-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <div class="win-title">Task Manager — Pranav's Skill Processes</div>
+        </div>
+        <div class="win-body htop-body">
+          <div class="htop-metrics">
+            <div class="metric-row">
+              <span class="m-label">CPU</span> [<span class="m-bar-gradient">████████████████████</span> <span>94.2%</span>]
+              <span class="m-info dim hidden-mobile">Processes: 20 &nbsp;&nbsp;Uptime: 19yrs</span>
+            </div>
+            <div class="metric-row">
+              <span class="m-label">MEM</span> [<span class="m-bar-gradient">████████████████</span>&nbsp;&nbsp;&nbsp;&nbsp; <span>82.0%</span>]
+              <span class="m-info dim hidden-mobile">Projects: 10+ &nbsp;&nbsp;Build: v2.0</span>
+            </div>
+          </div>
+          <div class="htop-header">
+            <span class="hc-pid">PID</span>
+            <span class="hc-user hidden-mobile">USER</span>
+            <span class="hc-skill">SKILL</span>
+            <span class="hc-prof">PROFICIENCY</span>
+            <span class="hc-status hidden-mobile">STATUS</span>
+          </div>
+          <div class="htop-rows">
+            <div class="htop-group">── WEB / APP DEVELOPMENT ──</div>
+            <div class="htop-row"><span class="hc-pid">001</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">HTML/CSS</span><span class="hc-prof"><div class="skill-bar" data-level="95"></div><span class="skill-pct">95%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">002</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">React &amp; Next.js</span><span class="hc-prof"><div class="skill-bar" data-level="90"></div><span class="skill-pct">90%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">003</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Flutter</span><span class="hc-prof"><div class="skill-bar" data-level="85"></div><span class="skill-pct">85%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">004</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">TypeScript</span><span class="hc-prof"><div class="skill-bar" data-level="80"></div><span class="skill-pct">80%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">005</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">n8n Automation</span><span class="hc-prof"><div class="skill-bar" data-level="88"></div><span class="skill-pct">88%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">006</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Flask</span><span class="hc-prof"><div class="skill-bar" data-level="75"></div><span class="skill-pct">75%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">007</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">UI/UX Design</span><span class="hc-prof"><div class="skill-bar" data-level="72"></div><span class="skill-pct">72%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">008</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Database Mgmt</span><span class="hc-prof"><div class="skill-bar" data-level="80"></div><span class="skill-pct">80%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-group">── AI/ML &amp; DATA SCIENCE ──</div>
+            <div class="htop-row"><span class="hc-pid">009</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Python</span><span class="hc-prof"><div class="skill-bar" data-level="95"></div><span class="skill-pct">95%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">010</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">TensorFlow</span><span class="hc-prof"><div class="skill-bar" data-level="82"></div><span class="skill-pct">82%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">011</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Scikit-learn</span><span class="hc-prof"><div class="skill-bar" data-level="88"></div><span class="skill-pct">88%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">012</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Pandas &amp; NumPy</span><span class="hc-prof"><div class="skill-bar" data-level="93"></div><span class="skill-pct">93%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">013</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">OpenCV</span><span class="hc-prof"><div class="skill-bar" data-level="70"></div><span class="skill-pct">70%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">014</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">ML Algorithms</span><span class="hc-prof"><div class="skill-bar" data-level="87"></div><span class="skill-pct">87%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-group">── LANGUAGES ──</div>
+            <div class="htop-row"><span class="hc-pid">015</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Python</span><span class="hc-prof"><div class="skill-bar" data-level="95"></div><span class="skill-pct">95%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">016</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">JavaScript</span><span class="hc-prof"><div class="skill-bar" data-level="90"></div><span class="skill-pct">90%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">017</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Dart</span><span class="hc-prof"><div class="skill-bar" data-level="82"></div><span class="skill-pct">82%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">018</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">TypeScript</span><span class="hc-prof"><div class="skill-bar" data-level="80"></div><span class="skill-pct">80%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">019</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">SQL</span><span class="hc-prof"><div class="skill-bar" data-level="74"></div><span class="skill-pct">74%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+            <div class="htop-row"><span class="hc-pid">020</span><span class="hc-user hidden-mobile">pranav</span><span class="hc-skill">Java (Basics)</span><span class="hc-prof"><div class="skill-bar" data-level="55"></div><span class="skill-pct">55%</span></span><span class="hc-status hidden-mobile text-green">running</span></div>
+          </div>
+          <div class="htop-footer dim">
+            <span class="hidden-mobile">F1 Help &nbsp;&nbsp;F2 Setup &nbsp;&nbsp;F5 Refresh &nbsp;&nbsp;F9 Kill &nbsp;&nbsp;F10 Quit</span>
+            <span class="text-green">[ All systems: operational ]</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SECTION E: ACHIEVEMENTS — Build Monitor ========== -->
+    <section class="os-section" id="achievements">
+      <div class="os-window build-win" id="win-achieve">
+        <div class="win-titlebar">
+          <div class="win-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <div class="win-title">Build Monitor — CI/CD Pipeline Results</div>
+        </div>
+        <div class="win-body build-body">
+          <!-- Banner 1 -->
+          <div class="build-banner slam-banner">
+            <div class="banner-accent green"></div>
+            <div class="banner-ghost-text">TOP 10</div>
+            <div class="banner-content">
+              <div class="b-header">✔ BUILD SUCCESSFUL <span class="dim float-right">TRIKAYA HACKTOHIRE 2025</span></div>
+              <div class="b-divider"></div>
+              <div class="b-row"><span class="dim b-label">Result:</span> <span class="text-green">TOP 10 / 4000+ TEAMS</span></div>
+              <div class="b-row"><span class="dim b-label">Venue:</span> Radisson Blu (Final Showcase)</div>
+              <div class="b-row"><span class="dim b-label">Stages:</span> Ideation → Build Phase → Live Pitch</div>
+              <div class="b-row"><span class="dim b-label">Note:</span> Pitched to industry experts + hiring partners</div>
+            </div>
+            <div class="banner-photo"><img src="./src/img/trikaya-prize.png" alt="Trikaya Prize"></div>
+          </div>
+          <!-- Banner 2 -->
+          <div class="build-banner slam-banner">
+            <div class="banner-accent amber"></div>
+            <div class="banner-ghost-text amber-ghost">1ST</div>
+            <div class="banner-content">
+              <div class="b-header text-amber">✔ BUILD SUCCESSFUL <span class="dim float-right">HULT PRIZE 2025</span></div>
+              <div class="b-divider"></div>
+              <div class="b-row"><span class="dim b-label">Result:</span> <span class="text-amber">1ST PLACE / 170+ PARTICIPANTS</span></div>
+              <div class="b-row"><span class="dim b-label">Category:</span> Prestigious International Hackathon</div>
+              <div class="b-row"><span class="dim b-label">Impact:</span> Exceptional problem-solving, won judges over</div>
+              <div class="b-row"><span class="dim b-label">Streak:</span> ← Hackathon win #2</div>
+            </div>
+            <div class="banner-photo"><img src="./src/img/hult-price.jpg" alt="Hult Prize"></div>
+          </div>
+          <!-- Banner 3 -->
+          <div class="build-banner slam-banner">
+            <div class="banner-accent cyan"></div>
+            <div class="banner-ghost-text cyan-ghost">WIN</div>
+            <div class="banner-content">
+              <div class="b-header text-cyan">✔ BUILD SUCCESSFUL <span class="dim float-right">HACK SPACE 2025</span></div>
+              <div class="b-divider"></div>
+              <div class="b-row"><span class="dim b-label">Result:</span> <span class="text-cyan">WINNER — GEN AI TRACK / 1250+ TEAMS</span></div>
+              <div class="b-row"><span class="dim b-label">Project:</span> MENTORA (Cross-Platform EdTech App)</div>
+              <div class="b-row"><span class="dim b-label">Streak:</span> ← 3rd Consecutive Hackathon Win</div>
+              <div class="b-row"><span class="dim b-label">Status:</span> No failed builds. Ever.</div>
+            </div>
+            <div class="banner-photo"><img src="./src/img/hackspace-prize.jpeg" alt="HackSpace Prize"></div>
+          </div>
+          <div class="build-summary">
+            <div class="dim">$ echo "3 pipelines. 3 exits. Zero crashes."</div>
+            <div class="text-green">> 3 pipelines. 3 exits. Zero crashes.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SECTION F: PROJECTS — File Explorer ========== -->
+    <section class="os-section" id="projects">
+      <div class="os-window finder-win" id="win-projects">
+        <div class="win-titlebar">
+          <div class="win-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <div class="win-title">Finder — /pranav/projects/ &nbsp;[9 items]</div>
+        </div>
+        <div class="win-body finder-body">
+          <div class="finder-sidebar" id="finder-sidebar">
+            <div class="finder-path dim">📁 pranav/projects/</div>
+            <div class="file-row active" data-project="0">
+              <span class="fi-icon">📱</span>
+              <span class="fi-name">mentora.apk</span>
+              <span class="file-type-tag tag-mobile">Mobile App</span>
+            </div>
+            <div class="file-row" data-project="1">
+              <span class="fi-icon">📱</span>
+              <span class="fi-name">electrotech.apk</span>
+              <span class="file-type-tag tag-mobile">Mobile App</span>
+            </div>
+            <div class="file-row" data-project="2">
+              <span class="fi-icon">🌐</span>
+              <span class="fi-name">nutrigo.web</span>
+              <span class="file-type-tag tag-pwa">PWA</span>
+            </div>
+            <div class="file-row" data-project="3">
+              <span class="fi-icon">📈</span>
+              <span class="fi-name">stock-analysis.py</span>
+              <span class="file-type-tag tag-ml">Fintech/ML</span>
+            </div>
+            <div class="file-row" data-project="4">
+              <span class="fi-icon">🤖</span>
+              <span class="fi-name">email-classifier.n8n</span>
+              <span class="file-type-tag tag-ai">AI Agents</span>
+            </div>
+            <div class="file-row" data-project="5">
+              <span class="fi-icon">🎙️</span>
+              <span class="fi-name">saanvi.n8n</span>
+              <span class="file-type-tag tag-ai">AI Auto</span>
+            </div>
+            <div class="file-row" data-project="6">
+              <span class="fi-icon">👁️</span>
+              <span class="fi-name">speedsnare.cv</span>
+              <span class="file-type-tag tag-cv">CV</span>
+            </div>
+            <div class="file-row" data-project="7">
+              <span class="fi-icon">🏥</span>
+              <span class="fi-name">dermiscan.tf</span>
+              <span class="file-type-tag tag-health">Healthcare AI</span>
+            </div>
+            <div class="file-row" data-project="8">
+              <span class="fi-icon">🚗</span>
+              <span class="fi-name">autoworth.ml</span>
+              <span class="file-type-tag tag-ml">ML</span>
+            </div>
+          </div>
+          <div class="finder-preview" id="finder-preview">
+            <div class="preview-panel" id="preview-panel">
+              <div class="pd-video-wrap">
+                <video id="pd-video" muted loop playsinline src="./src/vids/MR.mp4"></video>
+                <div class="pd-playing-badge">▶ playing</div>
+                <div class="pd-scanline-overlay"></div>
+              </div>
+              <div class="pd-info">
+                <div class="pd-name text-green" id="pd-name">> MENTORA</div>
+                <div class="pd-type" id="pd-type">[Mobile App]</div>
+                <div class="pd-desc dim" id="pd-desc">AI Learning & Career App — AI-powered career guidance and personalized learning roadmaps.</div>
+                <br>
+                <div class="dim">$ cat ./stack.txt</div>
+                <div class="text-green" id="pd-stack">> Flutter · AI/ML · Supabase · Dart</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SECTION G: FOOTER — Shutdown Dialog ========== -->
+    <section class="os-section footer-desktop" id="footer">
+      <div class="desktop-dim"></div>
+      <div class="shutdown-dialog" id="shutdown-dialog">
+        <div class="win-titlebar">
+          <div class="win-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <div class="win-title">PRANAV-OS — System Shutdown</div>
+        </div>
+        <div class="dialog-body">
+          <p>Are you sure you want to shut down PRANAV-OS?</p>
+          <br>
+          <div class="dialog-stats">
+            <div>Current uptime: <span class="text-green">19 years, 0 months</span></div>
+            <div>Unsaved work: <span class="text-amber">Building the future.</span></div>
+            <div>Sessions active: <span class="text-cyan">10+ projects, 3 hackathon wins</span></div>
+          </div>
+          <div class="dialog-divider"></div>
+          <div class="dialog-progress">
+            <span>Saving session...</span>
+            <span class="progress-track"><span class="progress-fill">██████████</span></span>
+            <span>100%</span>
+          </div>
+          <br>
+          <div class="dialog-quote">"Building innovative solutions through code."</div>
+          <div class="dialog-divider"></div>
+          <div class="dialog-buttons">
+            <a href="#hero" class="dialog-btn">[ Cancel ]</a>
+            <span class="dialog-btn dim">[ Sleep ]</span>
+            <span class="dialog-btn text-green">[ Reboot with idea ]</span>
+          </div>
+        </div>
+      </div>
+      <div class="footer-icons" id="footer-icons">
+        <a href="./src/pdf/PRANAV RAO K RESUME.pdf" download class="desktop-icon">
+          <div class="icon-img">📄</div>
+          <div class="icon-label">Resume.pdf</div>
+        </a>
+        <a href="https://github.com/pranavraok" target="_blank" class="desktop-icon">
+          <div class="icon-img">💻</div>
+          <div class="icon-label">GitHub</div>
+        </a>
+        <a href="https://www.linkedin.com/in/pranav-rao-k-4824352ba/" target="_blank" class="desktop-icon">
+          <div class="icon-img">👔</div>
+          <div class="icon-label">LinkedIn</div>
+        </a>
+        <a href="mailto:pranavraok@gmail.com" class="desktop-icon">
+          <div class="icon-img">✉️</div>
+          <div class="icon-label">Email</div>
+        </a>
+      </div>
+      <div class="footer-copyright">© 2025 Pranav Rao K · PRANAV-OS v2.4.0 · Bengaluru, India 🇮🇳 · Built with obsession</div>
+    </section>
+
+  </main>
+
   <script src="script.js"></script>
 </body>
 </html>
