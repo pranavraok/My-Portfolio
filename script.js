@@ -49,6 +49,7 @@ const lineNumbers = document.querySelector(".line-numbers");
 const photoScan = document.getElementById("photo-scan");
 
 function initializeSite() {
+  setupDynamicViewport();
   setupLineNumbers();
   setupMenu();
   setupCursor();
@@ -64,6 +65,21 @@ function initializeSite() {
     setupPhotoScanSweep();
     setupFooterTyped();
   });
+}
+
+function setupDynamicViewport() {
+  const applyViewportHeight = () => {
+    const viewportHeight = window.visualViewport?.height || window.innerHeight;
+    document.documentElement.style.setProperty("--vh", `${viewportHeight * 0.01}px`);
+  };
+
+  applyViewportHeight();
+  window.addEventListener("resize", applyViewportHeight);
+  window.addEventListener("orientationchange", applyViewportHeight);
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", applyViewportHeight);
+  }
 }
 
 function setupLineNumbers() {
@@ -198,14 +214,51 @@ function setupMenu() {
     return;
   }
 
+  menuToggle.setAttribute("aria-expanded", "false");
+
+  const closeMenu = () => {
+    mobileNav.classList.remove("open");
+    menuToggle.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("nav-open");
+  };
+
   menuToggle.addEventListener("click", () => {
-    mobileNav.classList.toggle("open");
+    const isOpen = mobileNav.classList.toggle("open");
+    menuToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    document.body.classList.toggle("nav-open", isOpen);
   });
 
   mobileNav.querySelectorAll("a").forEach((link) => {
     link.addEventListener("click", () => {
-      mobileNav.classList.remove("open");
+      closeMenu();
     });
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!mobileNav.classList.contains("open")) {
+      return;
+    }
+
+    const target = event.target;
+    if (!(target instanceof Node)) {
+      return;
+    }
+
+    if (!mobileNav.contains(target) && !menuToggle.contains(target)) {
+      closeMenu();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeMenu();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.matchMedia("(min-width: 768px)").matches) {
+      closeMenu();
+    }
   });
 }
 

@@ -23,6 +23,10 @@ body {
   min-height: 100%;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   background:
     radial-gradient(circle at 20% -10%, rgba(0, 212, 255, 0.08), transparent 40%),
@@ -37,6 +41,12 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+img,
+video {
+  max-width: 100%;
+  display: block;
 }
 
 .curtain,
@@ -226,6 +236,8 @@ a {
   color: var(--accent-green);
   font-family: "JetBrains Mono", monospace;
   padding: 0.5rem 0.75rem;
+  min-height: 42px;
+  touch-action: manipulation;
 }
 
 .mobile-nav {
@@ -420,6 +432,9 @@ a {
 .rule {
   margin-top: 1.35rem;
   color: var(--text-dim);
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .hero-stats {
@@ -1351,12 +1366,36 @@ a {
     cursor: auto;
   }
 
+  body.nav-open {
+    overflow: hidden;
+  }
+
   .cursor-layer {
     display: none;
   }
 
   .mobile-nav-shell {
     display: block;
+    left: 1rem;
+    right: 1rem;
+    top: 0.8rem;
+  }
+
+  .menu-toggle {
+    width: 100%;
+    text-align: left;
+  }
+
+  .mobile-nav {
+    width: 100%;
+    max-height: min(calc(var(--vh, 1vh) * 72), 420px);
+    overflow-y: auto;
+  }
+
+  .mobile-nav a {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
   }
 
   .panel {
@@ -1389,10 +1428,32 @@ a {
 
   .term-title {
     flex-wrap: wrap;
+    gap: 0.45rem;
+    font-size: 0.69rem;
+  }
+
+  .term-title p {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .term-body {
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .term-leftline {
+    display: none;
+  }
+
+  .hero-copy {
+    padding-left: 0;
   }
 
   .hero-name {
     font-size: clamp(2.5rem, 13vw, 3.25rem);
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .hero-stats {
@@ -1402,6 +1463,11 @@ a {
   .editor-grid {
     grid-template-columns: 1fr;
     min-height: unset;
+  }
+
+  .editor-title,
+  .editor-status {
+    overflow-wrap: anywhere;
   }
 
   .editor-tree {
@@ -1426,16 +1492,61 @@ a {
   }
 
   .skill-row {
-    grid-template-columns: 30px 56px 98px 1fr 40px 48px;
-    font-size: 0.72rem;
+    grid-template-columns: 26px 52px 1fr auto;
+    grid-template-areas:
+      "id user name state"
+      "bar bar bar level";
+    font-size: 0.7rem;
+    row-gap: 0.3rem;
+    column-gap: 0.45rem;
+    padding: 0.42rem 0.35rem;
+  }
+
+  .skill-row > span:nth-child(1) {
+    grid-area: id;
+  }
+
+  .skill-row > span:nth-child(2) {
+    grid-area: user;
+  }
+
+  .skill-row > span:nth-child(3) {
+    grid-area: name;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .skill-row > span:nth-child(5) {
+    grid-area: level;
+    justify-self: end;
+  }
+
+  .skill-row > span:nth-child(6) {
+    grid-area: state;
+    justify-self: end;
   }
 
   .skill-track {
-    width: 60%;
+    grid-area: bar;
+    width: 100%;
+    height: 10px;
+  }
+
+  .skill-group h3 {
+    font-size: 0.72rem;
+    overflow-wrap: anywhere;
   }
 
   .ach-card {
     min-height: 230px;
+  }
+
+  .ach-card::after {
+    font-size: clamp(2rem, 20vw, 3.2rem);
+    right: 0.6rem;
+    bottom: 0.15rem;
   }
 
   .ach-img {
@@ -1451,12 +1562,34 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .project-item {
+    min-height: 44px;
+  }
+
   .project-stage {
-    min-height: 560px;
+    min-height: 0;
+    padding: 0.55rem;
   }
 
   .project-detail {
     inset: 0;
+  }
+
+  .project-detail-body {
+    min-height: min(calc(var(--vh, 1vh) * 78), 680px);
+    grid-template-rows: minmax(220px, 36vh) auto;
+  }
+
+  .project-detail-video-wrap {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .proc-card {
+    grid-template-rows: auto minmax(150px, 42vw) auto;
+  }
+
+  .proc-headline {
+    white-space: normal;
   }
 
   .proc-titleline {
@@ -1469,5 +1602,33 @@ a {
 
   .footer-grid {
     grid-template-columns: 1fr;
+  }
+
+  .footer-status {
+    line-height: 1.5;
+  }
+}
+
+@media (max-width: 479px) {
+  .app {
+    padding: 0 0.75rem;
+  }
+
+  .mobile-nav-shell {
+    left: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .hero-panel {
+    padding-top: 6.1rem;
+  }
+
+  .hero-name {
+    font-size: clamp(2.05rem, 12.5vw, 2.55rem);
+  }
+
+  .project-item-tag,
+  .proc-tag {
+    font-size: 0.58rem;
   }
 }
