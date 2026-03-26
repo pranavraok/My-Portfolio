@@ -21,9 +21,6 @@ const IS_MOBILE = window.matchMedia("(max-width: 767px)").matches;
 const BOOT_LINES = IS_MOBILE ? BOOT_LINES_MOBILE : BOOT_LINES_DESKTOP;
 const BOOT_SESSION_KEY = "pranavOsBootSeenV1";
 const BOOT_FAST_MODE = IS_MOBILE || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const BOOT_TYPING_MS = IS_MOBILE ? 0 : 10;
-const BOOT_LINE_PAUSE_MS = IS_MOBILE ? 0 : 10;
-const BOOT_DONE_PAUSE_MS = IS_MOBILE ? 45 : 90;
 
 let hasSeenBoot = false;
 try {
@@ -108,7 +105,7 @@ async function runBootSequence() {
   if (BOOT_FAST_MODE || hasSeenBoot) {
     bootLog.textContent = `${BOOT_LINES[0]}\nBoot complete. Welcome.`;
     bootProgressFill.style.width = "100%";
-    await wait(BOOT_DONE_PAUSE_MS);
+    await wait(90);
     return;
   }
 
@@ -117,7 +114,7 @@ async function runBootSequence() {
     bootLog.textContent += "\n";
     const pct = ((i + 1) / BOOT_LINES.length) * 100;
     bootProgressFill.style.width = `${pct}%`;
-    await wait(BOOT_LINE_PAUSE_MS);
+    await wait(20);
   }
 
   try {
@@ -126,17 +123,11 @@ async function runBootSequence() {
     /* Ignore storage errors in restricted contexts. */
   }
 
-  await wait(BOOT_DONE_PAUSE_MS);
+  await wait(140);
 }
 
 function typeLine(line) {
   return new Promise((resolve) => {
-    if (BOOT_TYPING_MS <= 0) {
-      bootLog.textContent += line;
-      resolve();
-      return;
-    }
-
     let idx = 0;
     const timer = window.setInterval(() => {
       if (idx >= line.length) {
@@ -146,7 +137,7 @@ function typeLine(line) {
       }
       bootLog.textContent += line[idx];
       idx += 1;
-    }, BOOT_TYPING_MS);
+    }, 18);
   });
 }
 
