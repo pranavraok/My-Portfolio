@@ -184,11 +184,18 @@ video {
   z-index: 100;
   display: grid;
   place-items: center;
-  padding: 2rem;
+  padding: 1.25rem;
 }
 
 .boot-wrap {
-  width: min(760px, 95vw);
+  width: min(760px, 100%);
+  max-height: min(620px, calc(var(--vh, 1vh) * 88));
+  border: 1px solid #12301f;
+  background: linear-gradient(180deg, rgba(2, 10, 6, 0.95), rgba(0, 0, 0, 0.96));
+  padding: clamp(0.9rem, 2.2vw, 1.25rem);
+  display: grid;
+  gap: 0.6rem;
+  box-shadow: 0 0 34px rgba(0, 255, 136, 0.1);
 }
 
 .boot-log {
@@ -196,14 +203,17 @@ video {
   color: var(--accent-green);
   font-size: 0.875rem;
   line-height: 1.45;
-  min-height: 280px;
+  min-height: 210px;
+  max-height: min(360px, calc(var(--vh, 1vh) * 45));
+  overflow-y: auto;
+  padding-right: 0.15rem;
   white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .boot-progress-track {
   border: 1px solid #0f4225;
   height: 10px;
-  margin-top: 1rem;
   background: #08110c;
 }
 
@@ -216,7 +226,6 @@ video {
 }
 
 .boot-cursor {
-  margin-top: 0.5rem;
   color: var(--accent-green);
   animation: blink 1s steps(1, end) infinite;
 }
@@ -1423,7 +1432,8 @@ video {
 
   .boot-log {
     font-size: 0.75rem;
-    min-height: 180px;
+    min-height: 140px;
+    max-height: min(260px, calc(var(--vh, 1vh) * 38));
   }
 
   .term-title {
