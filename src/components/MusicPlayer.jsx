@@ -16,7 +16,7 @@ export default function MusicPlayer() {
   const [open, setOpen] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [index, setIndex] = useState(0);
-  const [volume, setVolume] = useState(0.3);
+  const [volume, setVolume] = useState(0.22);
   const [elapsed, setElapsed] = useState(0);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState("");
@@ -27,7 +27,9 @@ export default function MusicPlayer() {
     audio = useRef(null),
     engine = useRef(null),
     playingRef = useRef(false),
-    volumeRef = useRef(0.3),
+    volumeRef = useRef(0.22),
+    stopTimer = useRef(null),
+    playRequest = useRef(0),
     frame = useRef(null);
   const track = playlist[index];
   function updateRoomSound() {
@@ -39,17 +41,17 @@ export default function MusicPlayer() {
       : 3;
     const proximity = 1 - clamp(page / 2.5);
     e.pan.pan.setTargetAtTime(
-      innerWidth > 600 ? 0.45 * proximity : 0,
+      innerWidth > 600 ? 0.28 * proximity : 0,
       e.ctx.currentTime,
       0.25,
     );
     e.filter.frequency.setTargetAtTime(
-      1250 + 1750 * proximity,
+      2250 + 2050 * proximity,
       e.ctx.currentTime,
       0.25,
     );
     e.master.gain.setTargetAtTime(
-      volumeRef.current * (0.65 + 0.35 * proximity),
+      playingRef.current ? volumeRef.current * (0.82 + 0.18 * proximity) : 0,
       e.ctx.currentTime,
       0.16,
     );
@@ -58,7 +60,6 @@ export default function MusicPlayer() {
     if (engine.current) return engine.current;
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const input = ctx.createGain(),
-      ambient = ctx.createGain(),
       filter = ctx.createBiquadFilter(),
       pan = ctx.createStereoPanner(),
       master = ctx.createGain(),
@@ -66,9 +67,7 @@ export default function MusicPlayer() {
     filter.type = "lowpass";
     filter.frequency.value = 3000;
     filter.Q.value = 0.45;
-    ambient.gain.value = 0;
-    master.gain.value = volumeRef.current;
-    ambient.connect(input);
+    master.gain.value = 0;
     input.connect(filter);
     filter.connect(pan);
     pan.connect(master);
@@ -78,27 +77,8 @@ export default function MusicPlayer() {
     analyser.smoothingTimeConstant = 0.75;
     const media = ctx.createMediaElementSource(audio.current);
     media.connect(input);
-    [130.81, 164.81, 196, 261.63].forEach((frequency, i) => {
-      const oscillator = ctx.createOscillator(),
-        gain = ctx.createGain(),
-        lfo = ctx.createOscillator(),
-        depth = ctx.createGain();
-      oscillator.type = "sine";
-      oscillator.frequency.value = frequency;
-      oscillator.detune.value = i % 2 ? 3 : -3;
-      gain.gain.value = 0.1;
-      oscillator.connect(gain);
-      gain.connect(ambient);
-      oscillator.start();
-      lfo.frequency.value = 0.07 + i * 0.025;
-      depth.gain.value = 0.025;
-      lfo.connect(depth);
-      depth.connect(gain.gain);
-      lfo.start();
-    });
     engine.current = {
       ctx,
-      ambient,
       filter,
       pan,
       master,
@@ -106,18 +86,21 @@ export default function MusicPlayer() {
       media,
       bins: new Uint8Array(analyser.frequencyBinCount),
       wave: new Uint8Array(analyser.fftSize),
-      started: 0,
-      offset: 0,
     };
     updateRoomSound();
     return engine.current;
   }
   function stop() {
+    playRequest.current += 1;
     const e = engine.current;
-    if (e && playingRef.current)
-      e.offset += (performance.now() - e.started) / 1000;
-    audio.current?.pause();
-    e?.ctx.suspend();
+    clearTimeout(stopTimer.current);
+    if(e) {
+      e.master.gain.cancelScheduledValues(e.ctx.currentTime);
+      e.master.gain.setTargetAtTime(0,e.ctx.currentTime,.03);
+      stopTimer.current=setTimeout(()=>{
+        if(!playingRef.current) { audio.current?.pause(); e.ctx.suspend(); }
+      },150);
+    } else audio.current?.pause();
     playingRef.current = false;
     setPlaying(false);
     speakerState.playing = false;
@@ -127,25 +110,20 @@ export default function MusicPlayer() {
     cancelAnimationFrame(frame.current);
   }
   async function start(selected = track) {
+    const request = ++playRequest.current;
+    clearTimeout(stopTimer.current);
     setError("");
     try {
       const e = initialize();
       await e.ctx.resume();
-      e.ambient.gain.setTargetAtTime(
-        selected.kind === "ambient" ? 1 : 0,
-        e.ctx.currentTime,
-        0.08,
-      );
-      if (selected.kind === "ambient") {
-        audio.current.pause();
-        e.started = performance.now();
-      } else {
-        if (audio.current.getAttribute("src") !== selected.src) {
-          audio.current.src = selected.src;
-          audio.current.load();
-        }
-        await audio.current.play();
+      if(request !== playRequest.current) return;
+      if (audio.current.getAttribute("src") !== selected.src) {
+        audio.current.src = selected.src;
+        audio.current.load();
       }
+      audio.current.loop = Boolean(selected.loop);
+      await audio.current.play();
+      if(request !== playRequest.current) return;
       playingRef.current = true;
       setPlaying(true);
       speakerState.playing = true;
@@ -175,16 +153,13 @@ export default function MusicPlayer() {
             bar.style.transform = `scaleY(${Math.max(0.08, speakerState.bands[i])})`;
           });
         if (now - last > 500) {
-          setElapsed(
-            selected.kind === "ambient"
-              ? e.offset + (now - e.started) / 1000
-              : audio.current.currentTime,
-          );
+          setElapsed(audio.current.currentTime);
           last = now;
         }
       };
       frame.current = requestAnimationFrame(tick);
     } catch {
+      if(request !== playRequest.current) return;
       stop();
       setError("Unable to play this track. Please try again.");
     }
@@ -195,7 +170,6 @@ export default function MusicPlayer() {
     setIndex(nextIndex);
     setElapsed(0);
     setDuration(0);
-    if (engine.current) engine.current.offset = 0;
     const next = playlist[nextIndex];
     speakerState.title = next.title;
     speakerState.artist = next.artist;
@@ -226,6 +200,8 @@ export default function MusicPlayer() {
       window.removeEventListener("scroll", updateRoomSound);
       window.removeEventListener("resize", updateRoomSound);
       cancelAnimationFrame(frame.current);
+      clearTimeout(stopTimer.current);
+      playRequest.current += 1;
       audio.current?.pause();
       engine.current?.ctx.close();
       speakerState.playing = false;
@@ -310,7 +286,7 @@ export default function MusicPlayer() {
               <h2>{track.title}</h2>
               <p>{track.artist}</p>
               <span className="player-format">
-                {track.kind === "ambient" ? "AMBIENT LOOP" : "PLAYLIST"}
+                {track.kind === "lofi" ? "LO-FI LOOP" : "PLAYLIST"}
               </span>
             </div>
           </div>
@@ -328,11 +304,6 @@ export default function MusicPlayer() {
           />
           <div className="player-timeline">
             <span>{formatTime(elapsed)}</span>
-            {track.kind === "ambient" ? (
-              <div className="ambient-progress">
-                <i />
-              </div>
-            ) : (
               <input
                 aria-label="Track position"
                 type="range"
@@ -346,8 +317,7 @@ export default function MusicPlayer() {
                   setElapsed(Number(event.target.value));
                 }}
               />
-            )}
-            <span>{track.kind === "ambient" ? "∞" : formatTime(duration)}</span>
+            <span>{track.loop ? "∞" : formatTime(duration)}</span>
           </div>
           <div className="player-controls">
             <button

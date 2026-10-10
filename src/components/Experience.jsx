@@ -139,7 +139,7 @@ export default function Experience({ scrollTo, onPhase }) {
         </div>
         <Scene mode="experience" timeline={timeline} />
         <button className="hero-greeting" aria-label="Wave hello to Pranav" onClick={() => {
-          timeline.current.greetAt = performance.now() - 850;
+          timeline.current.greetAt = performance.now();
         }} />
         <a
           className="scroll-cue"

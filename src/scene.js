@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { drawComputerRadio, speakerState } from "./music.js";
+import { drawDeskWebsite } from "./desk-display.js";
 import { clone as cloneSkeleton } from "three/addons/utils/SkeletonUtils.js";
 import { createCharacter, walkPath } from "./character.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
@@ -151,7 +152,9 @@ export function createScene(host, mode, getProgress) {
   let speakerMap = null,
     speakerLed = null,
     lastSpeakerDraw = -1;
-  let chair = null;
+  let chair = null, chairSeat = null, websiteMap = null, lastWebsiteDraw = -1, websiteFrame = 0;
+  let speakerCone = null;
+  const soundRipples = [];
   let lastSpeakerPlaying = false,
     lastSpeakerTitle = "";
   if (!hologram) {
@@ -166,30 +169,10 @@ export function createScene(host, mode, getProgress) {
         cylinder(0.105, 0.095, 1.55, "#78947b", objects, [x, 0.72, z]);
     const screenMaps = [
       texture((ctx, w, h) => drawComputerRadio(ctx, w, h)),
-      texture((ctx, w, h) => {
-        ctx.fillStyle = "#262b37";
-        ctx.fillRect(0, 0, w, h);
-        ctx.fillStyle = "#1e2330";
-        ctx.fillRect(0, 0, w, 24);
-        for (let i = 0; i < 18; i++) {
-          ctx.fillStyle = "#697185";
-          ctx.font = "10px monospace";
-          ctx.fillText(String(i + 1), 12, 45 + i * 14);
-          ctx.fillStyle = ["#bc83ce", "#79b8c2", "#cba167", "#95b975"][i % 4];
-          ctx.fillRect(
-            48 + (i % 4) * 12,
-            39 + i * 14,
-            55 + ((i * 31) % 220),
-            4,
-          );
-          if (i % 3 === 0) {
-            ctx.fillStyle = "#ced9ed";
-            ctx.fillRect(110, 46 + i * 14, 100, 3);
-          }
-        }
-      }),
+      texture((ctx, w, h) => drawDeskWebsite(ctx,w,h)),
     ];
     speakerMap = screenMaps[0];
+    websiteMap = screenMaps[1];
     for (let i = 0; i < 2; i++) {
       const monitor = new THREE.Group();
       monitor.position.set(i === 0 ? -1.05 : 1.01, 2.36, -0.87);
@@ -219,15 +202,21 @@ export function createScene(host, mode, getProgress) {
     chair.name = "swivel-chair";
     chair.position.z = 1.28;
     objects.add(chair);
-    box([1.12, 0.22, 0.93], C.white, chair, [0, 0.7, -.04], 0.1);
-    const back = box([1.16, 1.1, 0.2], C.white, chair, [0, 1.28, .37], 0.1);
+    chairSeat = new THREE.Group(); chair.add(chairSeat);
+    box([1.12, 0.22, 0.93], C.white, chairSeat, [0, 0.7, -.04], 0.1);
+    const back = box([1.16, 1.1, 0.2], C.white, chairSeat, [0, 1.28, .37], 0.1);
     back.rotation.x = -.08;
-    for (const side of [-1, 1]) {
-      rod([side*.47,.62,-.39],[side*.47,.13,.36],.045,"#9aabad",chair);
-      rod([side*.47,.13,.36],[side*.47,.10,-.46],.045,"#9aabad",chair);
-      rod([side*.47,.10,-.46],[side*.47,.62,-.39],.045,"#9aabad",chair);
+    cylinder(.055,.07,.48,"#bac7c3",chair,[0,.38,0]);
+    cylinder(.1,.1,.14,"#3c4f45",chair,[0,.15,0]);
+    for(let i=0;i<5;i++) {
+      const angle=i*Math.PI*2/5, x=Math.cos(angle)*.54,z=Math.sin(angle)*.54;
+      rod([0,.15,0],[x,.015,z],.041,"#9cafa5",chair);
+      const caster=new THREE.Group();caster.name=`chair-caster-${i}`;caster.position.set(x,-.038,z);caster.rotation.y=angle+Math.PI/2;chair.add(caster);
+      cylinder(.033,.033,.10,"#83978b",caster,[0,.065,0]);
+      for(const side of [-1,1]) {
+        const wheel=cylinder(.098,.098,.052,"#35483d",caster,[side*.047,0,0]);wheel.rotation.z=Math.PI/2;
+      }
     }
-    rod([-.47,.1,-.46],[.47,.1,-.46],.045,"#9aabad",chair);
     cylinder(0.13, 0.13, 0.35, "#466b56", objects, [-1.8, 1.85, -0.2]);
     for (let i = 0; i < 4; i++)
       rod(
@@ -360,12 +349,16 @@ export function createScene(host, mode, getProgress) {
       objects,
       [2.05, 1.95, -0.584],
     );
-    mesh(
+    speakerCone = mesh(
       new THREE.CircleGeometry(0.09, 32),
       mat("#86939d"),
       objects,
       [2.05, 1.95, -0.58],
     );
+    for(let i=0;i<3;i++) {
+      const ripple=mesh(new THREE.TorusGeometry(.15,.005,6,40),new THREE.MeshBasicMaterial({color:'#b5e6cb',transparent:true,opacity:0,depthWrite:false}),objects,[2.05,1.95,-.56]);
+      ripple.castShadow=false;ripple.receiveShadow=false;ripple.visible=false;soundRipples.push(ripple);
+    }
     speakerLed = mesh(
       new THREE.CircleGeometry(0.025, 16),
       new THREE.MeshBasicMaterial({ color: "#b36a66", toneMapped: false }),
@@ -624,7 +617,7 @@ export function createScene(host, mode, getProgress) {
   const clamp = (value) => Math.min(1, Math.max(0, value));
   const smooth = (a, b, value) => {
     const t = clamp((value - a) / (b - a));
-    return t * t * (3 - 2 * t);
+    return t*t*t*(t*(t*6-15)+10);
   };
   const mix = THREE.MathUtils.lerp;
   const originalRig = [],
@@ -693,6 +686,7 @@ export function createScene(host, mode, getProgress) {
   const tick = (time) => {
     frame = requestAnimationFrame(tick);
     if (!visible || document.hidden || time - lastTime < 14) return;
+    const delta = Math.min(.05,(time-lastTime)/1000 || 1/60);
     lastTime = time;
     if (introStart === null) introStart = time;
     const t = time * 0.001,
@@ -719,10 +713,15 @@ export function createScene(host, mode, getProgress) {
       smooth(0.32, 0.43, page) *
       (1 - smooth(0.76, 0.87, page));
     if (!reduced) {
-      smoothedPointer.x = mix(smoothedPointer.x, pointer.x, 0.045);
-      smoothedPointer.y = mix(smoothedPointer.y, pointer.y, 0.045);
-      person.head.rotation.y = Math.sin(t * 0.45) * 0.025 + smoothedPointer.x * 0.065;
-      person.head.rotation.x = (1-standing)*.045+smoothedPointer.y * 0.025;
+      const follow = 1-Math.exp(-delta*4.2);
+      smoothedPointer.x = mix(smoothedPointer.x, pointer.x, follow);
+      smoothedPointer.y = mix(smoothedPointer.y, pointer.y, follow);
+      const idle = 1-smooth(.14,.5,page);
+      person.head.rotation.y = Math.sin(t*.52)*.042 + Math.sin(t*.19)*.025 + smoothedPointer.x*.11;
+      person.head.rotation.x = (1-standing)*(.055+Math.sin(t*1.25)*.024)+smoothedPointer.y*.045;
+      person.head.rotation.z = Math.sin(t*.72)*.018*idle;
+      person.body.rotation.z = Math.sin(t*.52)*.008*(1-smooth(.08,.3,page));
+      person.body.scale.y = 1+Math.sin(t*1.25)*.0025*idle;
       person.arms[0].rotation.x +=
         stride * 0.34 + (1 - standing) * Math.sin(t * 5) * 0.015;
       person.arms[1].rotation.x -= stride * 0.34;
@@ -740,7 +739,7 @@ export function createScene(host, mode, getProgress) {
     );
     person.root.rotation.y = facing + smooth(.94,1.12,page)*scanProgress*Math.PI*2;
     if (chair) {
-      chair.rotation.y = seatTurn;
+      chairSeat.rotation.y = seatTurn;
       chair.scale.setScalar(mobile ? .9 : 1);
     }
     const cameraX = mobile ? mix(2.6, 0, cameraWalk) : mix(4.7, 0, cameraWalk);
@@ -809,12 +808,28 @@ export function createScene(host, mode, getProgress) {
     host.dataset.page = page.toFixed(3);
     host.dataset.pose = page < .16 ? "swivel" : page < .37 ? "stand" : page < .84 ? "step" : "scan";
     host.dataset.greeting = helloWave.toFixed(2);
-    host.dataset.chair = (chair?.rotation.y || 0).toFixed(2);
+    host.dataset.chair = (chairSeat?.rotation.y || 0).toFixed(2);
     host.dataset.scan = scanProgress.toFixed(3);
     host.dataset.camera = camera.position
       .toArray()
       .map((v) => v.toFixed(2))
       .join(",");
+    if(websiteMap && objects.visible && (lastWebsiteDraw < 0 || (!reduced && time-lastWebsiteDraw>100))) {
+      const canvas=websiteMap.image;
+      drawDeskWebsite(canvas.getContext('2d'),canvas.width,canvas.height,reduced ? 0 : (time-introStart)/1000);
+      websiteMap.needsUpdate=true;lastWebsiteDraw=time;host.dataset.websiteFrame=String(++websiteFrame);
+    }
+    if(speakerCone) {
+      const activity = speakerState.playing && !reduced ? speakerState.level : 0;
+      speakerCone.scale.setScalar(1+activity*.09);
+      soundRipples.forEach((ripple,i)=>{
+        const phase=(t*.75+i/3)%1;
+        ripple.visible=activity>.005;
+        ripple.scale.setScalar(1+phase*1.7);ripple.position.z=-.56+phase*.32;
+        ripple.material.opacity=(1-phase)*activity*.55;
+      });
+      host.dataset.speaker=activity>.005 ? 'playing' : 'quiet';
+    }
     if (
       speakerMap &&
       objects.visible &&

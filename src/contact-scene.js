@@ -65,8 +65,8 @@ export function createContactScene(host, getProgress) {
   parcel([1.48, .86, 1.1], [2.18, 0, -.62], -.12);
   parcel([1.04, .65, .82], [2.23, .87, -.65], .05);
   parcel([.8, .65, .8], [1.03, 0, -.25], .12);
-  parcel([.7, .55, .73], [1.67, 0, 1.08], -.06);
-  parcel([1.24, .73, .96], [2.7, 0, 1.05], -.19);
+  parcel([.7, .55, .73], [1.5, 0, .3], -.06);
+  parcel([1.24, .73, .96], [2.7, 0, .22], -.19);
   const envelopeMap = texture((ctx, w, h) => {
     ctx.fillStyle = "#f3f0e6"; ctx.fillRect(0, 0, w, h);
     ctx.strokeStyle = "#c8cbbf"; ctx.lineWidth = 2;
@@ -77,7 +77,8 @@ export function createContactScene(host, getProgress) {
     const envelope = panel([.58,.35], envelopeMap, scene,[x,.018,z]); envelope.rotation.set(-Math.PI / 2,0,a);
   }
   let width = 0, height = 0, mobile = false, visible = false, frame, last = 0;
-  const pointer = {x:0,y:0};
+  const pointer = {x:0,y:0}, followPointer = {x:0,y:0};
+  let sleep = 1, wakeAt = -100, hasWoken = false;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const resize = () => {
     const rect = host.getBoundingClientRect(); width = rect.width; height = rect.height;
@@ -90,24 +91,41 @@ export function createContactScene(host, getProgress) {
   const visibleObserver = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }); visibleObserver.observe(host);
   const move = event => { if(mobile) return; const r = host.getBoundingClientRect(); pointer.x = (event.clientX-r.left)/r.width*2-1; pointer.y = (event.clientY-r.top)/r.height*2-1; };
   window.addEventListener("pointermove",move,{passive:true});
-  const smooth = (a,b,v) => { const p = THREE.MathUtils.clamp((v-a)/(b-a),0,1); return p*p*(3-2*p); };
+  const smooth = (a,b,v) => { const p = THREE.MathUtils.clamp((v-a)/(b-a),0,1); return p*p*p*(p*(p*6-15)+10); };
   function tick(time) {
     frame = requestAnimationFrame(tick);
     if(!visible || document.hidden || time-last < 20) return;
-    last=time;
-    const t=time/1000, data=getProgress() || {}, sleep=data.sleep ?? 1;
-    const since=t-(data.waveAt || -100);
-    const greeting=(1-smooth(2.1,2.7,since))*smooth(0,.3,since);
+    const delta=Math.min(.05,(time-last)/1000 || 1/60); last=time;
+    const t=time/1000, data=getProgress() || {};
+    sleep=THREE.MathUtils.lerp(sleep,data.sleep ?? 1,reduced.matches ? 1 : 1-Math.exp(-delta*7));
+    if(sleep>.85) hasWoken=false;
+    if(!hasWoken && sleep<.35) {wakeAt=t;hasWoken=true;}
+    const since=t-Math.max(data.waveAt ?? -100,wakeAt+.28);
+    const greeting=reduced.matches ? 0 : (1-smooth(2.15,3.05,since))*smooth(0,.55,since)*(1-sleep);
+    const wakeTime=t-wakeAt;
+    const stretch=reduced.matches ? 0 : smooth(0,.3,wakeTime)*(1-smooth(.45,1.05,wakeTime))*(1-sleep);
     person.pose(1);
-    person.head.rotation.set(sleep*.32 + (reduced.matches ? 0 : Math.sin(t*1.6)*.028*sleep), sleep*.07, sleep*-.055);
     person.restPose?.(sleep,t);
-    person.portraitPose?.((1-sleep)*(1-greeting));
+    person.portraitPose?.((1-sleep)*(1-greeting)*(1-stretch));
+    person.arms.forEach((arm,i)=>{
+      arm.rotation.x-=stretch*.22;
+      arm.rotation.z+=(i===0 ? -.12 : .12)*stretch;
+    });
     if(!reduced.matches) person.greetPose?.(greeting,t);
-    person.body.position.y += reduced.matches ? 0 : Math.sin(t*1.5)*.012;
-    person.root.rotation.y = -.035 + (reduced.matches ? 0 : pointer.x*.05);
+    if(!reduced.matches) {
+      const gaze=1-Math.exp(-delta*3.5);
+      followPointer.x=THREE.MathUtils.lerp(followPointer.x,pointer.x,gaze);
+      followPointer.y=THREE.MathUtils.lerp(followPointer.y,pointer.y,gaze);
+      person.head.rotation.y=(1-sleep)*(Math.sin(t*.45)*.045+followPointer.x*.11);
+      person.head.rotation.x+=(1-sleep)*(Math.sin(t*.9)*.025+followPointer.y*.035);
+      person.head.rotation.z+=(1-sleep)*Math.sin(t*.63)*.018;
+      person.body.scale.y=1+Math.sin(t*1.45)*.0025;
+    }
+    person.root.rotation.y = -.035 + (reduced.matches ? 0 : followPointer.x*.06);
     if(mobile) { camera.position.set(.2,3.2,10.4); camera.lookAt(-.1,2.5,.35); camera.clearViewOffset(); }
     else { camera.position.set(.4,3.35,9.6); camera.lookAt(.2,2.5,.25); camera.setViewOffset(width,height,-width*.045,0,width,height); }
-    host.dataset.sleep=sleep.toFixed(2); host.dataset.greeting=greeting.toFixed(2);
+    host.dataset.sleep=sleep.toFixed(2); host.dataset.greeting=greeting.toFixed(2);host.dataset.glasses='worn';
+    host.dataset.pose=sleep>.65 ? 'dozing' : stretch>.2 ? 'waking' : greeting>.1 ? 'greeting' : 'relaxed';
     renderer.render(scene,camera);
   }
   frame=requestAnimationFrame(tick);

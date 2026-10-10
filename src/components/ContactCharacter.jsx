@@ -23,7 +23,7 @@ export default function ContactCharacter() {
     <div className="sleep-symbols" aria-hidden="true"><span>Z</span><span>Z</span><span>Z</span></div>
     <button className="character-greeting" aria-label="Say hi to Pranav" onClick={()=>{
       timeline.current.sleep=0;
-      timeline.current.waveAt=performance.now()/1000-.3;
+      timeline.current.waveAt=performance.now()/1000;
       host.current.style.setProperty("--sleep",0);
     }} />
   </div>;

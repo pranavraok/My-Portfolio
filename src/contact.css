@@ -64,11 +64,11 @@
   .contact-stage .social-links { gap: 10px; }
 }
 @media (max-width: 600px) {
-  .contact-stage { height: 1050px; min-height: 0; border-radius: 28px; }
+  .contact-stage { height: 960px; min-height: 0; border-radius: 28px; }
   .contact-stage .contact-copy { top: 55px; left: 5%; width: 90%; }
   .contact-stage .contact-copy h2 { font-size: clamp(40px, 11vw, 52px); }
   .contact-stage .social-links { margin-top: 22px; gap: 14px; }
-  .contact-character { top: 390px; }
+  .contact-character { top: 300px; }
   .character-greeting { top: 10%; left: 17%; width: 62%; height: 82%; }
   .sleep-symbols { top: 20%; left: 68%; }
   .sleep-symbols span { font-size: 23px; }

@@ -2,10 +2,12 @@
 // Each local track uses { id, title, artist, src: '/music/filename.mp3' }.
 export const favoriteTracks = [];
 export const ambientTrack = {
-  id: "studio-ambience",
-  title: "Studio ambience",
-  artist: "Pranav FM",
-  kind: "ambient",
+  id: "window-light",
+  title: "Window Light",
+  artist: "Pranav FM · Lo-fi",
+  kind: "lofi",
+  src: "/music/studio-lofi.wav",
+  loop: true,
 };
 
 // Shared with the desk monitor. Audio analysis stays out of React's render loop.
@@ -15,7 +17,7 @@ export const speakerState = {
   artist: ambientTrack.artist,
   level: 0,
   bands: Array(8).fill(0),
-  volume: 0.3,
+  volume: 0.22,
 };
 
 export function drawComputerRadio(ctx, width, height, time = 0) {

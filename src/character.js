@@ -1,8 +1,8 @@
 import * as THREE from "three";
 
 const C = {
-  skin: "#d4a17c", skinShade: "#bb8666", hair: "#292725",
-  shirt: "#e95b63", neckline: "#da535c", jeans: "#30373f",
+  skin: "#d4a17c", skinShade: "#bb8666", hair: "#232326",
+  shirt: "#f04e5c", neckline: "#de3e4b", jeans: "#30373f",
   shoe: "#2d363e", sole: "#f4eedf", frame: "#242a30",
 };
 const DOWN = new THREE.Vector3(0, -1, 0);
@@ -67,18 +67,35 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
   const shirtMap = texture((ctx, w, h) => {
     ctx.fillStyle = C.shirt;
     ctx.fillRect(0, 0, w, h);
-    // Quiet tonal marks retain the red shirt cue without camouflage noise.
-    ctx.fillStyle = "#e25760";
-    for (let row = 0; row < 5; row++) {
-      for (let col = 0; col < 6; col++) {
-        const x = (col + 0.5 + (row % 2) * 0.27) * w / 6, y = (row + 0.5) * h / 5;
-        ctx.beginPath();
-        ctx.ellipse(x, y, 22, 12, Math.sin(row * 4 + col) * 0.7, 0, Math.PI * 2);
-        ctx.ellipse(x + 17, y - 6, 13, 10, 0, 0, Math.PI * 2);
-        ctx.fill();
+    // Small irregular overlapping cloud patches, with no repeating icon marks.
+    // Each outline is different; edge copies keep the wrap seam continuous.
+    let seed=9143;
+    const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+    const colors=["#d83547","#e13e50","#f56370"];
+    for (let row = 0; row < 12; row++) {
+      for (let col = 0; col < 12; col++) {
+        const x=(col+.5+(row%2)*.25)*w/12+(random()-.5)*38;
+        const y=(row+.5)*h/12+(random()-.5)*38;
+        const radius=38+random()*25,aspect=.72+random()*.5;
+        const outline=Array.from({length:12},(_,i)=>{
+          const a=i*Math.PI/6,r=.65+random()*.5;
+          return [Math.cos(a)*r,Math.sin(a)*r*aspect];
+        });
+        const color=colors[Math.floor(random()*colors.length)];
+        for(const dx of [-w,0,w]) for(const dy of [-h,0,h]) {
+          ctx.fillStyle=color;
+          const last=outline[outline.length-1],first=outline[0];
+          ctx.beginPath();
+          ctx.moveTo(x+dx+(last[0]+first[0])*radius/2,y+dy+(last[1]+first[1])*radius/2);
+          outline.forEach((p,i)=>{
+            const next=outline[(i+1)%outline.length];
+            ctx.quadraticCurveTo(x+dx+p[0]*radius,y+dy+p[1]*radius,x+dx+(p[0]+next[0])*radius/2,y+dy+(p[1]+next[1])*radius/2);
+          });
+          ctx.closePath();ctx.fill();
+        }
       }
     }
-  }, 512, 512);
+  }, 1024, 1024);
   shirtMap.wrapS = shirtMap.wrapT = THREE.RepeatWrapping;
   const shirtMaterial = mat("#ffffff", { map: shirtMap, roughness: 1 });
 
@@ -95,19 +112,66 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
     soft([0.026, 0.052, 0.018], C.skinShade, head, [side * 0.703, -0.027, 0.032]);
   }
 
-  // One wavy cap replaces separate curl balls. The surface stays cohesive.
-  const hp = [], hi = [], hairRows = 30, hairSides = 48;
+  // A connected sculpt surface carries curved raised locks and shallow grooves.
+  // Each lock is a curl-shaped ridge on the scalp, rather than a separate ball.
+  function scalp(theta,phi) {
+    const front=Math.max(0,Math.sin(phi));
+    const x=.696*Math.sin(theta)*Math.cos(phi),z=.551*Math.sin(theta)*Math.sin(phi)-.018;
+    const sweep=Math.exp(-((x+.23)**2/.14+(z-.19)**2/.14))*.042;
+    return [x,.608*Math.cos(theta)+.02+sweep+.007*Math.sin(phi*5+theta*3)*Math.sin(theta)*front,z];
+  }
+  const curlRidges=[];
+  const curlRows=[
+    {theta:.31,count:6,thetaRadius:.115,phiRadius:.24,height:.032},
+    {theta:.67,count:9,thetaRadius:.14,phiRadius:.24,height:.038},
+    {theta:.99,count:7,thetaRadius:.12,phiRadius:.18,height:.041,front:true},
+  ];
+  for(const row of curlRows) for(let i=0;i<row.count;i++) {
+    const centerPhi=row.front?.32+(i/(row.count-1))*(Math.PI-.64):(i/row.count)*Math.PI*2+.17;
+    const centerTheta=row.theta+Math.sin(i*2.4)*.036;
+    const points=[];
+    for(let j=0;j<=18;j++) {
+      const t=j/18,a=t*Math.PI*1.72-.43*Math.PI,growth=.69+.31*t;
+      points.push(scalp(centerTheta+Math.sin(a)*row.thetaRadius*growth,centerPhi+Math.cos(a)*row.phiRadius*growth));
+    }
+    const segments=[];
+    for(let j=0;j<points.length-1;j++) {
+      const a=points[j],b=points[j+1],dx=b[0]-a[0],dy=b[1]-a[1],dz=b[2]-a[2];
+      segments.push({x:a[0],y:a[1],z:a[2],dx,dy,dz,inverse:1/(dx*dx+dy*dy+dz*dz)});
+    }
+    curlRidges.push({segments,height:row.height*(.73+.27*Math.max(0,Math.sin(centerPhi))),widthSquared:(row.front?.041:.038)**2});
+  }
+  function curlRelief(x,y,z) {
+    let relief=0;
+    for(const ridge of curlRidges) {
+      let distance=Infinity;
+      for(const s of ridge.segments) {
+        const t=THREE.MathUtils.clamp(((x-s.x)*s.dx+(y-s.y)*s.dy+(z-s.z)*s.dz)*s.inverse,0,1);
+        const px=x-s.x-s.dx*t,py=y-s.y-s.dy*t,pz=z-s.z-s.dz*t;
+        distance=Math.min(distance,px*px+py*py+pz*pz);
+      }
+      const raised=ridge.height*Math.exp(-distance/ridge.widthSquared);
+      const bed=.009*Math.exp(-distance/(ridge.widthSquared*7));
+      const groove=.005*Math.exp(-((Math.sqrt(distance)-Math.sqrt(ridge.widthSquared)*1.8)**2)/(ridge.widthSquared*.4));
+      relief=Math.max(relief,raised+bed-groove);
+    }
+    return relief;
+  }
+  const hp = [], hi = [], hairRows = 64, hairSides = 144;
   for (let row = 0; row <= hairRows; row++) {
     for (let col = 0; col <= hairSides; col++) {
       const phi = col / hairSides * Math.PI * 2;
       const front = Math.max(0, Math.sin(phi)), back = Math.max(0, -Math.sin(phi));
-      const limit = 1.4 - 0.27 * front * front + 0.29 * back;
+      const limit = 1.4 - 0.27 * front * front + 0.29 * back+.022*Math.sin(phi*11)*front;
       const theta = row / hairRows * limit;
-      const wave = Math.sin(phi * 6 + theta * 5) * 0.014 * Math.sin(theta);
-      const x = (0.702 + wave) * Math.sin(theta) * Math.cos(phi);
-      const z = (0.562 + wave) * Math.sin(theta) * Math.sin(phi) - 0.018;
-      const sweep = Math.exp(-((x + 0.23) ** 2 / 0.14 + (z - 0.19) ** 2 / 0.14)) * 0.055;
-      hp.push(x, 0.64 * Math.cos(theta) + sweep + 0.022 + wave, z);
+      let [x,y,z]=scalp(theta,phi);
+      const edge=THREE.MathUtils.smoothstep(row/hairRows,.88,1);
+      const relief=curlRelief(x,y,z)*(1-edge*.66);
+      const nx=x/(.696*.696),ny=(y-.02)/(.608*.608),nz=(z+.018)/(.551*.551);
+      const length=Math.hypot(nx,ny,nz);
+      x+=nx/length*relief;y+=ny/length*relief;z+=nz/length*relief;
+      const templeTaper=edge*.007*(1-front*.6);
+      hp.push(x*(1-templeTaper),y,z*(1-templeTaper));
       if (row < hairRows && col < hairSides) {
         const a = row * (hairSides + 1) + col, b = a + hairSides + 1;
         hi.push(a, a + 1, b, a + 1, b + 1, b);
@@ -117,11 +181,15 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
   const hair = new THREE.BufferGeometry();
   hair.setAttribute("position", new THREE.Float32BufferAttribute(hp, 3));
   hair.setIndex(hi); hair.computeVertexNormals();
-  mesh(hair, mat(C.hair, { roughness: 0.96 }), head);
+  mesh(hair, mat(C.hair, { roughness: 0.83 }), head).name="sculpted-curly-hair";
 
   const glasses = new THREE.Group();
   glasses.name = "character-sunglasses";
   head.add(glasses);
+  const faceSurface=(x,y)=>{
+    const radius=.69*(1-Math.max(0,-y/.615)*.035);
+    return .545*Math.sqrt(Math.max(0,1-(x/radius)**2-(y/.615)**2));
+  };
   function rectangle(w, h, r) {
     const s = new THREE.Shape();
     s.moveTo(-w/2+r,-h/2); s.lineTo(w/2-r,-h/2);
@@ -131,10 +199,36 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
     s.quadraticCurveTo(-w/2,-h/2,-w/2+r,-h/2);
     return s;
   }
+  function curvedLens(shape,centerX) {
+    // Perimeter-only triangulation cuts through a convex face. Radial rings and
+    // evenly spaced perimeter samples keep every interior triangle on the lens.
+    const outline=shape.getSpacedPoints(96);
+    outline.pop();
+    const sides=outline.length,rings=16,positions=[],indices=[];
+    positions.push(centerX,.064,faceSurface(centerX,.064)+.033);
+    for(let ring=1;ring<=rings;ring++){
+      const radius=ring/rings;
+      for(const point of outline){
+        const x=centerX+point.x*radius,y=.064+point.y*radius;
+        positions.push(x,y,faceSurface(x,y)+.033);
+      }
+    }
+    for(let side=0;side<sides;side++)indices.push(0,1+side,1+(side+1)%sides);
+    for(let ring=1;ring<rings;ring++)for(let side=0;side<sides;side++){
+      const next=(side+1)%sides;
+      const a=1+(ring-1)*sides+side,b=1+ring*sides+side;
+      const c=1+(ring-1)*sides+next,d=1+ring*sides+next;
+      indices.push(a,b,c,b,d,c);
+    }
+    const geometry=new THREE.BufferGeometry();
+    geometry.setAttribute("position",new THREE.Float32BufferAttribute(positions,3));
+    geometry.setIndex(indices);geometry.computeVertexNormals();
+    return geometry;
+  }
   for (const side of [-1, 1]) {
-    const x = side * 0.268, eye = new THREE.Group();
+    const x = side * 0.262, eye = new THREE.Group();
     eye.name = side < 0 ? "left-eye" : "right-eye";
-    eye.position.set(x,0.064,0.505); head.add(eye);
+    eye.position.set(x,0.064,0.505); eye.visible=false; head.add(eye);
     const open = new THREE.Group(); eye.add(open);
     soft([0.12,0.1,0.034],"#fff8e9",open,[0,0,0],{roughness:0.73});
     soft([0.054,0.068,0.016],"#494138",open,[0.006,-0.005,0.036]);
@@ -143,19 +237,47 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
     const closed = curve([[-0.106,0,0.026],[0,-0.027,0.041],[0.106,0,0.026]],0.013,C.hair,eye,{transparent:true,opacity:0,depthWrite:false});
     closed.visible=false; eyes.push({root:eye,open,closed});
 
-    const shape=rectangle(0.464,0.286,0.066);
-    const lens=mesh(new THREE.ShapeGeometry(shape,16),mat("#202932",{roughness:0.22,metalness:0.2,side:THREE.DoubleSide}),glasses,[x,0.068,0.579]);
+    const shape=rectangle(0.486,0.306,0.06);
+    const lensGeometry=curvedLens(shape,x);
+    const lens=mesh(lensGeometry,mat("#10151c",{roughness:0.18,metalness:0.22,side:THREE.DoubleSide}),glasses);
     lens.name="sunglass-lens";
-    const path=new THREE.CatmullRomCurve3(shape.getPoints(8).map(p=>new THREE.Vector3(p.x+x,p.y+0.068,0.584)),true);
-    mesh(new THREE.TubeGeometry(path,64,0.014,8,true),mat(C.frame,{roughness:0.4}),glasses);
-    const glare=mesh(new THREE.PlaneGeometry(0.108,0.011),new THREE.MeshBasicMaterial({color:"#bcc9d0",transparent:true,opacity:0.16,depthWrite:false}),glasses,[x-0.064,0.139,0.589]);
-    glare.rotation.z=-0.23;
-    rod([side*0.491,0.112,0.579],[side*0.682,0.093,-0.02],0.012,C.frame,glasses);
+    const path=new THREE.CatmullRomCurve3(shape.getPoints(10).map(p=>new THREE.Vector3(p.x+x,p.y+.064,faceSurface(p.x+x,p.y+.064)+.034)),true);
+    mesh(new THREE.TubeGeometry(path,80,0.018,8,true),mat("#181c21",{roughness:0.32}),glasses);
+    const glareGeometry=new THREE.PlaneGeometry(.096,.009);glareGeometry.rotateZ(-.23);
+    const gp=glareGeometry.attributes.position;
+    for(let i=0;i<gp.count;i++){const px=gp.getX(i)+x-.052,py=gp.getY(i)+.132;gp.setXYZ(i,px,py,faceSurface(px,py)+.038);}
+    mesh(glareGeometry,new THREE.MeshBasicMaterial({color:"#b8c4cc",transparent:true,opacity:0.17,depthWrite:false}),glasses);
+    curve([[side*.505,.112,faceSurface(.505,.112)+.027],[side*.649,.102,.205],[side*.701,.084,-.016]],.017,"#181c21",glasses,{roughness:.32});
   }
-  curve([[-0.043,0.1,0.589],[0,0.116,0.6],[0.043,0.1,0.589]],0.014,C.frame,glasses);
+  curve([[-0.033,.104,.57],[0,.115,.576],[.033,.104,.57]],.017,"#181c21",glasses,{roughness:.32});
   soft([0.068,0.061,0.077],C.skin,head,[0,-0.079,0.539]);
-  curve([[-0.082,-0.188,0.525],[0,-0.18,0.533],[0.082,-0.188,0.525]],0.008,"#8c6b51",head);
-  curve([[-0.094,-0.248,0.495],[0,-0.268,0.503],[0.094,-0.248,0.495]],0.009,"#9c6c53",head);
+  for(const side of [-1,1]){
+    const points=[[side*.007,-.18],[side*.067,-.179],[side*.116,-.195]].map(([x,y])=>[x,y,faceSurface(x,y)+.013]);
+    curve(points,.009,"#795841",head);
+  }
+  function facePatch(shape,color,centerY,offset,options={}){
+    const geometry=new THREE.ShapeGeometry(shape,24),positions=geometry.attributes.position;
+    for(let i=0;i<positions.count;i++){
+      const x=positions.getX(i),y=positions.getY(i)+centerY;
+      positions.setXYZ(i,x,y,faceSurface(x,y)+offset);
+    }
+    geometry.computeVertexNormals();
+    const patch=mesh(geometry,mat(color,{roughness:.94,side:THREE.DoubleSide,...options}),head);
+    patch.castShadow=false;return patch;
+  }
+  const smile=new THREE.Shape();
+  smile.moveTo(-.147,.028);smile.quadraticCurveTo(0,-.005,.147,.029);
+  smile.quadraticCurveTo(.075,-.064,0,-.064);smile.quadraticCurveTo(-.075,-.065,-.147,.028);
+  facePatch(smile,"#785341",-.251,.007).name="character-smile";
+  const teeth=new THREE.Shape();
+  teeth.moveTo(-.129,.017);teeth.quadraticCurveTo(0,-.008,.128,.019);
+  teeth.quadraticCurveTo(.079,-.022,0,-.028);teeth.quadraticCurveTo(-.079,-.021,-.129,.017);
+  facePatch(teeth,"#f4e8d7",-.251,.011,{roughness:.82}).name="smile-teeth";
+  curve([[-.129,-.254],[0,-.318],[.129,-.253]].map(([x,y])=>[x,y,faceSurface(x,y)+.009]),.008,"#ac775d",head);
+  const beard=new THREE.Shape();
+  beard.moveTo(-.162,.037);beard.quadraticCurveTo(0,-.023,.162,.037);
+  beard.quadraticCurveTo(.09,-.024,0,-.046);beard.quadraticCurveTo(-.09,-.024,-.162,.037);
+  facePatch(beard,"#76543e",-.417,.003,{transparent:true,opacity:.22,depthWrite:false}).name="subtle-chin-stubble";
 
   soft([0.158,0.16,0.15],C.skin,body,[0,2.13,-0.028]).name="character-neck";
   mesh(loft([[0,1.07,0],[0.338,1.075,0.205],[0.4,1.15,0.249],[0.405,1.48,0.261],[0.465,1.85,0.285],[0.474,1.97,0.263],[0.377,2.063,0.205],[0.204,2.105,0.144],[0,2.119,0]]),shirtMaterial,body);
@@ -236,7 +358,7 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
       arm.userData.hand.userData.fingers.forEach(finger=>finger.rotation.set(0,0,0));
       arm.userData.hand.userData.thumb.rotation.set(0,0,arm.userData.side*0.45);
     }
-    glasses.position.set(0,0,0); glasses.rotation.set(0,0,0); head.rotation.x=0; head.rotation.z=0;
+    glasses.position.set(0,0,0); glasses.rotation.set(0,0,0); glasses.visible=true; head.rotation.x=0; head.rotation.z=0;
     eyes.forEach(eye=>{eye.open.scale.y=1;eye.open.visible=true;eye.closed.visible=false;eye.closed.material.opacity=0;});
     update(); return standing;
   }
@@ -248,27 +370,23 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
   }
 
   function greetPose(amount,time=0){
-    const blend=clamp(amount); if(!blend)return blend;
+    const raw=clamp(amount),blend=raw*raw*(3-2*raw); if(!blend)return blend;
     const arm=arms[0],hand=arm.userData.hand;
     arm.quaternion.slerp(greetingUpper,blend); arm.userData.elbow.quaternion.slerp(greetingElbow,blend);
     // The palm faces +Z while the wrist waves gently from side to side.
-    waveEuler.set(0,0,Math.PI+Math.sin((Number.isFinite(time)?time:0)*5.4)*0.16);
+    waveEuler.set(0,0,Math.PI+Math.sin((Number.isFinite(time)?time:0)*2.3)*0.085);
     waveHand.setFromEuler(waveEuler).premultiply(inverseGreetingLower);
     hand.quaternion.slerp(waveHand,blend);
     hand.userData.fingers.forEach((finger,i)=>{finger.rotation.z=THREE.MathUtils.lerp(finger.rotation.z,[-0.23,-0.07,0.075,0.24][i],blend);});
     hand.userData.thumb.rotation.z=THREE.MathUtils.lerp(hand.userData.thumb.rotation.z,0.95,blend);
-    glasses.position.y=Math.max(glasses.position.y,.345*blend);
-    glasses.rotation.x=Math.min(glasses.rotation.x,-.065*blend);
     update(); return blend;
   }
 
   function restPose(sleepAmount,time=0){
     const sleep=clamp(sleepAmount),seconds=Number.isFinite(time)?time:0;
-    head.rotation.x=THREE.MathUtils.lerp(-0.045,0.3,sleep)+Math.sin(seconds*0.68)*0.012*sleep;
+    head.rotation.x=THREE.MathUtils.lerp(-0.035,0.245,sleep)+Math.sin(seconds*0.58)*0.009*sleep;
     head.rotation.z=Math.sin(seconds*0.5)*0.035*sleep;
-    // Footer helper moves shades to the forehead, revealing eyes below them.
-    glasses.position.y=0.345; glasses.rotation.x=-0.065;
-    eyes.forEach(eye=>{eye.open.scale.y=Math.max(0.035,1-sleep*0.97);eye.open.visible=sleep<0.97;eye.closed.visible=sleep>0.18;eye.closed.material.opacity=sleep;});
+    // The shades remain worn. Sleep/wake is expressed by the gentle head nod.
     update(); return sleep;
   }
 
