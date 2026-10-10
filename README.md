@@ -1,0 +1,41 @@
+# Pranav Rao K — React portfolio
+
+A responsive React / Vite portfolio with an original Three.js character and workspace, smooth scrolling, a scroll-driven holographic scan, project pages, video walkthroughs, and updated professional content.
+
+## Run locally
+
+Requires Node.js 22.12+ (production uses Node.js 24).
+
+```sh
+npm ci
+npm run dev
+```
+
+## Build
+
+```sh
+npm run build
+npm run preview
+```
+
+The production build is written to `dist`. Vercel uses the configuration in `vercel.json`, including project-page rewrites.
+
+## Update the content
+
+- `src/data.js`: profile, project descriptions, verified links, and achievement dates.
+- `src/scene.js`: original character geometry, workspace, materials, lighting, and holographic scan.
+- `src/App.jsx`: page layouts, navigation, route transitions, and opt-in ambient sound.
+- `src/styles.css`: responsive styling and reduced-motion support.
+- `public/media`: optimized photos, thumbnails, full-length project videos, and resume.
+
+The original assets remain in `src/img`, `src/vids`, and `src/pdf` for reference and are excluded from deployment uploads. Public videos retain the original durations; they are encoded as H264 with streaming metadata.
+
+## Content sources
+
+Updated resume in `src/pdf/PRANAV RAO K RESUME.pdf`, public LinkedIn profile/search extracts at https://www.linkedin.com/in/pranav-rao-k/, and GitHub at https://github.com/pranavraok. Recent projects include Mentora, NutriGo, HostelVoice, and TradeLedger. The exact TradeLedger role was not available publicly and is not asserted.
+
+The visual reference was https://david-hckh.com/. The React implementation, 3D models, and generated ambient tones are original; no models, code, or music from the reference are used.
+
+## Accessibility and performance
+
+Keyboard navigation, visible focus states, meaningful link labels, native video controls, motion-preference support, portrait fallback if WebGL initialization fails, and visibility-aware animation. Heavy 3D code loads only when a scene approaches the viewport. Sound starts only after the visitor enables it.

@@ -1,0 +1,10 @@
+.git
+.vscode
+.qa
+node_modules
+src/vids
+src/img
+src/pdf
+script.js
+style.css
+README.md

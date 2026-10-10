@@ -1,0 +1,101 @@
+[
+  {
+    "source": "src\\vids\\AW.mp4",
+    "output": "public\\media\\project-AW.mp4",
+    "sourceBytes": 14981794,
+    "outputBytes": 767763,
+    "fullDurationPreserved": true,
+    "width": 1280,
+    "fps": 24,
+    "durationSeconds": 55.21,
+    "sourceDurationSeconds": 55.2
+  },
+  {
+    "source": "src\\vids\\DS.mp4",
+    "output": "public\\media\\project-DS.mp4",
+    "sourceBytes": 16575204,
+    "outputBytes": 985586,
+    "fullDurationPreserved": true,
+    "width": 1280,
+    "fps": 24,
+    "durationSeconds": 75.73,
+    "sourceDurationSeconds": 75.73
+  },
+  {
+    "source": "src\\vids\\ET.mp4",
+    "output": "public\\media\\project-ET.mp4",
+    "sourceBytes": 3990012,
+    "outputBytes": 2674886,
+    "fullDurationPreserved": true,
+    "width": 1280,
+    "fps": 24,
+    "durationSeconds": 135.25,
+    "sourceDurationSeconds": 135.25
+  },
+  {
+    "source": "src\\vids\\GSD.mp4",
+    "output": "public\\media\\project-GSD.mp4",
+    "sourceBytes": 77841789,
+    "outputBytes": 992804,
+    "fullDurationPreserved": true,
+    "width": 1280,
+    "fps": 24,
+    "durationSeconds": 74.01,
+    "sourceDurationSeconds": 74.01
+  },
+  {
+    "source": "src\\vids\\MR.mp4",
+    "output": "public\\media\\project-MR.mp4",
+    "sourceBytes": 9806857,
+    "outputBytes": 6639075,
+    "fullDurationPreserved": true,
+    "width": 1280,
+    "fps": 24,
+    "durationSeconds": 265.6,
+    "sourceDurationSeconds": 265.6
+  },
+  {
+    "source": "src\\vids\\NG.mp4",
+    "output": "public\\media\\project-NG.mp4",
+    "sourceBytes": 13035862,
+    "outputBytes": 8755532,
+    "fullDurationPreserved": true,
+    "width": 1280,
+    "fps": 24,
+    "durationSeconds": 301.48,
+    "sourceDurationSeconds": 301.48
+  },
+  {
+    "source": "src\\vids\\SA.mp4",
+    "output": "public\\media\\project-SA.mp4",
+    "sourceBytes": 100287797,
+    "outputBytes": 8141776,
+    "fullDurationPreserved": true,
+    "width": 1280,
+    "fps": 24,
+    "durationSeconds": 159.89,
+    "sourceDurationSeconds": 159.9
+  },
+  {
+    "source": "src\\vids\\SS.mp4",
+    "output": "public\\media\\project-SS.mp4",
+    "sourceBytes": 52739105,
+    "outputBytes": 1794777,
+    "fullDurationPreserved": true,
+    "width": 1280,
+    "fps": 24,
+    "durationSeconds": 62.27,
+    "sourceDurationSeconds": 62.27
+  },
+  {
+    "source": "src\\vids\\VA.mp4",
+    "output": "public\\media\\project-VA.mp4",
+    "sourceBytes": 12799474,
+    "outputBytes": 1128452,
+    "fullDurationPreserved": true,
+    "width": 1280,
+    "fps": 24,
+    "durationSeconds": 73.53999999999999,
+    "sourceDurationSeconds": 73.53
+  }
+]
