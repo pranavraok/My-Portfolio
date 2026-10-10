@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import Scene from "./components/Scene.jsx";
+import Experience from "./components/Experience.jsx";
 import { Icon, Logo } from "./components/Icons.jsx";
 import { profile, projects, awards } from "./data.js";
 
 gsap.registerPlugin(ScrollTrigger);
+ScrollTrigger.config({ ignoreMobileResize: true });
 const external = { target: "_blank", rel: "noopener noreferrer" };
 
 function SoundButton() {
@@ -192,129 +193,10 @@ function ProjectCard({ project, navigate }) {
   );
 }
 
-function Home({ progress, navigate, scrollTo }) {
+function Home({ navigate, scrollTo, onPhase }) {
   return (
     <main id="main-content">
-      <section className="hero" id="home" aria-labelledby="hero-title">
-        <div className="hero-copy">
-          <p className="eyebrow hero-eyebrow">
-            <span /> A LITTLE CURIOSITY. A LOT OF CODE.
-          </p>
-          <h1 id="hero-title">
-            <span>Pranav</span>
-            <span>
-              Rao K<span className="name-dot">.</span>
-            </span>
-          </h1>
-          <div className="role-sticker">DEVELOPER & ML ENGINEER</div>
-          <p className="hero-description">
-            Turning ideas into things
-            <br />
-            you can actually use.
-          </p>
-          <a
-            className="hero-explore"
-            href="#projects"
-            onClick={(event) => {
-              event.preventDefault();
-              scrollTo("projects");
-            }}
-          >
-            Explore my work <Icon name="arrow" size={18} />
-          </a>
-        </div>
-        <Scene mode="workspace" progress={progress} />
-        <div className="hero-bottom">
-          <span className="location">
-            <Icon name="pin" size={15} /> BENGALURU, INDIA
-          </span>
-          <a
-            className="scroll-cue"
-            href="#about"
-            aria-label="Scroll to about"
-            onClick={(event) => {
-              event.preventDefault();
-              scrollTo("about");
-            }}
-          >
-            <span className="mouse">
-              <i />
-            </span>
-            <Icon name="down" />
-          </a>
-          <span className="hero-note">
-            DESIGNED TO BE EXPLORED<span>SCROLL A LITTLE ↓</span>
-          </span>
-        </div>
-      </section>
-      <section
-        className="about-scroll"
-        id="about"
-        aria-labelledby="about-title"
-      >
-        <div className="about-stage">
-          <div className="blue-dust" aria-hidden="true" />
-          <div className="about-title">
-            <span className="eyebrow">THE HUMAN BEHIND THE CODE</span>
-            <h2 id="about-title">Hello, I’m Pranav.</h2>
-          </div>
-          <Scene mode="hologram" progress={progress} />
-          <div className="holo-label holo-identity">
-            <strong>Pranav Rao K</strong>
-            <span>
-              <Icon name="pin" size={15} /> Bengaluru, India
-            </span>
-            <i className="connector" />
-          </div>
-          <div className="holo-label holo-bio">
-            <span className="label-index">01 / WHAT I DO</span>
-            <p>
-              I build full-stack products,
-              <br />
-              intelligent automation,
-              <br />
-              and AI that solves real problems.
-            </p>
-            <i className="connector" />
-          </div>
-          <div className="holo-label holo-study">
-            <span className="label-index">02 / ALWAYS LEARNING</span>
-            <strong>Computer Science</strong>
-            <p>
-              M. S. Ramaiah University
-              <br />
-              of Applied Sciences
-            </p>
-            <span>2024–2028 · CGPA 9.02</span>
-            <i className="connector" />
-          </div>
-          <div className="holo-label holo-stack">
-            <span className="label-index">03 / MY TOOLKIT</span>
-            <p>
-              React · Flutter · Python
-              <br />
-              TensorFlow · Supabase · n8n
-            </p>
-            <a href={profile.resume} download>
-              Get my resume <Icon name="arrow" size={16} />
-            </a>
-            <i className="connector" />
-          </div>
-          <div className="scan-status">
-            <span>IDENTITY SCAN</span>
-            <strong>
-              {String(Math.round(progress * 100)).padStart(3, "0")}
-              <small>%</small>
-            </strong>
-            <div>
-              <i style={{ width: `${progress * 100}%` }} />
-            </div>
-          </div>
-          <span className="about-bottom">
-            CURIOUS BY NATURE. BUILDER BY CHOICE.
-          </span>
-        </div>
-      </section>
+      <Experience scrollTo={scrollTo} onPhase={onPhase} />
       <section
         className="projects-section content-width"
         id="projects"
@@ -384,6 +266,16 @@ function Home({ progress, navigate, scrollTo }) {
             From data preparation to model training and evaluation — applying
             machine learning to practical problems.
           </p>
+        </div>
+        <div className="journey-education reveal">
+          <span className="education-period">2024–2028</span>
+          <div>
+            <h3>Computer Science</h3>
+            <p>M. S. Ramaiah University of Applied Sciences · CGPA 9.02</p>
+          </div>
+          <a className="back-link" href={profile.resume} download>
+            Resume <Icon name="down" size={16} />
+          </a>
         </div>
       </section>
       <Contact />
@@ -594,7 +486,6 @@ function ProjectPage({ project, navigate }) {
 export default function App() {
   const [path, setPath] = useState(window.location.pathname);
   const [active, setActive] = useState("");
-  const [progress, setProgress] = useState(0);
   const [transition, setTransition] = useState(false);
   const lenis = useRef(null);
   const transitionTimer = useRef(null);
@@ -629,7 +520,6 @@ export default function App() {
       history.pushState({}, "", target + (section ? `#${section}` : ""));
       routeScroll.current = section;
       setPath(target);
-      setProgress(0);
       window.scrollTo(0, 0);
       lenis.current?.scrollTo(0, { immediate: true });
       setTimeout(() => setTransition(false), 180);
@@ -664,57 +554,15 @@ export default function App() {
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const context = gsap.context(() => {
       if (!reduced) {
-        gsap.from(".hero-copy > *", {
-          y: 26,
-          opacity: 0,
-          stagger: 0.085,
-          duration: 0.85,
-          ease: "power3.out",
-          delay: 0.15,
-        });
-        gsap.utils
-          .toArray(".reveal, .project-card")
-          .forEach((el) =>
-            gsap.from(el, {
-              y: 35,
-              opacity: 0,
-              duration: 0.65,
-              ease: "power2.out",
-              scrollTrigger: { trigger: el, start: "top 94%", once: true },
-            }),
-          );
-      }
-      if (home) {
-        ScrollTrigger.create({
-          trigger: ".about-scroll",
-          start: "top top",
-          end: "bottom bottom",
-          onUpdate: (self) =>
-            setProgress(Math.round(self.progress * 100) / 100),
-        });
-        if (!reduced) {
-          gsap.fromTo(
-            ".holo-label",
-            { opacity: 0, y: 18 },
-            {
-              opacity: 1,
-              y: 0,
-              stagger: 0.12,
-              duration: 0.6,
-              scrollTrigger: { trigger: ".about-scroll", start: "top 40%" },
-            },
-          );
-          gsap.to(".hero-copy", {
-            y: 85,
-            opacity: 0.15,
-            scrollTrigger: {
-              trigger: ".hero",
-              start: "top top",
-              end: "bottom top",
-              scrub: 1,
-            },
-          });
-        }
+        gsap.utils.toArray(".reveal, .project-card").forEach((el) =>
+          gsap.from(el, {
+            y: 35,
+            opacity: 0,
+            duration: 0.65,
+            ease: "power2.out",
+            scrollTrigger: { trigger: el, start: "top 94%", once: true },
+          }),
+        );
       }
     }, root);
     const observer = new IntersectionObserver(
@@ -726,7 +574,7 @@ export default function App() {
       },
       { rootMargin: "-30% 0px -40% 0px" },
     );
-    ["home", "about", "projects", "contact"].forEach((id) => {
+    ["projects", "contact"].forEach((id) => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
@@ -748,7 +596,10 @@ export default function App() {
   }, [path]);
   const blue = home && active === "about";
   return (
-    <div ref={root} className={`site ${blue ? "is-blue" : ""}`}>
+    <div
+      ref={root}
+      className={`site ${home ? "is-home" : ""} ${blue ? "is-blue" : ""}`}
+    >
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
@@ -793,7 +644,7 @@ export default function App() {
         </div>
       </header>
       {home ? (
-        <Home progress={progress} navigate={navigate} scrollTo={scrollTo} />
+        <Home navigate={navigate} scrollTo={scrollTo} onPhase={setActive} />
       ) : project ? (
         <ProjectPage project={project} navigate={navigate} />
       ) : (

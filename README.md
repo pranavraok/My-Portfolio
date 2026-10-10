@@ -23,7 +23,10 @@ The production build is written to `dist`. Vercel uses the configuration in `ver
 ## Update the content
 
 - `src/data.js`: profile, project descriptions, verified links, and achievement dates.
-- `src/scene.js`: original character geometry, workspace, materials, lighting, and holographic scan.
+- `src/scene.js`: one continuous 3D world, scroll-driven camera movement, workspace, lighting, and holographic scan.
+- `src/character.js`: original clay character with a sitting, standing, and walking rig.
+- `src/components/Experience.jsx`: the synchronized desk-to-scanner narrative, progressive labels, and mobile cards.
+- `src/experience.css`: desktop, phone, and landscape framing for the 3D narrative.
 - `src/App.jsx`: page layouts, navigation, route transitions, and opt-in ambient sound.
 - `src/styles.css`: responsive styling and reduced-motion support.
 - `public/media`: optimized photos, thumbnails, full-length project videos, and resume.

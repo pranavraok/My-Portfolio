@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-export default function Scene({ mode, progress }) {
+export default function Scene({ mode, progress, timeline }) {
   const host = useRef(null);
   const api = useRef(null);
   const currentProgress = useRef(progress);
@@ -18,10 +18,8 @@ export default function Scene({ mode, progress }) {
         try {
           const { createScene } = await import("../scene.js");
           if (disposed) return;
-          api.current = createScene(
-            target,
-            mode,
-            () => currentProgress.current || 0,
+          api.current = createScene(target, mode, () =>
+            timeline ? timeline.current : currentProgress.current || 0,
           );
           target.dataset.ready = "true";
         } catch (error) {
@@ -48,7 +46,7 @@ export default function Scene({ mode, progress }) {
       className={`scene scene-${mode}`}
       role="img"
       aria-label={
-        mode === "workspace"
+        mode === "workspace" || mode === "experience"
           ? "An original 3D model of Pranav at his desk, with glasses, swept black hair, and a light blue shirt"
           : "Pranav’s 3D character on a glowing holographic platform"
       }

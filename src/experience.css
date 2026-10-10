@@ -1,0 +1,524 @@
+/* One pinned stage keeps the character, room, and camera in the same world. */
+.experience-scroll {
+  position: relative;
+  height: 377svh;
+  background: var(--cream);
+}
+.experience-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  border-radius: 0 0 48px 48px;
+  background: radial-gradient(
+    ellipse at 50% 82%,
+    #0870a2 0%,
+    #053c7f 28%,
+    #05266b 72%
+  );
+  color: #fff;
+  isolation: isolate;
+}
+.experience-stage .blue-dust {
+  background-size: 83px 91px;
+  opacity: 0.23;
+}
+.about-anchor {
+  position: absolute;
+  top: 89svh;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+.room-card {
+  position: absolute;
+  inset: 0;
+  background: var(--cream);
+  color: var(--ink);
+  z-index: 1;
+  will-change: transform;
+  transform-origin: 50% 50%;
+  overflow: hidden;
+}
+.experience-stage .hero-copy {
+  left: 8.5%;
+  top: 33%;
+  z-index: 1;
+  width: max-content;
+}
+.experience-stage .hero-copy h1 {
+  font-size: clamp(78px, 7.3vw, 116px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.04;
+}
+.experience-stage .hero-copy h1 > span {
+  display: block;
+}
+.experience-stage .role-sticker {
+  font-size: clamp(17px, 1.6vw, 25px);
+  margin: 9px -18px 0 auto;
+  padding: 7px 13px;
+  transform: rotate(-5deg);
+}
+.scene-experience {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.experience-stage .scroll-cue {
+  color: var(--ink);
+  left: 50%;
+  right: auto;
+  bottom: 17px;
+  transform: translateX(-50%);
+  z-index: 4;
+}
+.experience-stage .scene-fallback {
+  height: 58%;
+  bottom: 16%;
+  left: 65%;
+}
+.desktop-holo-labels {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.desktop-holo-labels .holo-label {
+  opacity: 0;
+  backdrop-filter: none;
+  background: linear-gradient(135deg, #075bb078, #0a568052);
+  border-color: #4cb4e890;
+  border-radius: 11px;
+  box-shadow: inset 0 0 12px #41c2e715;
+  pointer-events: auto;
+  color: #d6f4ff;
+  padding: 14px 17px;
+}
+.desktop-holo-labels .holo-identity {
+  left: auto;
+  right: 61%;
+  top: 24%;
+  min-width: 180px;
+}
+.desktop-holo-labels .holo-identity strong {
+  font-size: 23px;
+  letter-spacing: -0.025em;
+}
+.desktop-holo-labels .holo-identity > span {
+  font-size: 12px;
+}
+.desktop-holo-labels .holo-bio {
+  left: auto;
+  right: 62%;
+  top: 50%;
+  width: 340px;
+  max-width: 29%;
+}
+.desktop-holo-labels .holo-bio p {
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+.desktop-holo-labels .holo-stack {
+  right: auto;
+  left: 60.5%;
+  top: 31%;
+  width: 285px;
+  max-width: 30%;
+}
+.desktop-holo-labels .holo-stack strong {
+  font-size: 20px;
+}
+.holo-stack ul {
+  padding: 0 0 0 17px;
+  margin: 9px 0 0;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.desktop-holo-labels .holo-stack a {
+  font-size: 10px;
+  color: #70deff;
+  margin-top: 12px;
+}
+.desktop-holo-labels .connector {
+  width: 44px;
+}
+.experience-stage .scan-status {
+  bottom: 7.3%;
+  z-index: 3;
+  opacity: 0;
+}
+.experience-stage .scan-status > div {
+  display: none;
+}
+.experience-stage .scan-status strong {
+  font-size: 26px;
+  background: #062860ba;
+  padding: 0 6px;
+  font-weight: 700;
+  color: #9befff;
+  text-shadow: 0 0 7px #28c9ff;
+}
+.experience-stage .scan-status small {
+  display: none;
+}
+.mobile-holo-card {
+  display: none;
+}
+.journey-education {
+  margin-top: 30px;
+  padding-top: 25px;
+  border-top: 1px solid #dcd0bd;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+.journey-education h3 {
+  font-size: 23px;
+  letter-spacing: -0.025em;
+}
+.journey-education p {
+  font-size: 12px;
+  color: #8b8172;
+  line-height: 1.6;
+}
+.journey-education .education-period {
+  font-family: "Outfit", sans-serif;
+  font-size: 24px;
+  color: #b6a486;
+  white-space: nowrap;
+}
+.is-home .brand {
+  transition:
+    opacity 0.35s,
+    color 0.35s;
+}
+.is-home:not(.is-blue) .brand {
+  opacity: 0;
+  pointer-events: none;
+}
+@media (max-width: 1000px) {
+  .experience-stage .hero-copy {
+    left: 7%;
+    top: 34%;
+  }
+  .experience-stage .hero-copy h1 {
+    font-size: 82px;
+  }
+  .experience-stage .role-sticker {
+    font-size: 17px;
+  }
+  .desktop-holo-labels .holo-identity {
+    right: 64%;
+    min-width: 145px;
+  }
+  .desktop-holo-labels .holo-bio {
+    right: 64%;
+    width: 270px;
+  }
+  .desktop-holo-labels .holo-bio p {
+    font-size: 11px;
+  }
+  .desktop-holo-labels .holo-stack {
+    left: 64%;
+    max-width: 31%;
+  }
+  .desktop-holo-labels .holo-stack ul {
+    font-size: 10px;
+  }
+  .desktop-holo-labels .connector {
+    width: 29px;
+  }
+}
+@media (max-width: 600px) {
+  .experience-scroll {
+    height: 350svh;
+  }
+  .experience-stage {
+    height: 100svh;
+    min-height: 0;
+    border-radius: 0 0 27px 27px;
+  }
+  .about-anchor {
+    top: 88svh;
+  }
+  .experience-stage .hero-copy {
+    left: 50%;
+    top: 15.6%;
+    transform: translateX(-50%);
+    width: max-content;
+  }
+  .experience-stage .hero-copy h1 {
+    font-size: clamp(46px, 13.5vw, 60px);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+  }
+  .experience-stage .role-sticker {
+    font-size: 12px;
+    padding: 5px 8px;
+    margin: 2px -17px 0 auto;
+  }
+  .site-header {
+    height: 42px;
+    top: 13px;
+    left: 16px;
+    right: 17px;
+  }
+  .site-header nav {
+    display: none;
+  }
+  .site-header .sound-button {
+    width: 42px;
+    height: 42px;
+  }
+  .site-header .sound-button svg {
+    width: 23px;
+    height: 23px;
+  }
+  .site-header .brand svg {
+    width: 34px;
+    height: 39px;
+  }
+  .site-header .header-actions {
+    margin-left: auto;
+  }
+  .site:not(.is-home) .site-header .brand {
+    display: grid;
+  }
+  .experience-stage .scroll-cue {
+    left: 50%;
+    bottom: 25px;
+    transform: translateX(-50%);
+  }
+  .experience-stage .scroll-cue .mouse {
+    width: 22px;
+    height: 33px;
+    border-width: 2px;
+  }
+  .experience-stage .scroll-cue > svg {
+    width: 23px;
+    height: 23px;
+  }
+  .desktop-holo-labels {
+    display: none;
+  }
+  .mobile-holo-card {
+    display: block;
+    position: absolute;
+    z-index: 3;
+    bottom: 9.8%;
+    left: 4.2%;
+    right: 4.2%;
+    min-height: 116px;
+    background: linear-gradient(145deg, #074c9c99, #09539277);
+    border: 1px solid #4bace5;
+    border-radius: 11px;
+    color: #d8f4ff;
+    font-family: "Space Mono", monospace;
+    opacity: 0;
+    box-shadow: inset 0 0 14px #35bcdf15;
+  }
+  .mobile-card-face {
+    padding: 13px 15px;
+    transition: opacity 0.22s;
+    min-height: 116px;
+  }
+  .mobile-card-face.hidden {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .mobile-identity {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #4ea2da70;
+    margin: -1px 0 10px;
+  }
+  .mobile-identity strong,
+  .mobile-skills > strong {
+    font-size: 18px;
+    letter-spacing: -0.04em;
+  }
+  .mobile-identity span {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    font-size: 11px;
+  }
+  .mobile-card-face p {
+    font-size: 12px;
+    line-height: 1.28;
+    letter-spacing: -0.015em;
+  }
+  .mobile-skills {
+    min-height: 144px;
+  }
+  .mobile-skills ul {
+    padding-left: 17px;
+    font-size: 12px;
+    line-height: 1.75;
+    margin: 8px 0 0;
+  }
+  .experience-stage .scan-status {
+    bottom: 5.5%;
+    width: 65%;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+  }
+  .experience-stage .scan-status > div {
+    display: block;
+    height: 2px;
+    width: 73%;
+    background: #47bde541;
+    margin: 0;
+  }
+  .experience-stage .scan-status strong {
+    font-size: 11px;
+    min-width: 33px;
+    background: transparent;
+    padding: 0;
+  }
+  .experience-stage .scan-status small {
+    display: inline;
+    font-size: 10px;
+    margin-left: 0;
+  }
+  .experience-stage .scan-status i {
+    background: #52c3eb;
+  }
+  .experience-stage .scene-fallback {
+    height: 48%;
+    left: 50%;
+    top: 11%;
+    bottom: auto;
+  }
+  .project-grid {
+    grid-template-columns: 1fr;
+    gap: 29px;
+  }
+  .project-visual {
+    aspect-ratio: 1.78;
+    border-radius: 15px;
+  }
+  .project-card h3 {
+    font-size: 22px;
+    margin-top: 9px;
+  }
+  .project-card > p {
+    font-size: 13px;
+    margin-top: 3px;
+  }
+  .mobile-art .screen-frame {
+    width: 30%;
+    height: 88%;
+    transform: rotate(-8deg) translate(35%, -2px);
+    border-width: 4px;
+    border-radius: 16px;
+  }
+  .mobile-art .art-small {
+    font-size: 22px;
+    left: 20px;
+  }
+  .art-small {
+    font-size: 8px;
+    bottom: 11px;
+    left: 16px;
+  }
+  .campus-bubble {
+    font-size: 19px;
+    padding: 15px;
+  }
+  .campus-building {
+    width: 38%;
+    padding: 20px;
+    left: 15%;
+  }
+  .campus-building > span {
+    font-size: 25px;
+    margin-bottom: 12px;
+  }
+  .campus-building > div {
+    gap: 10px;
+  }
+  .campus-building i {
+    width: 10px;
+    height: 15px;
+  }
+  .campus-building > b {
+    height: 35px;
+  }
+  .mock-dashboard {
+    left: 22%;
+    top: 17%;
+    width: 72%;
+    height: 67%;
+    padding: 10px;
+    gap: 10px;
+  }
+  .mock-chart strong {
+    font-size: 24px;
+  }
+  .mock-chart > span {
+    font-size: 6px;
+  }
+  .mock-chart svg {
+    height: 59%;
+  }
+  .mock-sidebar {
+    width: 26px;
+  }
+  .mock-sidebar i {
+    margin-top: 14px;
+    width: 13px;
+  }
+  .journey-education {
+    gap: 15px;
+    align-items: start;
+  }
+  .journey-education h3 {
+    font-size: 18px;
+  }
+  .journey-education p {
+    font-size: 10px;
+  }
+  .journey-education .education-period {
+    font-size: 17px;
+  }
+}
+@media (max-height: 650px) and (min-width: 601px) {
+  .desktop-holo-labels .holo-stack {
+    top: 25%;
+  }
+  .desktop-holo-labels .holo-bio {
+    top: 52%;
+  }
+  .experience-stage .scan-status {
+    bottom: 5%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mobile-card-face {
+    transition: none;
+  }
+  .experience-stage .hero-copy {
+    transform: translateX(0) !important;
+  }
+  .room-card {
+    will-change: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) and (max-width: 600px) {
+  .experience-stage .hero-copy {
+    transform: translateX(-50%) !important;
+  }
+}

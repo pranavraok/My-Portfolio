@@ -1,4 +1,6 @@
 import * as THREE from "three";
+import { clone as cloneSkeleton } from "three/addons/utils/SkeletonUtils.js";
+import { createCharacter } from "./character.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
 const C = {
@@ -15,6 +17,7 @@ const C = {
 
 export function createScene(host, mode, getProgress) {
   const hologram = mode === "hologram";
+  const experience = mode === "experience";
   const scene = new THREE.Scene();
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
@@ -23,11 +26,11 @@ export function createScene(host, mode, getProgress) {
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.6));
   renderer.setClearColor(0x000000, 0);
-  renderer.shadowMap.enabled = !hologram;
+  renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = hologram ? 1.15 : 1.3;
+  renderer.toneMappingExposure = 1.08;
   renderer.localClippingEnabled = true;
   renderer.domElement.setAttribute("aria-hidden", "true");
   host.appendChild(renderer.domElement);
@@ -36,6 +39,8 @@ export function createScene(host, mode, getProgress) {
   const textures = [];
   const objects = new THREE.Group();
   scene.add(objects);
+  const scanner = new THREE.Group();
+  scene.add(scanner);
   const mat = (color, options = {}) => {
     const key = color + JSON.stringify(options);
     if (!materials.has(key))
@@ -110,127 +115,14 @@ export function createScene(host, mode, getProgress) {
       pos,
     );
   }
-  function character(seated = false) {
-    const root = new THREE.Group();
-    const body = new THREE.Group();
-    root.add(body);
-    const head = new THREE.Group();
-    head.position.set(0, 2.67, 0);
-    body.add(head);
-    ball([0.64, 0.68, 0.58], C.skin, head, [0, 0, 0]);
-    ball([0.13, 0.2, 0.11], C.skin, head, [-0.63, -0.05, -0.01]);
-    ball([0.13, 0.2, 0.11], C.skin, head, [0.63, -0.05, -0.01]);
-    ball([0.65, 0.4, 0.57], C.hair, head, [0, 0.45, -0.09]);
-    ball([0.48, 0.28, 0.48], C.hair, head, [-0.25, 0.49, 0.12]).rotation.z =
-      0.25;
-    ball([0.49, 0.26, 0.4], C.hair, head, [0.18, 0.53, 0.02]).rotation.z =
-      -0.25;
-    ball([0.16, 0.36, 0.39], C.hair, head, [-0.52, 0.21, -0.12]);
-    ball([0.13, 0.31, 0.38], C.hair, head, [0.54, 0.19, -0.12]);
-    for (const x of [-0.25, 0.25]) {
-      ball([0.155, 0.175, 0.055], "#fefbf4", head, [x, 0.035, 0.51]);
-      ball([0.073, 0.095, 0.032], "#29211c", head, [x + 0.02, 0.01, 0.563]);
-      ball([0.025, 0.029, 0.015], "#ffffff", head, [x + 0.045, 0.05, 0.585]);
-      const glasses = mesh(
-        new THREE.TorusGeometry(0.215, 0.018, 8, 40),
-        mat("#34302d", { metalness: 0.5 }),
-        head,
-        [x, 0.045, 0.59],
-        [1.17, 0.88, 1],
-      );
-      glasses.rotation.z = x < 0 ? -0.06 : 0.06;
-      const brow = box(
-        [0.17, 0.038, 0.025],
-        C.hair,
-        head,
-        [x, 0.27, 0.48],
-        0.016,
-      );
-      brow.rotation.z = x < 0 ? 0.1 : -0.1;
-    }
-    rod([-0.035, 0.08, 0.595], [0.035, 0.08, 0.595], 0.016, "#34302d", head);
-    rod([-0.51, 0.1, 0.58], [-0.64, 0.09, 0.04], 0.016, "#34302d", head);
-    rod([0.51, 0.1, 0.58], [0.64, 0.09, 0.04], 0.016, "#34302d", head);
-    ball([0.088, 0.1, 0.1], C.skin, head, [0, -0.12, 0.565]);
-    const moustache = ball(
-      [0.15, 0.032, 0.024],
-      C.hair,
-      head,
-      [0, -0.27, 0.55],
-    );
-    moustache.rotation.z = -0.02;
-    ball([0.115, 0.022, 0.028], "#8c4f3f", head, [0, -0.335, 0.53]);
-    cylinder(0.15, 0.17, 0.24, C.skin, body, [0, 1.99, 0]);
-    box([0.94, 0.99, 0.55], C.blue, body, [0, 1.58, 0], 0.2);
-    const collar1 = box(
-      [0.22, 0.14, 0.06],
-      "#c2d9e5",
-      body,
-      [-0.14, 2.0, 0.27],
-      0.04,
-    );
-    collar1.rotation.z = -0.45;
-    const collar2 = box(
-      [0.22, 0.14, 0.06],
-      "#c2d9e5",
-      body,
-      [0.14, 2.0, 0.27],
-      0.04,
-    );
-    collar2.rotation.z = 0.45;
-    box([0.035, 0.22, 0.025], "#7595a9", body, [0, 1.88, 0.3], 0.01);
-    ball([0.03, 0.03, 0.018], "#dbe4e6", body, [0, 1.88, 0.32]);
-    panel(
-      [0.13, 0.15],
-      texture((ctx) => {
-        ctx.fillStyle = "#173b64";
-        ctx.font = "bold 80px sans-serif";
-        ctx.fillText("P", 140, 210);
-      }),
-      body,
-      [0.27, 1.71, 0.29],
-    );
-    const arms = [];
-    for (const side of [-1, 1]) {
-      const arm = new THREE.Group();
-      arm.position.set(side * 0.51, 1.89, 0);
-      body.add(arm);
-      arms.push(arm);
-      ball([0.19, 0.29, 0.23], C.blue, arm, [side * 0.025, -0.16, 0]);
-      ball([0.12, 0.37, 0.13], C.skin, arm, [side * 0.06, -0.59, 0]);
-      ball([0.13, 0.18, 0.1], C.skin, arm, [side * 0.065, -0.93, 0.02]);
-      arm.rotation.z = side * 0.1;
-      if (seated) {
-        arm.rotation.x = -1.0;
-        arm.rotation.z = side * 0.16;
-      }
-      const leg = new THREE.Group();
-      leg.position.set(side * 0.24, 1.06, 0);
-      body.add(leg);
-      box([0.38, 0.83, 0.42], "#303b4c", leg, [0, -0.4, 0], 0.12);
-      box([0.37, 0.5, 0.39], "#303b4c", leg, [0, -0.96, 0], 0.1);
-      box([0.41, 0.12, 0.64], "#ede9df", leg, [0, -1.25, 0.14], 0.06);
-      box([0.39, 0.25, 0.61], "#26323f", leg, [0, -1.14, 0.16], 0.09);
-      box([0.24, 0.025, 0.22], "#f5f2e8", leg, [0, -1.012, 0.21], 0.01);
-      if (seated) {
-        leg.rotation.x = -Math.PI / 2.8;
-        leg.children.slice(1).forEach((child) => {
-          child.position.z += 0.48;
-          child.position.y += 0.18;
-        });
-      }
-    }
-    return { root, head, body, arms };
-  }
-
   scene.add(
     new THREE.HemisphereLight(
       hologram ? "#8ebfff" : "#fff3d8",
       hologram ? "#052762" : "#a89173",
-      2.4,
+      1.7,
     ),
   );
-  const keyLight = new THREE.DirectionalLight("#fff8e8", hologram ? 2 : 4.3);
+  const keyLight = new THREE.DirectionalLight("#fff8e8", 3.2);
   keyLight.position.set(-4, 8, 6);
   keyLight.castShadow = true;
   keyLight.shadow.mapSize.set(1024, 1024);
@@ -244,7 +136,14 @@ export function createScene(host, mode, getProgress) {
   scene.add(keyLight);
   scene.add(new THREE.DirectionalLight("#9bbfff", 1.1));
 
-  const person = character(!hologram);
+  const person = createCharacter(
+    { mesh, mat, box, ball, cylinder, rod, texture, panel },
+    !hologram,
+  );
+  scene.add(person.root);
+  person.root.traverse((o) => {
+    if (o.isMesh) o.receiveShadow = false;
+  });
   let scan, solidPlane, wirePlane, ring, holo;
   if (!hologram) {
     // A self-contained clay workspace, modeled from original geometry.
@@ -322,15 +221,15 @@ export function createScene(host, mode, getProgress) {
           0.005,
         );
     ball([0.12, 0.045, 0.19], "#dae0df", objects, [1.02, 1.745, 0.12]);
-    person.root.position.set(0, 0.56, 1.06);
+    person.root.position.set(0, 0.12, 1.06);
     person.root.rotation.y = Math.PI;
-    person.root.scale.setScalar(0.83);
-    objects.add(person.root);
+    person.root.scale.setScalar(1);
+
     const chair = new THREE.Group();
     objects.add(chair);
-    box([1.12, 0.22, 0.93], C.white, chair, [0, 0.97, 1.24], 0.1);
-    box([1.16, 1.1, 0.22], C.white, chair, [0, 1.54, 1.65], 0.1);
-    cylinder(0.09, 0.09, 0.72, "#73787b", chair, [0, 0.5, 1.28]);
+    box([1.12, 0.22, 0.93], C.white, chair, [0, 0.7, 1.24], 0.1);
+    box([1.16, 1.1, 0.22], C.white, chair, [0, 1.28, 1.65], 0.1);
+    cylinder(0.09, 0.09, 0.43, "#73787b", chair, [0, 0.33, 1.28]);
     for (const side of [-1, 1]) {
       rod([0, 0.12, 1.3], [side * 0.62, 0.1, 0.91], 0.055, "#73787b", chair);
       rod([0, 0.12, 1.3], [side * 0.62, 0.1, 1.79], 0.055, "#73787b", chair);
@@ -408,13 +307,57 @@ export function createScene(host, mode, getProgress) {
     cylinder(0.39, 0.39, 0.04, "#665147", plant, [0, 0.69, 0]);
     for (let i = 0; i < 7; i++) {
       const angle = (i * Math.PI * 2) / 7;
-      const leaf = ball(
-        [0.14, 0.76, 0.08],
-        i % 2 ? "#84ae25" : "#aad437",
-        plant,
-        [Math.sin(angle) * 0.28, 1.25 + (i % 2) * 0.12, Math.cos(angle) * 0.28],
+      const positions = [],
+        indices = [];
+      const length = 1.1 + (i % 3) * 0.18;
+      for (let j = 0; j <= 16; j++) {
+        const t = j / 16,
+          w = 0.2 * Math.pow(Math.sin(Math.PI * t), 0.7);
+        const y = t * length,
+          z = Math.sin(t * Math.PI) * 0.11;
+        positions.push(
+          -w,
+          y,
+          z,
+          0,
+          y,
+          z + 0.065 * Math.sin(t * Math.PI),
+          w,
+          y,
+          z,
+        );
+        if (j < 16) {
+          const n = j * 3;
+          indices.push(
+            n,
+            n + 3,
+            n + 1,
+            n + 1,
+            n + 3,
+            n + 4,
+            n + 1,
+            n + 4,
+            n + 2,
+            n + 2,
+            n + 4,
+            n + 5,
+          );
+        }
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(positions, 3),
       );
-      leaf.rotation.set(Math.cos(angle) * 0.48, angle, -Math.sin(angle) * 0.48);
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+      const leaf = mesh(
+        geometry,
+        mat(i % 2 ? "#84bc24" : "#b0d62d", { side: THREE.DoubleSide }),
+        plant,
+        [0, 0.67, 0],
+      );
+      leaf.rotation.set(Math.cos(angle) * 0.55, angle, -Math.sin(angle) * 0.65);
     }
     box([0.41, 0.58, 0.32], "#e2b03e", objects, [2.05, 1.94, -0.75], 0.05);
     const speaker = mesh(
@@ -429,35 +372,117 @@ export function createScene(host, mode, getProgress) {
       objects,
       [2.05, 1.95, -0.58],
     );
+    const puzzle = new THREE.Group();
+    puzzle.position.set(1.45, 1.77, -0.55);
+    puzzle.rotation.y = -0.1;
+    objects.add(puzzle);
+    box([0.3, 0.3, 0.3], "#4b5364", puzzle, [0, 0, 0], 0.008);
+    for (let row = 0; row < 3; row++)
+      for (let col = 0; col < 3; col++) {
+        box(
+          [0.082, 0.082, 0.012],
+          ["#74bfea", "#e6d447", "#f5f3e2"][(row + col) % 3],
+          puzzle,
+          [-0.094 + col * 0.094, -0.094 + row * 0.094, 0.157],
+          0.004,
+        );
+        box(
+          [0.012, 0.082, 0.082],
+          ["#f6b348", "#e6eaee", "#70a6d7"][(row + col) % 3],
+          puzzle,
+          [0.157, -0.094 + row * 0.094, -0.094 + col * 0.094],
+          0.004,
+        );
+      }
+    const penguin = new THREE.Group();
+    penguin.position.set(-1.51, 1.78, -0.07);
+    objects.add(penguin);
+    ball([0.11, 0.16, 0.095], "#29303c", penguin, [0, 0.02, 0]);
+    ball([0.075, 0.11, 0.035], "#fff9eb", penguin, [0, 0, 0.075]);
+    for (const x of [-0.039, 0.039]) {
+      ball([0.026, 0.034, 0.015], "#f9f7e9", penguin, [x, 0.1, 0.078]);
+      ball([0.011, 0.015, 0.009], "#25232a", penguin, [x, 0.1, 0.092]);
+    }
+    box([0.05, 0.025, 0.045], "#e3a232", penguin, [0, 0.051, 0.107], 0.012);
+    const frame = new THREE.Group();
+    frame.position.set(3.15, 2.92, -1.45);
+    frame.rotation.z = -0.09;
+    objects.add(frame);
+    box([1.35, 1.0, 0.12], "#88b8d1", frame, [0, 0, 0], 0.11);
+    box([1.13, 0.78, 0.04], "#acc9db", frame, [0, 0, 0.076], 0.04);
+    panel(
+      [1.02, 0.7],
+      texture((ctx, w, h) => {
+        ctx.fillStyle = "#abc4d8";
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = "#fafaf3";
+        ctx.beginPath();
+        ctx.moveTo(0, h);
+        ctx.lineTo(w * 0.4, h * 0.2);
+        ctx.lineTo(w * 0.8, h);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(w * 0.55, h);
+        ctx.lineTo(w * 0.8, h * 0.5);
+        ctx.lineTo(w, h);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(w * 0.79, h * 0.21, h * 0.09, 0, Math.PI * 2);
+        ctx.fill();
+      }),
+      frame,
+      [0, 0, 0.104],
+    );
     const floor = mesh(
       new THREE.PlaneGeometry(100, 100),
       new THREE.ShadowMaterial({ opacity: 0.12 }),
-      scene,
+      objects,
       [0, -0.325, 0],
     );
     floor.rotation.x = -Math.PI / 2;
-  } else {
-    person.root.position.y = 0.34;
-    objects.add(person.root);
-    cylinder(0.95, 1.05, 0.24, "#123971", objects, [0, 0.02, 0]);
-    cylinder(0.89, 0.94, 0.14, "#175185", objects, [0, 0.19, 0]);
-    const light = new THREE.PointLight("#00d4ff", 14, 7, 1.8);
+    objects.children.slice(4).forEach((o) => {
+      if (o.position.y > 0.2) o.position.y -= 0.2;
+    });
+  }
+  if (hologram || experience) {
+    scanner.position.z = 3.2;
+    cylinder(0.92, 0.97, 0.14, "#123971", scanner, [0, 0.02, 0]);
+    cylinder(0.94, 0.94, 0.08, "#12487a", scanner, [0, 0.12, 0]);
+    cylinder(0.89, 0.92, 0.12, "#175185", scanner, [0, 0.22, 0]);
+    const light = new THREE.PointLight("#00d4ff", 2.5, 7, 1.8);
+    light.name = "scan-light";
     light.position.set(0, 1, 1.5);
-    scene.add(light);
+    scanner.add(light);
     for (const y of [0.03, 0.19, 0.27]) {
       const torus = mesh(
         new THREE.TorusGeometry(0.96, 0.013, 8, 100),
         new THREE.MeshBasicMaterial({ color: C.cyan }),
-        objects,
+        scanner,
         [0, y, 0],
       );
       torus.rotation.x = Math.PI / 2;
     }
+    const beam = mesh(
+      new THREE.CylinderGeometry(0.46, 0.83, 3.35, 40, 1, true),
+      new THREE.MeshBasicMaterial({
+        color: "#00bfff",
+        transparent: true,
+        opacity: 0.045,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+      }),
+      scanner,
+      [0, 1.9, 0],
+    );
+    beam.name = "scan-beam";
     const grid = new THREE.GridHelper(25, 50, "#0d8cba", "#0b477d");
     grid.position.y = -0.13;
     grid.material.transparent = true;
     grid.material.opacity = 0.27;
-    scene.add(grid);
+    scanner.add(grid);
     solidPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
     wirePlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
     person.root.traverse((o) => {
@@ -466,20 +491,61 @@ export function createScene(host, mode, getProgress) {
         o.material.clippingPlanes = [solidPlane];
       }
     });
-    holo = person.root.clone(true);
+    // Rig references are runtime objects, not serializable clone metadata.
+    const rigData = [];
+    person.root.traverse((o) => {
+      rigData.push([o, o.userData]);
+      o.userData = {};
+    });
+    holo = cloneSkeleton(person.root);
+    rigData.forEach(([object, data]) => {
+      object.userData = data;
+    });
+    const hologramMaterial = new THREE.MeshBasicMaterial({
+      color: "#10d9ff",
+      transparent: true,
+      opacity: 1,
+      depthWrite: true,
+      blending: THREE.AdditiveBlending,
+      clippingPlanes: [wirePlane],
+      toneMapped: false,
+    });
+    hologramMaterial.name = "hologram-material";
+    const scanUniforms = { uTime: { value: 0 }, uOpacity: { value: 0 } };
+    hologramMaterial.userData.scanUniforms = scanUniforms;
+    hologramMaterial.onBeforeCompile = (shader) => {
+      Object.assign(shader.uniforms, scanUniforms);
+      shader.vertexShader = shader.vertexShader
+        .replace(
+          "#include <common>",
+          "#include <common>\nvarying vec3 vHoloPosition;\nvarying vec3 vHoloNormal;",
+        )
+        .replace(
+          "#include <project_vertex>",
+          "#include <project_vertex>\nvHoloPosition=(modelMatrix*vec4(transformed,1.0)).xyz;\nvHoloNormal=normalize(mat3(modelMatrix)*normal);",
+        );
+      shader.fragmentShader = shader.fragmentShader
+        .replace(
+          "#include <common>",
+          "#include <common>\nvarying vec3 vHoloPosition;\nvarying vec3 vHoloNormal;\nuniform float uTime;\nuniform float uOpacity;",
+        )
+        .replace(
+          "#include <color_fragment>",
+          "#include <color_fragment>\nfloat stripe=pow(0.5+0.5*sin(vHoloPosition.y*145.0-uTime*1.2),5.0);\nfloat edge=pow(1.0-abs(dot(normalize(vHoloNormal),normalize(cameraPosition-vHoloPosition))),2.4);\ndiffuseColor.rgb=vec3(0.0,0.58,1.0)*(0.28+edge*1.15+stripe*0.55);\ndiffuseColor.a=uOpacity*(0.16+edge*0.60+stripe*0.22);",
+        );
+    };
+    hologramMaterial.customProgramCacheKey = () => "pranav-hologram-v2";
     holo.traverse((o) => {
       if (o.isMesh) {
-        o.material = new THREE.MeshBasicMaterial({
-          color: "#1fe5ff",
-          wireframe: true,
-          transparent: true,
-          opacity: 0.35,
-          clippingPlanes: [wirePlane],
-        });
+        o.material = hologramMaterial;
         o.castShadow = false;
+        o.receiveShadow = false;
+        if (o.name === "character-neck" || o.name === "character-hips")
+          o.visible = false;
       }
     });
-    objects.add(holo);
+    scene.add(holo);
+
     scan = mesh(
       new THREE.CylinderGeometry(0.9, 0.9, 0.021, 64),
       new THREE.MeshBasicMaterial({
@@ -489,13 +555,13 @@ export function createScene(host, mode, getProgress) {
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       }),
-      objects,
+      scanner,
       [0, 0, 0],
     );
     ring = mesh(
       new THREE.TorusGeometry(0.8, 0.009, 6, 100),
       new THREE.MeshBasicMaterial({ color: "#80f7ff" }),
-      objects,
+      scanner,
       [0, 0, 0],
     );
     ring.rotation.x = Math.PI / 2;
@@ -509,7 +575,7 @@ export function createScene(host, mode, getProgress) {
           h / 2,
           w / 2,
         );
-        grad.addColorStop(0, "rgba(20,217,255,.7)");
+        grad.addColorStop(0, "rgba(20,217,255,.25)");
         grad.addColorStop(1, "rgba(0,80,150,0)");
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, w, h);
@@ -525,7 +591,7 @@ export function createScene(host, mode, getProgress) {
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       }),
-      objects,
+      scanner,
       [0, 0.28, 0],
     );
     glow.rotation.x = -Math.PI / 2;
@@ -539,7 +605,7 @@ export function createScene(host, mode, getProgress) {
       );
     const geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
-    scene.add(
+    scanner.add(
       new THREE.Points(
         geo,
         new THREE.PointsMaterial({
@@ -552,25 +618,41 @@ export function createScene(host, mode, getProgress) {
     );
   }
   let width = 0,
-    height = 0;
+    height = 0,
+    mobile = false;
   const target = new THREE.Vector3();
+  const clamp = (value) => Math.min(1, Math.max(0, value));
+  const smooth = (a, b, value) => {
+    const t = clamp((value - a) / (b - a));
+    return t * t * (3 - 2 * t);
+  };
+  const mix = THREE.MathUtils.lerp;
+  const originalRig = [],
+    hologramRig = [];
+  person.root.traverse((o) => originalRig.push(o));
+  holo?.traverse((o) => hologramRig.push(o));
+  const copyPose = () => {
+    for (let i = 0; i < originalRig.length; i++) {
+      const source = originalRig[i],
+        dest = hologramRig[i];
+      if (!dest) continue;
+      dest.position.copy(source.position);
+      dest.quaternion.copy(source.quaternion);
+      dest.scale.copy(source.scale);
+    }
+    holo?.updateMatrixWorld(true);
+  };
   function resize() {
     const rect = host.getBoundingClientRect();
     width = rect.width;
     height = rect.height;
+    mobile = width <= 600;
     if (!width || !height) return;
+    renderer.setPixelRatio(
+      Math.min(window.devicePixelRatio, mobile ? 1.35 : 1.75),
+    );
     renderer.setSize(width, height);
     camera.aspect = width / height;
-    const mobile = width < 600;
-    if (hologram) {
-      camera.position.set(0, 2.95, mobile ? 10.8 : 9.0);
-      target.set(0, 2.0, 0);
-    } else {
-      camera.position.set(6.4, 4.65, 8.3);
-      target.set(0, 1.55, 0);
-      if (mobile) camera.position.multiplyScalar(1.04);
-    }
-    camera.lookAt(target);
     camera.updateProjectionMatrix();
   }
   const resizeObserver = new ResizeObserver(resize);
@@ -584,47 +666,130 @@ export function createScene(host, mode, getProgress) {
     { threshold: 0 },
   );
   visibleObserver.observe(host);
-  let pointer = { x: 0, y: 0 };
+  const pointer = { x: 0, y: 0 },
+    smoothedPointer = { x: 0, y: 0 };
   const move = (event) => {
+    if (mobile) return;
     const r = host.getBoundingClientRect();
-    pointer.x = ((event.clientX - r.left) / r.width - 0.5) * 2;
-    pointer.y = ((event.clientY - r.top) / r.height - 0.5) * 2;
+    pointer.x = clamp((event.clientX - r.left) / r.width) * 2 - 1;
+    pointer.y = clamp((event.clientY - r.top) / r.height) * 2 - 1;
   };
-  host.addEventListener("pointermove", move, { passive: true });
+  window.addEventListener("pointermove", move, { passive: true });
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   let frame,
     lastTime = 0;
   const tick = (time) => {
     frame = requestAnimationFrame(tick);
-    if (!visible || document.hidden || time - lastTime < 30) return;
+    if (!visible || document.hidden || time - lastTime < 14) return;
     lastTime = time;
-    const t = time * 0.001;
-    const reduced = motionQuery.matches;
-    const progress = getProgress();
+    const t = time * 0.001,
+      reduced = motionQuery.matches;
+    const data = getProgress();
+    const page = typeof data === "object" ? data.page : 0;
+    const walk =
+      typeof data === "object" ? data.walk : smooth(0.035, 0.86, page);
+    const scanProgress =
+      typeof data === "object" ? data.scan : Number(data) || 0;
+    const cameraWalk = smooth(0.03, 0.92, page);
+    const standing = smooth(0.03, 0.34, page);
+    person.pose(standing);
+    person.root.scale.setScalar(mix(0.9, 1, standing));
+    person.arms.forEach((arm) => {
+      arm.position.y = mix(2.12, 2.04, standing);
+      arm.rotation.x = mix(-1.32, -0.015, standing);
+      arm.userData.elbow.rotation.x = mix(-0.24, -0.09, standing);
+    });
+    const stride =
+      Math.sin(page * 20) *
+      smooth(0.3, 0.45, page) *
+      (1 - smooth(0.68, 0.86, page));
     if (!reduced) {
-      if (hologram) {
-        person.root.rotation.y = Math.sin(t * 0.4) * 0.12 + pointer.x * 0.15;
-        holo.rotation.copy(person.root.rotation);
-        person.head.rotation.y = pointer.x * 0.11;
-        holo.children[0].children[0].rotation.copy(person.head.rotation);
-      } else {
-        objects.rotation.y = THREE.MathUtils.lerp(
-          objects.rotation.y,
-          pointer.x * 0.045,
-          0.06,
-        );
-        person.head.rotation.y =
-          Math.sin(t * 0.4) * 0.22 + Math.max(0, Math.sin(t * 0.24)) * 0.8;
-        person.arms[0].rotation.x = -1.02 + Math.sin(t * 5) * 0.015;
-      }
+      smoothedPointer.x = mix(smoothedPointer.x, pointer.x, 0.045);
+      smoothedPointer.y = mix(smoothedPointer.y, pointer.y, 0.045);
+      person.head.rotation.y =
+        Math.sin(t * 0.45) * 0.035 +
+        (1 - walk) * 0.08 +
+        smoothedPointer.x * 0.065;
+      person.head.rotation.x = smoothedPointer.y * 0.035;
+      person.arms[0].rotation.x +=
+        stride * 0.34 + (1 - standing) * Math.sin(t * 5) * 0.015;
+      person.arms[1].rotation.x -= stride * 0.34;
+      person.legs[0].rotation.x += stride * 0.18;
+      person.legs[1].rotation.x -= stride * 0.18;
     }
-    if (hologram) {
-      const scanHeight = THREE.MathUtils.lerp(0.3, 3.85, progress);
-      solidPlane.constant = -scanHeight;
+    person.root.position.set(
+      mix(0, 0, walk),
+      mix(0.12, 0.29, standing) + Math.abs(stride) * 0.035,
+      mix(1.06, 3.2, walk),
+    );
+    person.root.rotation.y = mix(Math.PI, 0, smooth(0.2, 0.82, page));
+    if (walk > 0.99 && !reduced)
+      person.root.rotation.y += Math.sin(t * 0.3) * 0.025;
+    const cameraX = mobile ? mix(2.6, 0, cameraWalk) : mix(4.7, 0, cameraWalk);
+    const cameraY = mobile
+      ? mix(3.7, 3.4, cameraWalk)
+      : mix(3.8, 3.05, cameraWalk);
+    const cameraZ = mobile
+      ? mix(13.2, 17.8, cameraWalk)
+      : mix(9.6, 12.2, cameraWalk);
+    camera.position.set(
+      cameraX + (reduced ? 0 : smoothedPointer.x * 0.1),
+      cameraY,
+      cameraZ,
+    );
+    target.set(
+      0,
+      mobile ? mix(3.5, 0.65, cameraWalk) : mix(1.8, 1.98, cameraWalk),
+      mix(0.2, 3.2, cameraWalk),
+    );
+    camera.lookAt(target);
+    camera.setViewOffset(
+      width,
+      height,
+      -width * (mobile ? 0.11 : 0.175) * (1 - cameraWalk),
+      0,
+      width,
+      height,
+    );
+    objects.position.y = page * 4.4;
+    objects.rotation.z = -walk * 0.035;
+    objects.scale.setScalar(1 - walk * 0.055);
+    objects.visible = page < 1.3;
+    const reveal = smooth(0.2, 0.78, page);
+    scanner.visible = reveal > 0.001;
+    scanner.traverse((o) => {
+      if (o.isLight) o.intensity = 2.5 * reveal;
+      else if (o.material) {
+        const list = Array.isArray(o.material) ? o.material : [o.material];
+        for (const m of list) {
+          if (m.userData.baseOpacity === undefined)
+            m.userData.baseOpacity = m.opacity;
+          m.opacity = m.userData.baseOpacity * reveal;
+        }
+      }
+    });
+    if (holo) {
+      copyPose();
+      holo.visible = reveal > 0.001;
+      const material = holo.children[0].children[0].children.find(
+        (o) => o.isMesh,
+      )?.material;
+      if (material?.userData.scanUniforms) {
+        material.userData.scanUniforms.uTime.value = t;
+        material.userData.scanUniforms.uOpacity.value = reveal;
+      }
+      const scanHeight = mix(0.28, 3.85, scanProgress);
+      solidPlane.constant = reveal > 0.95 ? -scanHeight : 100;
       wirePlane.constant = scanHeight;
       scan.position.y = scanHeight;
       ring.position.y = scanHeight;
     }
+    host.dataset.page = page.toFixed(3);
+    host.dataset.scan = scanProgress.toFixed(3);
+    host.dataset.camera = camera.position
+      .toArray()
+      .map((v) => v.toFixed(2))
+      .join(",");
     renderer.render(scene, camera);
   };
   frame = requestAnimationFrame(tick);
@@ -638,17 +803,20 @@ export function createScene(host, mode, getProgress) {
       cancelAnimationFrame(frame);
       resizeObserver.disconnect();
       visibleObserver.disconnect();
-      host.removeEventListener("pointermove", move);
+      window.removeEventListener("pointermove", move);
       renderer.domElement.removeEventListener("webglcontextlost", lost);
+      const skeletons = new Set();
       const geometries = new Set(),
         allMaterials = new Set();
       scene.traverse((o) => {
         if (o.geometry) geometries.add(o.geometry);
+        if (o.isSkinnedMesh) skeletons.add(o.skeleton);
         if (o.material)
           (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) =>
             allMaterials.add(m),
           );
       });
+      skeletons.forEach((s) => s.dispose());
       geometries.forEach((g) => g.dispose());
       allMaterials.forEach((m) => m.dispose());
       textures.forEach((t) => t.dispose());
