@@ -30,7 +30,6 @@ export default function Experience({ scrollTo, onPhase }) {
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let lastPercent = -1;
     let lastCard = false;
-    let lastPhase = "";
     const context = gsap.context(() => {
       if (!reduced)
         gsap.from(".hero-copy > *", {
@@ -44,7 +43,7 @@ export default function Experience({ scrollTo, onPhase }) {
       const update = (self) => {
         const mobile = matchMedia("(max-width: 600px)").matches;
         const height = stage.clientHeight;
-        const page = self.progress * (target.clientHeight / height - 1);
+        const page = Math.min(self.progress * target.clientHeight / height, target.clientHeight / height - 1);
         const walk = smooth(0.035, 0.86, page);
         const scan = clamp(
           (page - (mobile ? 0.6 : 0.7)) / (mobile ? 1.7 : 1.65),
@@ -61,9 +60,9 @@ export default function Experience({ scrollTo, onPhase }) {
           lastCard = nextCard;
         }
         const phase = page > 0.28 ? "about" : "";
-        if (phase !== lastPhase || self.progress === 0) {
+        const stageBounds = stage.getBoundingClientRect();
+        if (stageBounds.bottom > height * .6 && stageBounds.top < height * .35) {
           onPhase(phase);
-          lastPhase = phase;
         }
         const roomShift = -page * height * 0.9;
         gsap.set(room, {
@@ -102,7 +101,7 @@ export default function Experience({ scrollTo, onPhase }) {
       const trigger = ScrollTrigger.create({
         trigger: target,
         start: "top top",
-        end: "bottom bottom",
+        end: "bottom top",
         onUpdate: update,
         onRefresh: update,
       });

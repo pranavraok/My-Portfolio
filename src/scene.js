@@ -779,6 +779,10 @@ export function createScene(host, mode, getProgress) {
         material.userData.scanUniforms.uOpacity.value = reveal;
       }
       const scanHeight = mix(0.28, 3.85, scanProgress);
+      const beam = scanner.getObjectByName("scan-beam");
+      const beamHeight = Math.max(.02, scanHeight - .28);
+      beam.scale.y = beamHeight / 3.35;
+      beam.position.y = .28 + beamHeight / 2;
       solidPlane.constant = reveal > 0.95 ? -scanHeight : 100;
       wirePlane.constant = scanHeight;
       scan.position.y = scanHeight;
