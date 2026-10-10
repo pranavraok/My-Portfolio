@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { drawComputerRadio, speakerState } from "./music.js";
-import { drawDeskWebsite } from "./desk-display.js";
+import { drawDeskCode } from "./desk-display.js";
 import { clone as cloneSkeleton } from "three/addons/utils/SkeletonUtils.js";
 import { createCharacter, walkPath } from "./character.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
@@ -154,6 +154,8 @@ export function createScene(host, mode, getProgress) {
     lastSpeakerDraw = -1;
   let chair = null, chairSeat = null, websiteMap = null, lastWebsiteDraw = -1, websiteFrame = 0;
   let speakerCone = null;
+  let mouse = null;
+  const mouseWrist = new THREE.Vector3(), keyboardWrist = new THREE.Vector3(), actualWrist = new THREE.Vector3();
   const soundRipples = [];
   let lastSpeakerPlaying = false,
     lastSpeakerTitle = "";
@@ -169,7 +171,7 @@ export function createScene(host, mode, getProgress) {
         cylinder(0.105, 0.095, 1.55, "#78947b", objects, [x, 0.72, z]);
     const screenMaps = [
       texture((ctx, w, h) => drawComputerRadio(ctx, w, h)),
-      texture((ctx, w, h) => drawDeskWebsite(ctx,w,h)),
+      texture((ctx, w, h) => drawDeskCode(ctx,w,h)),
     ];
     speakerMap = screenMaps[0];
     websiteMap = screenMaps[1];
@@ -183,29 +185,33 @@ export function createScene(host, mode, getProgress) {
       rod([0, -0.65, 0], [0, -0.86, -0.01], 0.065, "#424452", monitor);
       box([0.66, 0.07, 0.35], "#454451", monitor, [0, -0.79, 0.12], 0.025);
     }
-    box([1.32, 0.075, 0.42], "#c8cfd0", objects, [0.18, 1.74, 0.01], 0.035);
+    box([1.32, 0.075, 0.42], "#c8cfd0", objects, [-.16, 1.74, .18], 0.035);
     for (let row = 0; row < 3; row++)
       for (let col = 0; col < 11; col++)
         box(
           [0.075, 0.03, 0.067],
           C.white,
           objects,
-          [-0.36 + col * 0.1, 1.785, -0.12 + row * 0.105],
+          [-0.70 + col * 0.1, 1.785, .05 + row * 0.105],
           0.005,
         );
-    ball([0.12, 0.045, 0.19], "#dae0df", objects, [1.02, 1.745, 0.12]);
-    person.root.position.set(0, 0.12, 1.06);
+    mouse = ball([0.12, 0.045, 0.19], "#dae0df", objects, [.79, 1.745, .22]);
+    person.root.position.set(0, .22, .86);
     person.root.rotation.y = Math.PI;
     person.root.scale.setScalar(1);
 
     chair = new THREE.Group();
     chair.name = "swivel-chair";
-    chair.position.z = 1.28;
+    chair.position.z = 1.08;
     objects.add(chair);
     chairSeat = new THREE.Group(); chair.add(chairSeat);
     box([1.12, 0.22, 0.93], C.white, chairSeat, [0, 0.7, -.04], 0.1);
     const back = box([1.16, 1.1, 0.2], C.white, chairSeat, [0, 1.28, .37], 0.1);
     back.rotation.x = -.08;
+    for(const side of [-1,1]) {
+      rod([side*.48,.77,-.16],[side*.55,1.25,-.35],.033,'#a1b3a8',chairSeat);
+      box([.18,.075,.56],'#466352',chairSeat,[side*.55,1.285,-.4],.036);
+    }
     cylinder(.055,.07,.48,"#bac7c3",chair,[0,.38,0]);
     cylinder(.1,.1,.14,"#3c4f45",chair,[0,.15,0]);
     for(let i=0;i<5;i++) {
@@ -707,7 +713,7 @@ export function createScene(host, mode, getProgress) {
     const helloTurn = reduced ? 0 : smooth(.2,.8,intro)*(1-smooth(3.4,4.2,intro))*helloWeight;
     const helloWave = reduced ? 0 : smooth(.6,1,intro)*(1-smooth(2.8,3.3,intro))*helloWeight;
     person.pose(standing);
-    person.root.scale.setScalar(mobile ? mix(.9,1,standing) : 1);
+    person.root.scale.setScalar(1);
     const stride =
       Math.sin(stepping * Math.PI * 4) *
       smooth(0.32, 0.43, page) *
@@ -722,26 +728,42 @@ export function createScene(host, mode, getProgress) {
       person.head.rotation.z = Math.sin(t*.72)*.018*idle;
       person.body.rotation.z = Math.sin(t*.52)*.008*(1-smooth(.08,.3,page));
       person.body.scale.y = 1+Math.sin(t*1.25)*.0025*idle;
-      person.arms[0].rotation.x +=
-        stride * 0.34 + (1 - standing) * Math.sin(t * 5) * 0.015;
+      person.arms[0].rotation.x += stride * 0.34;
       person.arms[1].rotation.x -= stride * 0.34;
       if (standing > .98 && page < .88) person.walkPose?.(stepping);
     }
-    person.greetPose?.(helloWave,t);
     const roomLift = Math.max(0,page-.08)*4.4;
     const carry = roomLift*(1-smooth(.14,.4,page));
     const facing = mix(Math.PI, .04, chairTurn) + helloTurn*(.5-Math.PI);
     const seatTurn = facing-Math.PI;
     person.root.position.set(
       -.22*Math.sin(seatTurn)*(1-stepping),
-      .12+carry+stepping*.17,
-      mix(1.28-.22*Math.cos(seatTurn),3.2,walkPath(stepping).advance),
+      mix(.22,.12,standing)+carry+stepping*.17,
+      mix(1.08-.22*Math.cos(seatTurn),3.2,walkPath(stepping).advance),
     );
     person.root.rotation.y = facing + smooth(.94,1.12,page)*scanProgress*Math.PI*2;
     if (chair) {
       chairSeat.rotation.y = seatTurn;
-      chair.scale.setScalar(mobile ? .9 : 1);
+      chair.scale.setScalar(1);
     }
+    objects.position.y = roomLift;
+    objects.rotation.z = -walk * 0.035;
+    objects.scale.setScalar(1 - walk * 0.055);
+    const workBlend=(1-smooth(.05,.07,page))*(1-smooth(0,.2,helloTurn));
+    if(mouse) {
+      mouse.position.x=.79+(reduced ? 0 : Math.sin(t*.82)*.014+Math.sin(t*1.7)*.004)*workBlend;
+      mouse.position.z=.22+(reduced ? 0 : Math.sin(t*.61)*.012)*workBlend;
+      objects.updateMatrixWorld(true);
+      objects.localToWorld(mouseWrist.set(mouse.position.x,mouse.position.y+.119,mouse.position.z+.096));
+      objects.localToWorld(keyboardWrist.set(-.26,1.877,.33));
+      person.deskPose?.(workBlend,mouseWrist,keyboardWrist,reduced ? 0 : t);
+    }
+    person.greetPose?.(helloWave,t,1);
+    if(workBlend>.98) {
+      person.root.updateMatrixWorld(true);
+      person.arms[0].userData.hand.getWorldPosition(actualWrist);
+      host.dataset.mouseContact=actualWrist.distanceTo(mouseWrist).toFixed(4);
+    } else host.dataset.mouseContact='released';
     const cameraX = mobile ? mix(2.6, 0, cameraWalk) : mix(4.7, 0, cameraWalk);
     const cameraY = mobile
       ? mix(3.7, 3.4, cameraWalk)
@@ -816,7 +838,7 @@ export function createScene(host, mode, getProgress) {
       .join(",");
     if(websiteMap && objects.visible && (lastWebsiteDraw < 0 || (!reduced && time-lastWebsiteDraw>100))) {
       const canvas=websiteMap.image;
-      drawDeskWebsite(canvas.getContext('2d'),canvas.width,canvas.height,reduced ? 0 : (time-introStart)/1000);
+      drawDeskCode(canvas.getContext('2d'),canvas.width,canvas.height,reduced ? 0 : (time-introStart)/1000);
       websiteMap.needsUpdate=true;lastWebsiteDraw=time;host.dataset.websiteFrame=String(++websiteFrame);
     }
     if(speakerCone) {

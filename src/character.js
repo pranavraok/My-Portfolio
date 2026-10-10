@@ -26,7 +26,7 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
   root.add(body);
   const head = new THREE.Group();
   head.name = "character-head";
-  head.position.y = 2.75;
+  head.position.y = 2.72;
   body.add(head);
   const arms = [], legs = [], skeletons = [], eyes = [];
 
@@ -99,47 +99,67 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
   shirtMap.wrapS = shirtMap.wrapT = THREE.RepeatWrapping;
   const shirtMaterial = mat("#ffffff", { map: shirtMap, roughness: 1 });
 
-  // Wide cheeks and a nearly round jaw give the head a friendly chibi shape.
-  const face = new THREE.SphereGeometry(1, 48, 32), fp = face.attributes.position;
-  for (let i = 0; i < fp.count; i++) {
-    const y = fp.getY(i);
-    fp.setXYZ(i, fp.getX(i) * 0.69 * (1 - Math.max(0, -y) * 0.035), y * 0.615, fp.getZ(i) * 0.545);
+  // An adult oval/square silhouette: a flatter mid-face and a tapered mandible
+  // meet a distinct broad chin, without spherical cheek pieces.
+  const faceProfile=[[-.655,0,0],[-.63,.155,.115],[-.585,.248,.208],[-.49,.336,.29],[-.34,.413,.345],[-.15,.485,.395],[.075,.526,.41],[.26,.522,.398],[.43,.484,.362],[.56,.378,.282],[.635,.22,.161],[.68,0,0]];
+  function faceRadii(y){
+    const index=faceProfile.findIndex(point=>point[0]>=y);
+    if(index<=0)return [0,0];
+    const a=faceProfile[index-1],b=faceProfile[index],span=b[0]-a[0],t=(y-a[0])/span;
+    return [1,2].map(axis=>{
+      const before=faceProfile[Math.max(0,index-2)],after=faceProfile[Math.min(faceProfile.length-1,index+1)];
+      const ma=(b[axis]-before[axis])/(b[0]-before[0]),mb=(after[axis]-a[axis])/(after[0]-a[0]);
+      return Math.max(0,(2*t*t*t-3*t*t+1)*a[axis]+(t*t*t-2*t*t+t)*span*ma+(-2*t*t*t+3*t*t)*b[axis]+(t*t*t-t*t)*span*mb);
+    });
   }
-  face.computeVertexNormals();
-  mesh(face, mat(C.skin, { roughness: 1 }), head);
+  const facePositions=[],faceIndices=[],faceRows=64,faceSides=80;
+  for(let row=0;row<=faceRows;row++){
+    const y=-.655+(1.335*row/faceRows),[rx,rz]=faceRadii(y);
+    for(let col=0;col<=faceSides;col++){
+      const angle=col/faceSides*Math.PI*2,sine=Math.sin(angle);
+      facePositions.push(rx*Math.cos(angle),y,rz*(sine>=0?Math.pow(sine,.75):sine));
+      if(row<faceRows&&col<faceSides){const a=row*(faceSides+1)+col,b=a+faceSides+1;faceIndices.push(a,b,a+1,b,b+1,a+1);}
+    }
+  }
+  const face=new THREE.BufferGeometry();
+  face.setAttribute("position",new THREE.Float32BufferAttribute(facePositions,3));
+  face.setIndex(faceIndices);face.computeVertexNormals();
+  mesh(face,mat(C.skin,{roughness:1}),head).name="adult-profile-face";
   for (const side of [-1, 1]) {
-    soft([0.09, 0.125, 0.081], C.skin, head, [side * 0.658, -0.018, -0.023]);
-    soft([0.026, 0.052, 0.018], C.skinShade, head, [side * 0.703, -0.027, 0.032]);
+    soft([.066,.114,.061],C.skin,head,[side*.514,-.014,-.018]);
+    soft([.019,.054,.014],C.skinShade,head,[side*.548,-.024,.025]);
   }
 
-  // A connected sculpt surface carries curved raised locks and shallow grooves.
-  // Each lock is a curl-shaped ridge on the scalp, rather than a separate ball.
+  // Fuller tousled top with open asymmetric swept waves. No concentric curl
+  // loops or negative ring grooves: the sides taper into one cohesive groom.
   function scalp(theta,phi) {
-    const front=Math.max(0,Math.sin(phi));
-    const x=.696*Math.sin(theta)*Math.cos(phi),z=.551*Math.sin(theta)*Math.sin(phi)-.018;
-    const sweep=Math.exp(-((x+.23)**2/.14+(z-.19)**2/.14))*.042;
-    return [x,.608*Math.cos(theta)+.02+sweep+.007*Math.sin(phi*5+theta*3)*Math.sin(theta)*front,z];
+    const sine=Math.sin(phi),front=Math.max(0,sine);
+    const crownX=.552*Math.sin(theta)*Math.cos(phi),crownZ=.438*Math.sin(theta)*sine-.017;
+    const sweep=Math.exp(-((crownX+.13)**2/.1+(crownZ-.16)**2/.1))*.043;
+    const y=.681*Math.cos(theta)+.016+sweep+.006*Math.sin(phi*3.7+theta*4.1)*Math.sin(theta)*front;
+    const [faceX,faceZ]=faceRadii(y);
+    // The adult skull is a shaped profile, not an ellipse. Match its radii and
+    // flattened front at EVERY row, while retaining the extended upper crown.
+    const rx=Math.max(.552*Math.sin(theta),faceX>0?faceX+.028:0);
+    const rz=Math.max(.438*Math.sin(theta),faceZ>0?faceZ+.042:0);
+    return [rx*Math.cos(phi),y,rz*(sine>=0?Math.pow(sine,.75):sine)-.006];
   }
   const curlRidges=[];
-  const curlRows=[
-    {theta:.31,count:6,thetaRadius:.115,phiRadius:.24,height:.032},
-    {theta:.67,count:9,thetaRadius:.14,phiRadius:.24,height:.038},
-    {theta:.99,count:7,thetaRadius:.12,phiRadius:.18,height:.041,front:true},
-  ];
-  for(const row of curlRows) for(let i=0;i<row.count;i++) {
-    const centerPhi=row.front?.32+(i/(row.count-1))*(Math.PI-.64):(i/row.count)*Math.PI*2+.17;
-    const centerTheta=row.theta+Math.sin(i*2.4)*.036;
+  for(let i=0;i<13;i++) {
+    const front=i<9,centerPhi=front?.22+(i/8)*(Math.PI-.44):Math.PI+.38+(i-9)*.56;
+    const start=.15+(Math.sin(i*2.1)+1)*.11,end=front?1.02+Math.sin(i*1.8)*.085:1.24+Math.sin(i)*.06;
     const points=[];
-    for(let j=0;j<=18;j++) {
-      const t=j/18,a=t*Math.PI*1.72-.43*Math.PI,growth=.69+.31*t;
-      points.push(scalp(centerTheta+Math.sin(a)*row.thetaRadius*growth,centerPhi+Math.cos(a)*row.phiRadius*growth));
+    for(let j=0;j<=24;j++) {
+      const t=j/24,theta=THREE.MathUtils.lerp(start,end,t);
+      const phi=centerPhi+.22*(1-t)+Math.sin(t*Math.PI*1.35+i*1.97)*.15*Math.sqrt(t)+Math.sin(t*Math.PI*2.4+i)*.04*t;
+      points.push(scalp(theta,phi));
     }
     const segments=[];
     for(let j=0;j<points.length-1;j++) {
       const a=points[j],b=points[j+1],dx=b[0]-a[0],dy=b[1]-a[1],dz=b[2]-a[2];
       segments.push({x:a[0],y:a[1],z:a[2],dx,dy,dz,inverse:1/(dx*dx+dy*dy+dz*dz)});
     }
-    curlRidges.push({segments,height:row.height*(.73+.27*Math.max(0,Math.sin(centerPhi))),widthSquared:(row.front?.041:.038)**2});
+    curlRidges.push({segments,height:front?.023:.014,widthSquared:(.038+.007*Math.sin(i*1.4))**2});
   }
   function curlRelief(x,y,z) {
     let relief=0;
@@ -151,9 +171,8 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
         distance=Math.min(distance,px*px+py*py+pz*pz);
       }
       const raised=ridge.height*Math.exp(-distance/ridge.widthSquared);
-      const bed=.009*Math.exp(-distance/(ridge.widthSquared*7));
-      const groove=.005*Math.exp(-((Math.sqrt(distance)-Math.sqrt(ridge.widthSquared)*1.8)**2)/(ridge.widthSquared*.4));
-      relief=Math.max(relief,raised+bed-groove);
+      const bed=.006*Math.exp(-distance/(ridge.widthSquared*5));
+      relief=Math.max(relief,raised+bed);
     }
     return relief;
   }
@@ -162,15 +181,15 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
     for (let col = 0; col <= hairSides; col++) {
       const phi = col / hairSides * Math.PI * 2;
       const front = Math.max(0, Math.sin(phi)), back = Math.max(0, -Math.sin(phi));
-      const limit = 1.4 - 0.27 * front * front + 0.29 * back+.022*Math.sin(phi*11)*front;
+      const limit = 1.39 - 0.26 * front * front + 0.32 * back+.026*Math.sin(phi*7.3)*front;
       const theta = row / hairRows * limit;
       let [x,y,z]=scalp(theta,phi);
       const edge=THREE.MathUtils.smoothstep(row/hairRows,.88,1);
       const relief=curlRelief(x,y,z)*(1-edge*.66);
-      const nx=x/(.696*.696),ny=(y-.02)/(.608*.608),nz=(z+.018)/(.551*.551);
+      const nx=x/(.552*.552),ny=(y-.016)/(.681*.681),nz=(z+.006)/(.438*.438);
       const length=Math.hypot(nx,ny,nz);
       x+=nx/length*relief;y+=ny/length*relief;z+=nz/length*relief;
-      const templeTaper=edge*.007*(1-front*.6);
+      const templeTaper=edge*.016*(1-front*.6);
       hp.push(x*(1-templeTaper),y,z*(1-templeTaper));
       if (row < hairRows && col < hairSides) {
         const a = row * (hairSides + 1) + col, b = a + hairSides + 1;
@@ -181,14 +200,14 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
   const hair = new THREE.BufferGeometry();
   hair.setAttribute("position", new THREE.Float32BufferAttribute(hp, 3));
   hair.setIndex(hi); hair.computeVertexNormals();
-  mesh(hair, mat(C.hair, { roughness: 0.83 }), head).name="sculpted-curly-hair";
+  mesh(hair, mat(C.hair, { roughness: 0.87 }), head).name="sculpted-curly-hair";
 
   const glasses = new THREE.Group();
   glasses.name = "character-sunglasses";
   head.add(glasses);
   const faceSurface=(x,y)=>{
-    const radius=.69*(1-Math.max(0,-y/.615)*.035);
-    return .545*Math.sqrt(Math.max(0,1-(x/radius)**2-(y/.615)**2));
+    const [rx,rz]=faceRadii(y);
+    return rx>0?rz*Math.pow(Math.max(0,1-(x/rx)**2),.375):0;
   };
   function rectangle(w, h, r) {
     const s = new THREE.Shape();
@@ -226,9 +245,9 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
     return geometry;
   }
   for (const side of [-1, 1]) {
-    const x = side * 0.262, eye = new THREE.Group();
+    const x = side * 0.211, eye = new THREE.Group();
     eye.name = side < 0 ? "left-eye" : "right-eye";
-    eye.position.set(x,0.064,0.505); eye.visible=false; head.add(eye);
+    eye.position.set(x,0.064,faceSurface(x,.064)); eye.visible=false; head.add(eye);
     const open = new THREE.Group(); eye.add(open);
     soft([0.12,0.1,0.034],"#fff8e9",open,[0,0,0],{roughness:0.73});
     soft([0.054,0.068,0.016],"#494138",open,[0.006,-0.005,0.036]);
@@ -237,49 +256,60 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
     const closed = curve([[-0.106,0,0.026],[0,-0.027,0.041],[0.106,0,0.026]],0.013,C.hair,eye,{transparent:true,opacity:0,depthWrite:false});
     closed.visible=false; eyes.push({root:eye,open,closed});
 
-    const shape=rectangle(0.486,0.306,0.06);
+    const shape=rectangle(.391,.265,.045);
     const lensGeometry=curvedLens(shape,x);
     const lens=mesh(lensGeometry,mat("#10151c",{roughness:0.18,metalness:0.22,side:THREE.DoubleSide}),glasses);
     lens.name="sunglass-lens";
     const path=new THREE.CatmullRomCurve3(shape.getPoints(10).map(p=>new THREE.Vector3(p.x+x,p.y+.064,faceSurface(p.x+x,p.y+.064)+.034)),true);
-    mesh(new THREE.TubeGeometry(path,80,0.018,8,true),mat("#181c21",{roughness:0.32}),glasses);
-    const glareGeometry=new THREE.PlaneGeometry(.096,.009);glareGeometry.rotateZ(-.23);
+    mesh(new THREE.TubeGeometry(path,80,.014,8,true),mat("#181c21",{roughness:0.32}),glasses);
+    const glareGeometry=new THREE.PlaneGeometry(.065,.007);glareGeometry.rotateZ(-.23);
     const gp=glareGeometry.attributes.position;
-    for(let i=0;i<gp.count;i++){const px=gp.getX(i)+x-.052,py=gp.getY(i)+.132;gp.setXYZ(i,px,py,faceSurface(px,py)+.038);}
+    for(let i=0;i<gp.count;i++){const px=gp.getX(i)+x-.04,py=gp.getY(i)+.125;gp.setXYZ(i,px,py,faceSurface(px,py)+.038);}
     mesh(glareGeometry,new THREE.MeshBasicMaterial({color:"#b8c4cc",transparent:true,opacity:0.17,depthWrite:false}),glasses);
-    curve([[side*.505,.112,faceSurface(.505,.112)+.027],[side*.649,.102,.205],[side*.701,.084,-.016]],.017,"#181c21",glasses,{roughness:.32});
+    curve([[side*.406,.103,faceSurface(.406,.103)+.027],[side*.508,.094,.135],[side*.557,.073,-.02]],.014,"#181c21",glasses,{roughness:.32});
   }
-  curve([[-0.033,.104,.57],[0,.115,.576],[.033,.104,.57]],.017,"#181c21",glasses,{roughness:.32});
-  soft([0.068,0.061,0.077],C.skin,head,[0,-0.079,0.539]);
+  curve([[-.026,.101,.441],[0,.114,.448],[.026,.101,.441]],.014,"#181c21",glasses,{roughness:.32});
+  soft([.041,.097,.037],C.skin,head,[0,-.014,faceSurface(0,-.014)+.005]);
+  soft([.06,.056,.058],C.skin,head,[0,-.118,faceSurface(0,-.118)+.034]);
   for(const side of [-1,1]){
-    const points=[[side*.007,-.18],[side*.067,-.179],[side*.116,-.195]].map(([x,y])=>[x,y,faceSurface(x,y)+.013]);
-    curve(points,.009,"#795841",head);
+    const points=[[side*.008,-.227],[side*.062,-.223],[side*.111,-.237]].map(([x,y])=>[x,y,faceSurface(x,y)+.009]);
+    curve(points,.0065,"#795841",head);
   }
   function facePatch(shape,color,centerY,offset,options={}){
-    const geometry=new THREE.ShapeGeometry(shape,24),positions=geometry.attributes.position;
-    for(let i=0;i<positions.count;i++){
-      const x=positions.getX(i),y=positions.getY(i)+centerY;
-      positions.setXYZ(i,x,y,faceSurface(x,y)+offset);
+    const source=new THREE.ShapeGeometry(shape,16),sp=source.attributes.position,si=source.index;
+    const positions=[],normals=[];
+    function triangle(a,b,c,level){
+      if(level){const ab=a.clone().add(b).multiplyScalar(.5),bc=b.clone().add(c).multiplyScalar(.5),ca=c.clone().add(a).multiplyScalar(.5);triangle(a,ab,ca,level-1);triangle(ab,b,bc,level-1);triangle(ca,bc,c,level-1);triangle(ab,bc,ca,level-1);return;}
+      for(const point of [a,b,c]){
+        const x=point.x,y=point.y+centerY;
+        positions.push(x,y,faceSurface(x,y)+offset);
+        const normal=new THREE.Vector3(-(faceSurface(x+.001,y)-faceSurface(x-.001,y))/.002,-(faceSurface(x,y+.001)-faceSurface(x,y-.001))/.002,1).normalize();
+        normals.push(normal.x,normal.y,normal.z);
+      }
     }
-    geometry.computeVertexNormals();
+    for(let i=0;i<si.count;i+=3)triangle(new THREE.Vector3().fromBufferAttribute(sp,si.getX(i)),new THREE.Vector3().fromBufferAttribute(sp,si.getX(i+1)),new THREE.Vector3().fromBufferAttribute(sp,si.getX(i+2)),2);
+    source.dispose();
+    const geometry=new THREE.BufferGeometry();
+    geometry.setAttribute("position",new THREE.Float32BufferAttribute(positions,3));
+    geometry.setAttribute("normal",new THREE.Float32BufferAttribute(normals,3));
     const patch=mesh(geometry,mat(color,{roughness:.94,side:THREE.DoubleSide,...options}),head);
     patch.castShadow=false;return patch;
   }
   const smile=new THREE.Shape();
-  smile.moveTo(-.147,.028);smile.quadraticCurveTo(0,-.005,.147,.029);
-  smile.quadraticCurveTo(.075,-.064,0,-.064);smile.quadraticCurveTo(-.075,-.065,-.147,.028);
-  facePatch(smile,"#785341",-.251,.007).name="character-smile";
+  smile.moveTo(-.132,.014);smile.quadraticCurveTo(0,-.003,.132,.015);
+  smile.quadraticCurveTo(.122,-.031,.066,-.035);smile.quadraticCurveTo(0,-.045,-.067,-.034);smile.quadraticCurveTo(-.12,-.029,-.132,.014);
+  facePatch(smile,"#815a46",-.278,.008).name="character-smile";
   const teeth=new THREE.Shape();
-  teeth.moveTo(-.129,.017);teeth.quadraticCurveTo(0,-.008,.128,.019);
-  teeth.quadraticCurveTo(.079,-.022,0,-.028);teeth.quadraticCurveTo(-.079,-.021,-.129,.017);
-  facePatch(teeth,"#f4e8d7",-.251,.011,{roughness:.82}).name="smile-teeth";
-  curve([[-.129,-.254],[0,-.318],[.129,-.253]].map(([x,y])=>[x,y,faceSurface(x,y)+.009]),.008,"#ac775d",head);
+  teeth.moveTo(-.105,.004);teeth.quadraticCurveTo(0,-.006,.105,.004);
+  teeth.quadraticCurveTo(.066,-.019,0,-.02);teeth.quadraticCurveTo(-.068,-.019,-.105,.004);
+  facePatch(teeth,"#eee2cf",-.281,.012,{roughness:.86}).name="smile-teeth";
+  curve([[-.105,-.29],[0,-.327],[.105,-.289]].map(([x,y])=>[x,y,faceSurface(x,y)+.007]),.0055,"#b57c64",head);
   const beard=new THREE.Shape();
-  beard.moveTo(-.162,.037);beard.quadraticCurveTo(0,-.023,.162,.037);
-  beard.quadraticCurveTo(.09,-.024,0,-.046);beard.quadraticCurveTo(-.09,-.024,-.162,.037);
-  facePatch(beard,"#76543e",-.417,.003,{transparent:true,opacity:.22,depthWrite:false}).name="subtle-chin-stubble";
+  beard.moveTo(-.162,.032);beard.quadraticCurveTo(0,-.011,.162,.032);
+  beard.quadraticCurveTo(.084,-.014,0,-.029);beard.quadraticCurveTo(-.084,-.014,-.162,.032);
+  facePatch(beard,"#76543e",-.533,.005,{transparent:true,opacity:.19,depthWrite:false}).name="subtle-chin-stubble";
 
-  soft([0.158,0.16,0.15],C.skin,body,[0,2.13,-0.028]).name="character-neck";
+  soft([.145,.15,.139],C.skin,body,[0,2.11,-.028]).name="character-neck";
   mesh(loft([[0,1.07,0],[0.338,1.075,0.205],[0.4,1.15,0.249],[0.405,1.48,0.261],[0.465,1.85,0.285],[0.474,1.97,0.263],[0.377,2.063,0.205],[0.204,2.105,0.144],[0,2.119,0]]),shirtMaterial,body);
   soft([0.34,0.125,0.215],C.jeans,body,[0,1.078,-0.018]).name="character-hips";
   const neck=mesh(new THREE.TorusGeometry(0.176,0.022,10,40),mat(C.neckline,{roughness:1}),body,[0,2.093,-0.007],[1,0.87,1]);
@@ -339,12 +369,44 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
     const lower=new THREE.Quaternion().setFromUnitVectors(DOWN,new THREE.Vector3(...(left?[0.94,-0.12,0.32]:[-0.95,-0.06,0.3])).normalize());
     return {upper,elbow:upper.clone().invert().multiply(lower),hand:new THREE.Quaternion().setFromEuler(new THREE.Euler(0,arm.userData.side*0.16,arm.userData.side*0.06))};
   });
-  const greetingUpper=new THREE.Quaternion().setFromUnitVectors(DOWN,new THREE.Vector3(-0.3,0.52,0.8).normalize());
-  const greetingLower=new THREE.Quaternion().setFromUnitVectors(DOWN,new THREE.Vector3(-0.2,0.92,0.34).normalize());
-  const greetingElbow=greetingUpper.clone().invert().multiply(greetingLower);
-  const inverseGreetingLower=greetingLower.clone().invert(),waveHand=new THREE.Quaternion(),waveEuler=new THREE.Euler();
+  const greetingTargets=arms.map(arm=>{
+    const side=arm.userData.side;
+    const upper=new THREE.Quaternion().setFromUnitVectors(DOWN,new THREE.Vector3(side*.3,.52,.8).normalize());
+    const lower=new THREE.Quaternion().setFromUnitVectors(DOWN,new THREE.Vector3(side*.2,.92,.34).normalize());
+    return {upper,elbow:upper.clone().invert().multiply(lower),inverseLower:lower.clone().invert()};
+  });
+  const waveHand=new THREE.Quaternion(),waveEuler=new THREE.Euler();
   const clamp=(value,fallback=0)=>THREE.MathUtils.clamp(Number.isFinite(value)?value:fallback,0,1);
   function update(){root.updateMatrixWorld(true);for(const skeleton of skeletons)skeleton.update();}
+
+  const wristTarget=new THREE.Vector3(),direction=new THREE.Vector3(),pole=new THREE.Vector3(),bend=new THREE.Vector3(),lowerDirection=new THREE.Vector3();
+  const upperRotation=new THREE.Quaternion(),lowerRotation=new THREE.Quaternion(),relativeRotation=new THREE.Quaternion();
+  const bodyRotation=new THREE.Quaternion(),handRotation=new THREE.Quaternion();
+  const deskHandRotation=new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI/2,0,0));
+  const restHandRotation=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(-1,0,0),new THREE.Vector3(0,0,-1),new THREE.Vector3(0,-1,0)));
+
+  // Two actual joints reach the wrist target; the hand never moves separately
+  // from its forearm. The pole controls where the elbow bends.
+  function reachArm(arm,target,poleHint,orientation,amount=1) {
+    const blend=clamp(amount);if(!blend)return;
+    direction.copy(target).sub(arm.position);
+    const distance=THREE.MathUtils.clamp(direction.length(),.09001,.76999);
+    direction.normalize();
+    const along=(.43*.43-.34*.34+distance*distance)/(2*distance);
+    const height=Math.sqrt(Math.max(0,.43*.43-along*along));
+    pole.copy(poleHint).addScaledVector(direction,-poleHint.dot(direction)).normalize();
+    bend.copy(direction).multiplyScalar(along).addScaledVector(pole,height);
+    upperRotation.setFromUnitVectors(DOWN,bend.clone().normalize());
+    lowerDirection.copy(direction).multiplyScalar(distance).sub(bend).normalize();
+    lowerRotation.setFromUnitVectors(DOWN,lowerDirection);
+    arm.quaternion.slerp(upperRotation,blend);
+    relativeRotation.copy(upperRotation).invert().multiply(lowerRotation);
+    arm.userData.elbow.quaternion.slerp(relativeRotation,blend);
+    relativeRotation.copy(lowerRotation).invert().multiply(orientation);
+    arm.userData.hand.quaternion.slerp(relativeRotation,blend);
+  }
+
+  const restTargets=arms.map(arm=>({wrist:new THREE.Vector3(arm.userData.side*.55,1.66,.20),pole:new THREE.Vector3(arm.userData.side,0,0)}));
 
   function pose(amount){
     const standing=clamp(amount,1),angle=(1-standing)*Math.PI/2;
@@ -358,6 +420,7 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
       arm.userData.hand.userData.fingers.forEach(finger=>finger.rotation.set(0,0,0));
       arm.userData.hand.userData.thumb.rotation.set(0,0,arm.userData.side*0.45);
     }
+    arms.forEach((arm,index)=>reachArm(arm,restTargets[index].wrist,restTargets[index].pole,restHandRotation,1-standing));
     glasses.position.set(0,0,0); glasses.rotation.set(0,0,0); glasses.visible=true; head.rotation.x=0; head.rotation.z=0;
     eyes.forEach(eye=>{eye.open.scale.y=1;eye.open.visible=true;eye.closed.visible=false;eye.closed.material.opacity=0;});
     update(); return standing;
@@ -369,13 +432,32 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
     update(); return blend;
   }
 
-  function greetPose(amount,time=0){
+  function deskPose(amount,mouseWrist,keyboardWrist,time=0) {
+    const blend=clamp(amount);if(!blend)return;
+    body.updateWorldMatrix(true,false);
+    body.getWorldQuaternion(bodyRotation).invert();
+    handRotation.copy(bodyRotation).multiply(deskHandRotation);
+    [mouseWrist,keyboardWrist].forEach((target,index)=>{
+      wristTarget.copy(target);body.worldToLocal(wristTarget);
+      pole.set(index===0 ? 1 : -1,-.25,.05).applyQuaternion(bodyRotation);
+      reachArm(arms[index],wristTarget,pole,handRotation,blend);
+    });
+    const mouseFingers=arms[0].userData.hand.userData.fingers;
+    mouseFingers.forEach(finger=>finger.rotation.x=-.60*blend);
+    mouseFingers[1].rotation.x-=.15*Math.pow(Math.max(0,Math.sin(time*2.1)),8)*blend;
+    arms[1].userData.hand.userData.fingers.forEach((finger,index)=>{
+      finger.rotation.x=(-.52-.20*Math.pow(Math.max(0,Math.sin(time*3.8+index*.8)),4))*blend;
+    });
+    update();
+  }
+
+  function greetPose(amount,time=0,armIndex=0){
     const raw=clamp(amount),blend=raw*raw*(3-2*raw); if(!blend)return blend;
-    const arm=arms[0],hand=arm.userData.hand;
-    arm.quaternion.slerp(greetingUpper,blend); arm.userData.elbow.quaternion.slerp(greetingElbow,blend);
+    const arm=arms[armIndex],hand=arm.userData.hand,target=greetingTargets[armIndex];
+    arm.quaternion.slerp(target.upper,blend); arm.userData.elbow.quaternion.slerp(target.elbow,blend);
     // The palm faces +Z while the wrist waves gently from side to side.
     waveEuler.set(0,0,Math.PI+Math.sin((Number.isFinite(time)?time:0)*2.3)*0.085);
-    waveHand.setFromEuler(waveEuler).premultiply(inverseGreetingLower);
+    waveHand.setFromEuler(waveEuler).premultiply(target.inverseLower);
     hand.quaternion.slerp(waveHand,blend);
     hand.userData.fingers.forEach((finger,i)=>{finger.rotation.z=THREE.MathUtils.lerp(finger.rotation.z,[-0.23,-0.07,0.075,0.24][i],blend);});
     hand.userData.thumb.rotation.z=THREE.MathUtils.lerp(hand.userData.thumb.rotation.z,0.95,blend);
@@ -413,5 +495,5 @@ export function createCharacter({ mesh, mat, box, rod, texture }, seated = false
   }
 
   pose(seated?0:1);
-  return {root,body,head,arms,legs,pose,portraitPose,greetPose,restPose,walkPose,glasses,eyes};
+  return {root,body,head,arms,legs,pose,portraitPose,greetPose,restPose,walkPose,deskPose,glasses,eyes};
 }

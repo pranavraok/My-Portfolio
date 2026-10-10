@@ -24,16 +24,16 @@ The production build is written to `dist`. Vercel uses the configuration in `ver
 
 - `src/data.js`: profile, project descriptions, verified links, and achievement dates.
 - `src/scene.js`: one continuous 3D world, scroll-driven camera movement, workspace, lighting, and holographic scan.
-- `src/character.js`: photo-inspired clay character with sculpted curls, fitted sunglasses, a patterned red shirt, a smile, and reversible sitting, standing, greeting, sleeping, walking, and folded-arm poses. Foot plants and body advance share a continuous walking path; glasses remain anchored on the face during every gesture.
+- `src/character.js`: photo-inspired character with an adult tapered jaw, fitted wavy hair, sunglasses, and a patterned red shirt. Two-joint arm reach keeps the wrist attached to the mouse and keyboard in the working pose; supported armrest poses blend into the greeting and stand-up. Foot plants and body advance share a continuous walking path.
 - `src/components/Experience.jsx`: the synchronized desk-to-scanner narrative, progressive labels, and mobile cards.
 - `src/experience.css`: desktop, phone, and landscape framing for the 3D narrative.
 - `src/contact-scene.js` and `src/components/ContactCharacter.jsx`: parcel-and-letter scene with a sleeping character, scroll-driven wake-up, and a tappable hello wave.
-- `src/contact.css`: responsive contact-scene composition and back-to-top footer.
+- `src/contact.css`: responsive contact scene with the heading at upper left, parcels at lower left, a centered character, and a back-to-top footer.
 - `src/components/DecodedText.jsx`: motion-aware text decoding for the opening role and hologram labels.
 - `src/theme.css`: the personalized mint, forest-green, and coral palette.
 - `src/components/MusicPlayer.jsx`: computer-style music controls with speaker panning, volume, and live audio analysis.
 - `src/music.js`: favorite-track configuration and the desk-monitor radio display. The default soundtrack is the original 76 BPM lo-fi composition “Window Light”; favorite songs will be added once supplied.
-- `src/desk-display.js`: animated miniature portfolio displayed on the right monitor.
+- `src/desk-display.js`: code editor with a typing comment and blinking cursor on the right monitor.
 - `public/music/studio-lofi.wav` and `scripts/compose-lofi.mjs`: seamless stereo piano, bass, and brushed drums loop with its reproducible composition source.
 - `src/App.jsx`: page layouts, navigation, route transitions, and opt-in lo-fi music.
 - `src/styles.css`: responsive styling and reduced-motion support.

@@ -1,38 +1,41 @@
-const ease = value => { const t = Math.max(0,Math.min(1,value)); return t*t*t*(t*(t*6-15)+10); };
-
-// A live miniature of Pranav's site on the desk, rather than a static screenshot.
-export function drawDeskWebsite(ctx,w,h,time=0) {
-  const cycle = (time % 28)/28;
-  const travel = cycle < .12 ? 0 : cycle < .44 ? ease((cycle-.12)/.32) : cycle < .58 ? 1 : cycle < .9 ? 1-ease((cycle-.58)/.32) : 0;
-  const scroll = travel*435;
+// A calm code editor: the camera moves, while the monitor stays a coding desk.
+export function drawDeskCode(ctx,w,h,time=0) {
   ctx.clearRect(0,0,w,h);
-  ctx.fillStyle='#f3f0e8'; ctx.fillRect(0,0,w,h);
-  ctx.save(); ctx.beginPath(); ctx.rect(0,30,w,h-30); ctx.clip(); ctx.translate(0,30-scroll);
-  ctx.fillStyle='#dce9e1'; ctx.fillRect(0,0,w,218);
-  ctx.fillStyle='#183f32'; ctx.font='bold 43px sans-serif';
-  ctx.fillText('Pranav',29,82); ctx.fillText('Rao K',29,127);
-  ctx.fillStyle='#e85a62'; ctx.fillRect(30,145,192,23);
-  ctx.fillStyle='#fff6e9'; ctx.font='bold 10px sans-serif'; ctx.fillText('DEVELOPER & ML ENGINEER',39,160);
-  ctx.save(); ctx.translate(w*.77,98); ctx.rotate(Math.sin(time*.5)*.025);
-  ctx.fillStyle='#ed5760'; ctx.beginPath(); ctx.roundRect(-31,35,62,66,16); ctx.fill();
-  ctx.fillStyle='#c38a66'; ctx.beginPath(); ctx.ellipse(0,0,47,47,0,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#252527'; ctx.beginPath(); ctx.ellipse(0,-27,45,28,-.05,0,Math.PI*2); ctx.fill();
-  for(let i=0;i<8;i++){ctx.beginPath();ctx.arc(-30+i*9,-40-Math.sin(i*1.7)*6,10,0,Math.PI*2);ctx.fill();}
-  ctx.fillStyle='#151e24'; ctx.beginPath(); ctx.roundRect(-40,-13,36,23,6); ctx.roundRect(4,-13,36,23,6); ctx.fill(); ctx.fillRect(-5,-8,10,4);
-  ctx.strokeStyle='#754b3c';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,10,16,.3,Math.PI-.3);ctx.stroke();
-  ctx.restore();
-  ctx.fillStyle='#214e3c';ctx.font='bold 29px sans-serif';ctx.fillText('Selected projects.',29,269);
-  const cards=[['Mentora','Learning, reimagined.','#cab9ec'],['NutriGo','A healthier everyday.','#b9d6a4'],['TradeLedger','Find your trading rhythm.','#efc19c']];
-  cards.forEach(([title,detail,color],i)=>{
-    const y=291+i*93;ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(28,y,w-56,79,10);ctx.fill();
-    ctx.fillStyle='#1c3c31';ctx.font='bold 20px sans-serif';ctx.fillText(title,46,y+33);ctx.font='11px sans-serif';ctx.fillText(detail,46,y+53);
-    ctx.fillStyle='#ffffff95';ctx.beginPath();ctx.roundRect(w-129,y+13,70,52,6);ctx.fill();
-    ctx.fillStyle=color;ctx.fillRect(w-115,y+25,40,6);ctx.fillRect(w-115,y+38,27,5);ctx.fillRect(w-115,y+48,33,5);
+  ctx.fillStyle='#19212e';ctx.fillRect(0,0,w,h);
+  ctx.fillStyle='#111824';ctx.fillRect(0,0,31,h);ctx.fillRect(31,0,w-31,30);
+  ctx.fillStyle='#273342';ctx.fillRect(31,0,123,30);
+  ctx.font='11px monospace';ctx.fillStyle='#bacbd7';ctx.fillText('App.tsx',51,20);
+  ctx.fillStyle='#6c8597';ctx.fillText('avatar.ts',175,20);
+  ['#ef7b83','#e6c885','#97c9b2'].forEach((color,index)=>{ctx.fillStyle=color;ctx.beginPath();ctx.arc(w-50+index*14,15,3,0,Math.PI*2);ctx.fill();});
+  for(let i=0;i<5;i++){ctx.strokeStyle=i===0?'#8ed3bc':'#526374';ctx.lineWidth=2;ctx.strokeRect(9,45+i*35,12,14);}
+  const lines=[
+    "import { useState } from 'react';",
+    "import { Portfolio } from './Portfolio';",
+    '',
+    'export default function Pranav() {',
+    '  const [music, setMusic] = useState(false);',
+    '',
+    '  return (',
+    '    <Portfolio',
+    '      name="Pranav Rao K"',
+    '      stack={["React", "Python", "AI"]}',
+    '      onReady={() => setMusic(true)}',
+    '    />',
+    '  );',
+    '}',
+  ];
+  const liveLine="// Building something good, one detail at a time.";
+  const step=Math.floor(time*9)%(liveLine.length+45);
+  lines.push('',liveLine.slice(0,Math.min(step,liveLine.length)));
+  ctx.font='11px monospace';
+  lines.forEach((line,index)=>{
+    const y=48+index*13;
+    ctx.fillStyle='#576d81';ctx.fillText(String(index+1).padStart(2,' '),38,y);
+    ctx.fillStyle=line.trim().startsWith('//') ? '#7c9b85' : /import|export|return/.test(line) ? '#be9be8' : /const|onReady|stack/.test(line) ? '#7bbace' : '#d6d2c2';
+    ctx.fillText(line,65,y);
   });
-  ctx.fillStyle='#dce6db';ctx.fillRect(0,591,w,180);ctx.fillStyle='#244739';ctx.font='bold 27px sans-serif';ctx.fillText('Let’s work together!',28,647);
-  ctx.font='12px sans-serif';ctx.fillText('pranavraok18@gmail.com',29,678);
-  ctx.restore();
-  ctx.fillStyle='#e9eee5';ctx.fillRect(0,0,w,30);ctx.fillStyle='#264d3d';ctx.font='bold 12px sans-serif';ctx.fillText('PR',15,20);
-  ctx.font='9px sans-serif';ctx.fillText('ABOUT     PROJECTS     CONTACT',w-205,19);
-  ctx.fillStyle='#eb6b71';ctx.beginPath();ctx.arc(w-17,15,5,0,Math.PI*2);ctx.fill();
+  if(Math.floor(time*2)%2===0){ctx.fillStyle='#b8dbc9';ctx.fillRect(65+ctx.measureText(lines[15]).width,48+15*13-9,1.5,11);}
+  ctx.fillStyle='#121b26';ctx.fillRect(31,257,w-31,45);
+  ctx.fillStyle='#769a89';ctx.font='10px monospace';ctx.fillText('TERMINAL',45,271);ctx.fillStyle='#a3cfb2';ctx.fillText('✓ ready    › npm run dev',45,289);
+  ctx.fillStyle='#2e6855';ctx.fillRect(0,h-18,w,18);ctx.fillStyle='#d5e4dc';ctx.font='9px monospace';ctx.fillText('main  ✓',13,h-6);ctx.fillText('TypeScript React     UTF-8     Ln 16',w-228,h-6);
 }

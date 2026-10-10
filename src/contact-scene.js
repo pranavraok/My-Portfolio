@@ -41,7 +41,7 @@ export function createContactScene(host, getProgress) {
   const panel = (size, map, parent, pos) => mesh(new THREE.PlaneGeometry(...size), new THREE.MeshBasicMaterial({ map, transparent: true }), parent, pos);
   const person = createCharacter({ mesh, mat, box, ball, cylinder, rod, texture, panel });
   scene.add(person.root);
-  person.root.position.set(-.25, .02, .35);
+  person.root.position.set(0, .02, .35);
   person.root.traverse(o => { if (o.isMesh) o.receiveShadow = false; });
   scene.add(new THREE.HemisphereLight("#fff9ed", "#8eaa91", 2.5));
   const light = new THREE.DirectionalLight("#fff2dc", 3.3);
@@ -62,19 +62,19 @@ export function createContactScene(host, getProgress) {
     for(let i = 0; i < 3; i++) box([.085 - i * .02, .006, .003], "#998d79", item, [size[0] * .28 - .03, size[1] * .68 - i * .022, size[2] / 2 + .02], .001);
     return item;
   }
-  parcel([1.48, .86, 1.1], [2.18, 0, -.62], -.12);
-  parcel([1.04, .65, .82], [2.23, .87, -.65], .05);
-  parcel([.8, .65, .8], [1.03, 0, -.25], .12);
-  parcel([.7, .55, .73], [1.5, 0, .3], -.06);
-  parcel([1.24, .73, .96], [2.7, 0, .22], -.19);
+  parcel([1.48, .86, 1.1], [-2.18, 0, -.62], .12);
+  parcel([1.04, .65, .82], [-2.23, .87, -.65], -.05);
+  parcel([.8, .65, .8], [-1.03, 0, -.25], -.12);
+  parcel([.7, .55, .73], [-1.5, 0, .3], .06);
+  parcel([1.24, .73, .96], [-2.7, 0, .22], .19);
   const envelopeMap = texture((ctx, w, h) => {
     ctx.fillStyle = "#f3f0e6"; ctx.fillRect(0, 0, w, h);
     ctx.strokeStyle = "#c8cbbf"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(w / 2, h * .58); ctx.lineTo(w, 0); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(0, h); ctx.lineTo(w * .36, h * .43); ctx.moveTo(w, h); ctx.lineTo(w * .64, h * .43); ctx.stroke();
   });
-  for(const [x,z,a] of [[-1.8,1.1,.35],[.65,.65,-.3],[1.6,.62,.2],[2,1.62,-.16],[-1,1.65,-.2],[2.3,.65,.45]]) {
-    const envelope = panel([.58,.35], envelopeMap, scene,[x,.018,z]); envelope.rotation.set(-Math.PI / 2,0,a);
+  for(const [x,z,a] of [[-1.8,1.1,.35],[-.65,.65,-.3],[-1.6,.62,.2],[-2,1.62,-.16],[-1,1.65,-.2],[-2.3,.65,.45]]) {
+    const envelope = panel([.58,.35], envelopeMap, packages,[x,.018,z]); envelope.rotation.set(-Math.PI / 2,0,a);
   }
   let width = 0, height = 0, mobile = false, visible = false, frame, last = 0;
   const pointer = {x:0,y:0}, followPointer = {x:0,y:0};
@@ -84,6 +84,8 @@ export function createContactScene(host, getProgress) {
     const rect = host.getBoundingClientRect(); width = rect.width; height = rect.height;
     if(!width || !height) return;
     mobile = width <= 600 || width / height < 1;
+    packages.scale.setScalar(mobile ? .48 : 1);
+    packages.position.x = mobile ? -.03 : 0;
     renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.35 : 1.7)); renderer.setSize(width,height);
     camera.aspect = width / height; camera.updateProjectionMatrix();
   };
@@ -122,8 +124,9 @@ export function createContactScene(host, getProgress) {
       person.body.scale.y=1+Math.sin(t*1.45)*.0025;
     }
     person.root.rotation.y = -.035 + (reduced.matches ? 0 : followPointer.x*.06);
-    if(mobile) { camera.position.set(.2,3.2,10.4); camera.lookAt(-.1,2.5,.35); camera.clearViewOffset(); }
-    else { camera.position.set(.4,3.35,9.6); camera.lookAt(.2,2.5,.25); camera.setViewOffset(width,height,-width*.045,0,width,height); }
+    if(mobile) { camera.position.set(.2,3.2,10.4); camera.lookAt(0,2.5,.35); }
+    else { camera.position.set(.4,3.35,9.6); camera.lookAt(0,2.5,.25); }
+    camera.clearViewOffset();
     host.dataset.sleep=sleep.toFixed(2); host.dataset.greeting=greeting.toFixed(2);host.dataset.glasses='worn';
     host.dataset.pose=sleep>.65 ? 'dozing' : stretch>.2 ? 'waking' : greeting>.1 ? 'greeting' : 'relaxed';
     renderer.render(scene,camera);

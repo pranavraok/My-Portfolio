@@ -17,7 +17,7 @@
 .contact-stage .contact-copy {
   position: absolute;
   left: 9.5%; top: 13%;
-  width: 36%;
+  width: 32%;
   z-index: 2;
 }
 .contact-stage .contact-copy h2 {
@@ -34,12 +34,12 @@
 .contact-stage .social-links > a:hover { transform: translateY(-4px); background: #fffaf0; }
 .contact-stage .social-links .resume-link { color: var(--ink); font-size: 12px; }
 .character-greeting {
-  position: absolute; left: 47%; top: 24%; width: 21%; height: 71%;
+  position: absolute; left: 42%; top: 24%; width: 18%; height: 71%;
   border: 0; padding: 0; background: transparent; cursor: pointer;
   border-radius: 50%;
 }
 .character-greeting:focus-visible { outline: 2px dashed var(--navy); outline-offset: -8px; }
-.sleep-symbols { position: absolute; left: 66%; top: 26%; opacity: var(--sleep); pointer-events: none; }
+.sleep-symbols { position: absolute; left: 58%; top: 26%; opacity: var(--sleep); pointer-events: none; }
 .sleep-symbols span { position: absolute; font-size: 30px; font-weight: 700; animation: doze 3s ease-in-out infinite; }
 .sleep-symbols span:nth-child(2) { left: 32px; top: -32px; font-size: 35px; animation-delay: .8s; }
 .sleep-symbols span:nth-child(3) { left: 60px; top: -67px; font-size: 27px; animation-delay: 1.6s; }
