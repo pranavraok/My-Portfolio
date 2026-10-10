@@ -106,7 +106,7 @@ export function createContactScene(host, getProgress) {
     person.body.position.y += reduced.matches ? 0 : Math.sin(t*1.5)*.012;
     person.root.rotation.y = -.035 + (reduced.matches ? 0 : pointer.x*.05);
     if(mobile) { camera.position.set(.2,3.2,10.4); camera.lookAt(-.1,2.5,.35); camera.clearViewOffset(); }
-    else { camera.position.set(.4,3.35,9.6); camera.lookAt(.2,1.68,.25); camera.setViewOffset(width,height,-width*.045,0,width,height); }
+    else { camera.position.set(.4,3.35,9.6); camera.lookAt(.2,2.5,.25); camera.setViewOffset(width,height,-width*.045,0,width,height); }
     host.dataset.sleep=sleep.toFixed(2); host.dataset.greeting=greeting.toFixed(2);
     renderer.render(scene,camera);
   }

@@ -6,7 +6,7 @@
 }
 .contact-stage {
   position: relative;
-  height: min(850px, 108svh);
+  height: min(850px, 90svh);
   min-height: 650px;
   border-radius: 48px;
   background: #dce6db;
