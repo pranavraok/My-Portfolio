@@ -598,7 +598,7 @@ export default function App() {
   return (
     <div
       ref={root}
-      className={`site ${home ? "is-home" : ""} ${blue ? "is-blue" : ""}`}
+      className={`site ${home ? "is-home" : ""} ${active ? "has-started" : ""} ${blue ? "is-blue" : ""}`}
     >
       <a className="skip-link" href="#main-content">
         Skip to content

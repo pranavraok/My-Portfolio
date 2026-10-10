@@ -196,7 +196,7 @@
     opacity 0.35s,
     color 0.35s;
 }
-.is-home:not(.is-blue) .brand {
+.is-home:not(.has-started) .brand {
   opacity: 0;
   pointer-events: none;
 }
