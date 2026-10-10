@@ -48,7 +48,9 @@ export default function Scene({ mode, progress, timeline }) {
       aria-label={
         mode === "workspace" || mode === "experience"
           ? "Pranav at his desk: curly black hair, sunglasses, a smile, and his red patterned shirt"
-          : "Pranav’s 3D character on a glowing holographic platform"
+          : mode === "contact"
+            ? "Pranav dozing beside parcels, then waking up and waving hello"
+            : "Pranav’s 3D character on a glowing holographic platform"
       }
     >
       {failed ? (

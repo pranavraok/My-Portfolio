@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import Experience from "./components/Experience.jsx";
 import MusicPlayer from "./components/MusicPlayer.jsx";
+import ContactCharacter from "./components/ContactCharacter.jsx";
 import { Icon, Logo } from "./components/Icons.jsx";
 import { profile, projects, awards } from "./data.js";
 
@@ -214,35 +215,26 @@ function Home({ navigate, scrollTo, onPhase }) {
           </a>
         </div>
       </section>
-      <Contact />
+      <Contact scrollTo={scrollTo} />
     </main>
   );
 }
 
-function Contact() {
+function Contact({ scrollTo }) {
   return (
     <section
       className="contact-section"
       id="contact"
       aria-labelledby="contact-title"
     >
-      <div className="contact-inner">
-        <div className="contact-copy reveal">
-          <span className="sticker">HAVE AN IDEA?</span>
+      <div className="contact-stage">
+        <ContactCharacter />
+        <div className="contact-copy">
           <h2 id="contact-title">
             Let’s work
             <br />
-            together<span>.</span>
+            together!
           </h2>
-          <p>
-            A project, an opportunity, or just a hello.
-            <br />
-            I’d love to hear from you.
-          </p>
-          <a className="contact-email" href={`mailto:${profile.email}`}>
-            {profile.email}
-            <Icon name="arrow" />
-          </a>
           <div className="social-links">
             <a
               href={`mailto:${profile.email}`}
@@ -269,35 +261,15 @@ function Contact() {
             </a>
           </div>
         </div>
-        <div className="contact-illustration" aria-hidden="true">
-          <div className="letter-shadow" />
-          <div className="letter">
-            <div className="letter-paper">
-              <span>Hey Pranav!</span>
-              <i />
-              <i />
-              <i />
-              <b>Let’s build ✦</b>
-            </div>
-            <div className="envelope-front" />
-            <div className="letter-stamp">
-              <Logo />
-            </div>
-          </div>
-          <div className="contact-spark spark-one">✦</div>
-          <div className="contact-spark spark-two">✳</div>
-          <span className="contact-orbit" />
-        </div>
       </div>
       <footer>
-        <a className="footer-logo" href="/" aria-label="Pranav Rao K home">
-          <Logo />
-        </a>
+        <a className="back-to-top" href="#home" aria-label="Back to top" onClick={event => {
+          event.preventDefault();
+          if(scrollTo) scrollTo("home");
+          else window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth"});
+        }}><Icon name="down" size={25}/></a>
         <span>Made with curiosity & code.</span>
         <span>© {new Date().getFullYear()} Pranav Rao K</span>
-        <a href={profile.linkedin} {...external}>
-          Say hello <Icon name="external" size={13} />
-        </a>
       </footer>
     </section>
   );
@@ -422,6 +394,7 @@ function ProjectPage({ project, navigate }) {
 export default function App() {
   const [path, setPath] = useState(window.location.pathname);
   const [active, setActive] = useState("");
+  const [sceneBlue, setSceneBlue] = useState(false);
   const [transition, setTransition] = useState(false);
   const lenis = useRef(null);
   const transitionTimer = useRef(null);
@@ -429,6 +402,10 @@ export default function App() {
   const root = useRef(null);
   const project = projects.find((p) => path === `/project/${p.slug}`);
   const home = path === "/";
+  const onExperiencePhase = useCallback((phase,dark) => {
+    setActive(phase);
+    setSceneBlue(dark);
+  },[]);
   function scrollTo(id) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -476,8 +453,15 @@ export default function App() {
       setTransition(false);
     };
     window.addEventListener("popstate", pop);
+    const jump = event => {
+      if(!lenis.current || !["Home","End"].includes(event.key) || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
+      event.preventDefault();
+      lenis.current.scrollTo(event.key === "Home" ? 0 : document.documentElement.scrollHeight, {immediate:true});
+    };
+    window.addEventListener("keydown",jump);
     return () => {
       window.removeEventListener("popstate", pop);
+      window.removeEventListener("keydown",jump);
       clearTimeout(transitionTimer.current);
       lenis.current?.destroy();
       lenis.current = null;
@@ -530,7 +514,7 @@ export default function App() {
       clearTimeout(timer);
     };
   }, [path]);
-  const blue = home && active === "about";
+  const blue = home && active === "about" && sceneBlue;
   return (
     <div
       ref={root}
@@ -580,7 +564,7 @@ export default function App() {
         </div>
       </header>
       {home ? (
-        <Home navigate={navigate} scrollTo={scrollTo} onPhase={setActive} />
+        <Home navigate={navigate} scrollTo={scrollTo} onPhase={onExperiencePhase} />
       ) : project ? (
         <ProjectPage project={project} navigate={navigate} />
       ) : (

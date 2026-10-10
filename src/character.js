@@ -1,27 +1,24 @@
 import * as THREE from "three";
 
-const COLORS = {
-  skin: "#b98161",
-  skinShade: "#a96f54",
-  hair: "#24201e",
-  hairLight: "#302b27",
-  shirt: "#ed4854",
-  collar: "#d73746",
-  jeans: "#2a3848",
-  shoe: "#263341",
-  sole: "#f2eee4",
-  frame: "#292b2e",
-  eye: "#f7f1e7",
-  iris: "#47352b",
-  lip: "#895342",
+const C = {
+  skin: "#d4a17c", skinShade: "#bb8666", hair: "#292725",
+  shirt: "#e95b63", neckline: "#da535c", jeans: "#30373f",
+  shoe: "#2d363e", sole: "#f4eedf", frame: "#242a30",
 };
+const DOWN = new THREE.Vector3(0, -1, 0);
 
-// An original clay character. The floor and joint dimensions are kept in model
-// space so one rig can sit, stand, and walk without swapping meshes.
-export function createCharacter(
-  { mesh, mat, box, ball, cylinder, rod, texture, panel },
-  seated = false,
-) {
+// Body advance follows the midpoint of successive foot plants. The last step
+// brings both shoes together rather than sliding into the final stance.
+export function walkPath(amount) {
+  const phase = THREE.MathUtils.clamp(amount, 0, 1) * 4;
+  const step = Math.min(3, Math.floor(phase));
+  const fraction = THREE.MathUtils.smoothstep(phase - step, 0, 1);
+  const stations = [0, 1 / 6, 1 / 2, 5 / 6, 1];
+  return { step, fraction, advance: THREE.MathUtils.lerp(stations[step], stations[step + 1], fraction) };
+}
+
+/** Original soft clay model. Pose helpers are applied after pose() each frame. */
+export function createCharacter({ mesh, mat, box, rod, texture }, seated = false) {
   const root = new THREE.Group();
   root.name = "Pranav";
   const body = new THREE.Group();
@@ -31,661 +28,272 @@ export function createCharacter(
   head.name = "character-head";
   head.position.y = 2.75;
   body.add(head);
-  const arms = [];
-  const legs = [];
-  const skeletons = [];
-  const shirtPattern = texture(
-    (ctx, w, h) => {
-      // An original repeatable cloud camouflage, drawn rather than extracted
-      // from the portrait. Three reds keep the pattern tonal in warm clay light.
-      let seed = 1847;
-      const random = () => {
-        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-        return seed / 4294967296;
-      };
-      ctx.fillStyle = COLORS.shirt;
-      ctx.fillRect(0, 0, w, h);
-      const shades = ["#d53544", "#df3d4b", "#f05a63"];
-      for (let row = 0; row < 18; row++) {
-        for (let col = 0; col < 18; col++) {
-          const x = ((col + 0.5) * w) / 18 + (random() - 0.5) * 25;
-          const y = ((row + 0.5) * h) / 18 + (random() - 0.5) * 25;
-          const radius = 23 + random() * 15;
-          const lobes = Array.from({ length: 12 }, (_, i) => {
-            const angle = (i * Math.PI) / 6;
-            const reach = radius * (0.45 + random() * 0.55);
-            return [Math.cos(angle) * reach, Math.sin(angle) * reach * 0.78];
-          });
-          const color = shades[(row + col) % shades.length];
-          for (const dx of [-w, 0, w]) {
-            for (const dy of [-h, 0, h]) {
-              ctx.fillStyle = color;
-              ctx.beginPath();
-              for (let i = 0; i < lobes.length; i++) {
-                const p = lobes[i];
-                const q = lobes[(i + 1) % lobes.length];
-                const mx = x + dx + (p[0] + q[0]) / 2;
-                const my = y + dy + (p[1] + q[1]) / 2;
-                if (i === 0) ctx.moveTo(mx, my);
-                else ctx.quadraticCurveTo(x + dx + p[0], y + dy + p[1], mx, my);
-              }
-              ctx.closePath();
-              ctx.fill();
-            }
-          }
-        }
-      }
-    },
-    1024,
-    1024,
-  );
-  shirtPattern.wrapS = THREE.RepeatWrapping;
-  shirtPattern.wrapT = THREE.RepeatWrapping;
-  const shirtMaterial = mat("#ffffff", { map: shirtPattern, roughness: 0.97 });
+  const arms = [], legs = [], skeletons = [], eyes = [];
 
   const soft = (size, color, parent, position, options = {}) =>
-    mesh(
-      new THREE.SphereGeometry(1, 28, 20),
-      mat(color, { roughness: 0.86, ...options }),
-      parent,
-      position,
-      size,
-    );
+    mesh(new THREE.SphereGeometry(1, 28, 20), mat(color, { roughness: 0.95, ...options }), parent, position, size);
 
   function curve(points, radius, color, parent, options = {}) {
-    const path = new THREE.CatmullRomCurve3(
-      points.map((point) => new THREE.Vector3(...point)),
-    );
     return mesh(
-      new THREE.TubeGeometry(path, 32, radius, 8, false),
-      mat(color, { roughness: 0.86, ...options }),
-      parent,
+      new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(...p))), 24, radius, 8, false),
+      mat(color, { roughness: 0.95, ...options }), parent,
     );
   }
 
-  // Smooth elliptical rings make a continuous silhouette instead of stacked
-  // boxes. Profile coordinates are [horizontal radius, height, depth radius].
-  function loft(profile, rings = 32, sides = 36) {
-    const spline = new THREE.CatmullRomCurve3(
-      profile.map((point) => new THREE.Vector3(...point)),
-      false,
-      "centripetal",
-    );
-    const positions = [];
-    const indices = [];
-    const uvs = [];
-    for (let ring = 0; ring <= rings; ring++) {
-      const p = spline.getPoint(ring / rings);
-      for (let side = 0; side <= sides; side++) {
-        const angle = (side / sides) * Math.PI * 2;
-        positions.push(
-          Math.max(0, p.x) * Math.cos(angle),
-          p.y,
-          Math.max(0, p.z) * Math.sin(angle),
-        );
-        uvs.push(side / sides, ring / rings);
-        if (ring < rings && side < sides) {
-          const a = ring * (sides + 1) + side;
-          const b = a + sides + 1;
+  // Profiles are elliptical, with one continuous soft surface per garment.
+  function loft(profile, rings = 30, sides = 32) {
+    const spline = new THREE.CatmullRomCurve3(profile.map(p => new THREE.Vector3(...p)), false, "centripetal");
+    const positions = [], uvs = [], indices = [];
+    for (let row = 0; row <= rings; row++) {
+      const p = spline.getPoint(row / rings);
+      for (let col = 0; col <= sides; col++) {
+        const angle = col / sides * Math.PI * 2;
+        positions.push(Math.max(0, p.x) * Math.cos(angle), p.y, Math.max(0, p.z) * Math.sin(angle));
+        uvs.push(col / sides, row / rings);
+        if (row < rings && col < sides) {
+          const a = row * (sides + 1) + col, b = a + sides + 1;
           indices.push(a, b, a + 1, b, b + 1, a + 1);
         }
       }
     }
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute(
-      "position",
-      new THREE.Float32BufferAttribute(positions, 3),
-    );
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
     geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
     geometry.setIndex(indices);
     geometry.computeVertexNormals();
     return geometry;
   }
 
-  const faceGeometry = new THREE.SphereGeometry(1, 48, 32);
-  const facePositions = faceGeometry.attributes.position;
-  for (let i = 0; i < facePositions.count; i++) {
-    const y = facePositions.getY(i);
-    const jaw = 1 - Math.max(0, -y) * 0.16;
-    facePositions.setXYZ(
-      i,
-      facePositions.getX(i) * 0.535 * jaw,
-      y * 0.605,
-      facePositions.getZ(i) * 0.445,
-    );
-  }
-  faceGeometry.computeVertexNormals();
-  mesh(faceGeometry, mat(COLORS.skin, { roughness: 0.9 }), head);
+  const shirtMap = texture((ctx, w, h) => {
+    ctx.fillStyle = C.shirt;
+    ctx.fillRect(0, 0, w, h);
+    // Quiet tonal marks retain the red shirt cue without camouflage noise.
+    ctx.fillStyle = "#e25760";
+    for (let row = 0; row < 5; row++) {
+      for (let col = 0; col < 6; col++) {
+        const x = (col + 0.5 + (row % 2) * 0.27) * w / 6, y = (row + 0.5) * h / 5;
+        ctx.beginPath();
+        ctx.ellipse(x, y, 22, 12, Math.sin(row * 4 + col) * 0.7, 0, Math.PI * 2);
+        ctx.ellipse(x + 17, y - 6, 13, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }, 512, 512);
+  shirtMap.wrapS = shirtMap.wrapT = THREE.RepeatWrapping;
+  const shirtMaterial = mat("#ffffff", { map: shirtMap, roughness: 1 });
 
+  // Wide cheeks and a nearly round jaw give the head a friendly chibi shape.
+  const face = new THREE.SphereGeometry(1, 48, 32), fp = face.attributes.position;
+  for (let i = 0; i < fp.count; i++) {
+    const y = fp.getY(i);
+    fp.setXYZ(i, fp.getX(i) * 0.69 * (1 - Math.max(0, -y) * 0.035), y * 0.615, fp.getZ(i) * 0.545);
+  }
+  face.computeVertexNormals();
+  mesh(face, mat(C.skin, { roughness: 1 }), head);
   for (const side of [-1, 1]) {
-    soft([0.095, 0.15, 0.09], COLORS.skin, head, [
-      side * 0.515,
-      -0.015,
-      -0.025,
-    ]);
-    soft([0.035, 0.08, 0.025], COLORS.skinShade, head, [
-      side * 0.558,
-      -0.027,
-      0.042,
-    ]);
+    soft([0.09, 0.125, 0.081], C.skin, head, [side * 0.658, -0.018, -0.023]);
+    soft([0.026, 0.052, 0.018], C.skinShade, head, [side * 0.703, -0.027, 0.032]);
   }
 
-  // A short, wavy cap and interlocking clay curls personalize the silhouette.
-  // The smaller underlying crown leaves room for curls below y=3.45.
-  const hairPositions = [];
-  const hairIndices = [];
-  const hairSides = 48;
-  const hairRings = 26;
-  for (let ring = 0; ring <= hairRings; ring++) {
-    for (let side = 0; side <= hairSides; side++) {
-      const phi = (side / hairSides) * Math.PI * 2;
-      const front = Math.max(0, Math.sin(phi));
-      const back = Math.max(0, -Math.sin(phi));
-      const limit = 1.52 - 0.4 * front * front + 0.25 * back;
-      const theta = (ring / hairRings) * limit;
-      const x = 0.552 * Math.sin(theta) * Math.cos(phi);
-      const z = 0.462 * Math.sin(theta) * Math.sin(phi) - 0.018;
-      const sweep =
-        Math.exp(-((x + 0.17) ** 2 / 0.07 + (z - 0.16) ** 2 / 0.08)) * 0.046;
-      const wave = Math.sin(phi * 7 + theta * 5) * 0.01 * Math.sin(theta);
-      hairPositions.push(x, 0.605 * Math.cos(theta) + sweep + 0.023 + wave, z);
-      if (ring < hairRings && side < hairSides) {
-        const a = ring * (hairSides + 1) + side;
-        const b = a + hairSides + 1;
-        hairIndices.push(a, a + 1, b, a + 1, b + 1, b);
+  // One wavy cap replaces separate curl balls. The surface stays cohesive.
+  const hp = [], hi = [], hairRows = 30, hairSides = 48;
+  for (let row = 0; row <= hairRows; row++) {
+    for (let col = 0; col <= hairSides; col++) {
+      const phi = col / hairSides * Math.PI * 2;
+      const front = Math.max(0, Math.sin(phi)), back = Math.max(0, -Math.sin(phi));
+      const limit = 1.4 - 0.27 * front * front + 0.29 * back;
+      const theta = row / hairRows * limit;
+      const wave = Math.sin(phi * 6 + theta * 5) * 0.014 * Math.sin(theta);
+      const x = (0.702 + wave) * Math.sin(theta) * Math.cos(phi);
+      const z = (0.562 + wave) * Math.sin(theta) * Math.sin(phi) - 0.018;
+      const sweep = Math.exp(-((x + 0.23) ** 2 / 0.14 + (z - 0.19) ** 2 / 0.14)) * 0.055;
+      hp.push(x, 0.64 * Math.cos(theta) + sweep + 0.022 + wave, z);
+      if (row < hairRows && col < hairSides) {
+        const a = row * (hairSides + 1) + col, b = a + hairSides + 1;
+        hi.push(a, a + 1, b, a + 1, b + 1, b);
       }
     }
   }
-  const hairGeometry = new THREE.BufferGeometry();
-  hairGeometry.setAttribute(
-    "position",
-    new THREE.Float32BufferAttribute(hairPositions, 3),
-  );
-  hairGeometry.setIndex(hairIndices);
-  hairGeometry.computeVertexNormals();
-  mesh(hairGeometry, mat(COLORS.hair, { roughness: 0.98 }), head);
-  const curlRows = [
-    {
-      theta: 0.21,
-      count: 5,
-      start: 0,
-      span: Math.PI * 2,
-      size: [0.091, 0.044, 0.084],
-    },
-    {
-      theta: 0.58,
-      count: 8,
-      start: 0,
-      span: Math.PI * 2,
-      size: [0.107, 0.057, 0.09],
-    },
-    {
-      theta: 0.96,
-      count: 7,
-      start: 0.24,
-      span: Math.PI - 0.48,
-      size: [0.09, 0.054, 0.082],
-    },
-  ];
-  for (const row of curlRows) {
-    for (let i = 0; i < row.count; i++) {
-      const phi = row.start + (i / row.count) * row.span;
-      const theta = row.theta + Math.sin(i * 2.1) * 0.025;
-      const x = 0.543 * Math.sin(theta) * Math.cos(phi);
-      const z = 0.453 * Math.sin(theta) * Math.sin(phi) - 0.018;
-      const sweep =
-        Math.exp(-((x + 0.17) ** 2 / 0.07 + (z - 0.16) ** 2 / 0.08)) * 0.046;
-      const y = 0.605 * Math.cos(theta) + sweep + 0.012;
-      const curl = soft(
-        row.size,
-        i % 4 === 0 ? COLORS.hairLight : COLORS.hair,
-        head,
-        [x, y, z],
-        { roughness: 0.96 },
-      );
-      curl.rotation.set(0.14 * Math.sin(phi), -phi, Math.sin(i * 1.8) * 0.23);
+  const hair = new THREE.BufferGeometry();
+  hair.setAttribute("position", new THREE.Float32BufferAttribute(hp, 3));
+  hair.setIndex(hi); hair.computeVertexNormals();
+  mesh(hair, mat(C.hair, { roughness: 0.96 }), head);
+
+  const glasses = new THREE.Group();
+  glasses.name = "character-sunglasses";
+  head.add(glasses);
+  function rectangle(w, h, r) {
+    const s = new THREE.Shape();
+    s.moveTo(-w/2+r,-h/2); s.lineTo(w/2-r,-h/2);
+    s.quadraticCurveTo(w/2,-h/2,w/2,-h/2+r); s.lineTo(w/2,h/2-r);
+    s.quadraticCurveTo(w/2,h/2,w/2-r,h/2); s.lineTo(-w/2+r,h/2);
+    s.quadraticCurveTo(-w/2,h/2,-w/2,h/2-r); s.lineTo(-w/2,-h/2+r);
+    s.quadraticCurveTo(-w/2,-h/2,-w/2+r,-h/2);
+    return s;
+  }
+  for (const side of [-1, 1]) {
+    const x = side * 0.268, eye = new THREE.Group();
+    eye.name = side < 0 ? "left-eye" : "right-eye";
+    eye.position.set(x,0.064,0.505); head.add(eye);
+    const open = new THREE.Group(); eye.add(open);
+    soft([0.12,0.1,0.034],"#fff8e9",open,[0,0,0],{roughness:0.73});
+    soft([0.054,0.068,0.016],"#494138",open,[0.006,-0.005,0.036]);
+    soft([0.03,0.042,0.008],"#282726",open,[0.008,-0.005,0.051]);
+    soft([0.012,0.014,0.006],"#ffffff",open,[-0.008,0.021,0.06]);
+    const closed = curve([[-0.106,0,0.026],[0,-0.027,0.041],[0.106,0,0.026]],0.013,C.hair,eye,{transparent:true,opacity:0,depthWrite:false});
+    closed.visible=false; eyes.push({root:eye,open,closed});
+
+    const shape=rectangle(0.464,0.286,0.066);
+    const lens=mesh(new THREE.ShapeGeometry(shape,16),mat("#202932",{roughness:0.22,metalness:0.2,side:THREE.DoubleSide}),glasses,[x,0.068,0.579]);
+    lens.name="sunglass-lens";
+    const path=new THREE.CatmullRomCurve3(shape.getPoints(8).map(p=>new THREE.Vector3(p.x+x,p.y+0.068,0.584)),true);
+    mesh(new THREE.TubeGeometry(path,64,0.014,8,true),mat(C.frame,{roughness:0.4}),glasses);
+    const glare=mesh(new THREE.PlaneGeometry(0.108,0.011),new THREE.MeshBasicMaterial({color:"#bcc9d0",transparent:true,opacity:0.16,depthWrite:false}),glasses,[x-0.064,0.139,0.589]);
+    glare.rotation.z=-0.23;
+    rod([side*0.491,0.112,0.579],[side*0.682,0.093,-0.02],0.012,C.frame,glasses);
+  }
+  curve([[-0.043,0.1,0.589],[0,0.116,0.6],[0.043,0.1,0.589]],0.014,C.frame,glasses);
+  soft([0.068,0.061,0.077],C.skin,head,[0,-0.079,0.539]);
+  curve([[-0.082,-0.188,0.525],[0,-0.18,0.533],[0.082,-0.188,0.525]],0.008,"#8c6b51",head);
+  curve([[-0.094,-0.248,0.495],[0,-0.268,0.503],[0.094,-0.248,0.495]],0.009,"#9c6c53",head);
+
+  soft([0.158,0.16,0.15],C.skin,body,[0,2.13,-0.028]).name="character-neck";
+  mesh(loft([[0,1.07,0],[0.338,1.075,0.205],[0.4,1.15,0.249],[0.405,1.48,0.261],[0.465,1.85,0.285],[0.474,1.97,0.263],[0.377,2.063,0.205],[0.204,2.105,0.144],[0,2.119,0]]),shirtMaterial,body);
+  soft([0.34,0.125,0.215],C.jeans,body,[0,1.078,-0.018]).name="character-hips";
+  const neck=mesh(new THREE.TorusGeometry(0.176,0.022,10,40),mat(C.neckline,{roughness:1}),body,[0,2.093,-0.007],[1,0.87,1]);
+  neck.rotation.x=Math.PI/2; neck.name="crew-neckline";
+
+  for(const side of [-1,1]) {
+    const arm=new THREE.Group(); arm.name=side<0?"left-arm":"right-arm";
+    arm.position.set(side*0.485,2.04,-0.008); body.add(arm); arms.push(arm);
+    mesh(loft([[0,-0.31,0],[0.14,-0.274,0.148],[0.173,-0.14,0.173],[0.174,-0.012,0.174],[0.108,0.076,0.112],[0,0.091,0]],22,28),shirtMaterial,arm);
+    soft([0.11,0.15,0.112],C.skin,arm,[0,-0.319,0]);
+    const elbow=new THREE.Group(); elbow.name=`${arm.name}-elbow`; elbow.position.y=-0.43; arm.add(elbow);
+    soft([0.108,0.106,0.109],C.skin,elbow,[0,0,0]);
+    mesh(loft([[0,-0.366,0],[0.079,-0.343,0.082],[0.088,-0.257,0.091],[0.109,-0.079,0.111],[0.101,0.012,0.102],[0,0.04,0]],22,28),mat(C.skin,{roughness:1}),elbow);
+    const hand=new THREE.Group(); hand.name=`${arm.name}-hand`; hand.position.y=-0.34; elbow.add(hand);
+    soft([0.092,0.103,0.064],C.skin,hand,[0,-0.091,0.012]);
+    const fingers=[];
+    for(let i=0;i<4;i++){
+      const finger=new THREE.Group(); finger.name=`${arm.name}-finger-${i}`;
+      finger.position.set(-0.056+i*0.0375,-0.163,0.011); hand.add(finger);
+      const length=i===0||i===3?0.043:0.054;
+      soft([0.022,length,0.034],C.skin,finger,[0,-length*0.63,0]); fingers.push(finger);
     }
+    const thumb=new THREE.Group(); thumb.name=`${arm.name}-thumb`; thumb.position.set(-side*0.077,-0.085,0.025); hand.add(thumb);
+    soft([0.037,0.067,0.041],C.skin,thumb,[0,-0.025,0]); thumb.rotation.z=side*0.45;
+    hand.userData={fingers,thumb}; arm.userData={elbow,hand,side};
+
+    const leg=new THREE.Group(); leg.name=side<0?"left-leg":"right-leg";
+    leg.position.set(side*0.206,1.06,0); body.add(leg); legs.push(leg);
+    const hip=new THREE.Bone(),knee=new THREE.Bone(),ankle=new THREE.Bone();
+    hip.name=`${leg.name}-hip`; knee.name=`${leg.name}-knee`; ankle.name=`${leg.name}-ankle`;
+    knee.position.y=-0.48; ankle.position.y=-0.42; hip.add(knee); knee.add(ankle);
+    const geometry=loft([[0,-0.745,0],[0.149,-0.727,0.151],[0.157,-0.699,0.164],[0.172,-0.64,0.174],[0.183,-0.48,0.182],[0.2,-0.3,0.205],[0.223,-0.09,0.216],[0.209,0.004,0.202],[0,0.037,0]],40,32);
+    const indices=[],weights=[];
+    for(let i=0;i<geometry.attributes.position.count;i++){
+      const weight=THREE.MathUtils.smoothstep(-geometry.attributes.position.getY(i),0.35,0.61);
+      indices.push(0,1,0,0); weights.push(1-weight,weight,0,0);
+    }
+    geometry.setAttribute("skinIndex",new THREE.Uint16BufferAttribute(indices,4));
+    geometry.setAttribute("skinWeight",new THREE.Float32BufferAttribute(weights,4));
+    const trousers=new THREE.SkinnedMesh(geometry,mat(C.jeans,{roughness:1})); trousers.name=`${leg.name}-continuous-trousers`;
+    trousers.castShadow=trousers.receiveShadow=true; trousers.frustumCulled=false;
+    leg.add(trousers); trousers.add(hip);
+    const skeleton=new THREE.Skeleton([hip,knee,ankle]); trousers.bind(skeleton); skeletons.push(skeleton);
+    const foot=new THREE.Group(); foot.name=`${leg.name}-shoe`; ankle.add(foot);
+    mesh(new THREE.CylinderGeometry(.132,.129,.22,24),mat(C.sole,{roughness:1}),foot,[0,.09,0]);
+    box([0.406,0.09,0.61],C.sole,foot,[0,-0.115,0.123],0.039);
+    box([0.379,0.219,0.569],C.shoe,foot,[0,-0.025,0.123],0.098);
+    box([0.265,0.033,0.045],C.sole,foot,[0,-0.01,-0.161],0.014);
+    for(let i=0;i<3;i++)rod([-0.077,0.081,0.139+i*0.041],[0.077,0.081,0.147+i*0.041],0.009,C.sole,foot);
+    leg.userData={hip,knee,ankle,foot,trousers,side};
   }
 
-  // Opaque glossy lenses, thicker rectangular frames, and modest reflections
-  // match the sunglasses in the supplied red-shirt portrait.
-  function sunglasses(centerX) {
-    const w = 0.434;
-    const h = 0.299;
-    const r = 0.055;
-    const shape = new THREE.Shape();
-    shape.moveTo(-w / 2 + r, -h / 2);
-    shape.lineTo(w / 2 - r, -h / 2);
-    shape.quadraticCurveTo(w / 2, -h / 2, w / 2, -h / 2 + r);
-    shape.lineTo(w / 2, h / 2 - r);
-    shape.quadraticCurveTo(w / 2, h / 2, w / 2 - r, h / 2);
-    shape.lineTo(-w / 2 + r, h / 2);
-    shape.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - r);
-    shape.lineTo(-w / 2, -h / 2 + r);
-    shape.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + r, -h / 2);
-    const lens = mesh(
-      new THREE.ShapeGeometry(shape, 16),
-      mat("#11141b", {
-        roughness: 0.15,
-        metalness: 0.32,
-        side: THREE.DoubleSide,
-      }),
-      head,
-      [centerX, 0.065, 0.481],
-    );
-    lens.name = "sunglass-lens";
-    const path = new THREE.CatmullRomCurve3(
-      shape
-        .getPoints(8)
-        .map((p) => new THREE.Vector3(p.x + centerX, p.y + 0.065, 0.487)),
-      true,
-    );
-    mesh(
-      new THREE.TubeGeometry(path, 72, 0.018, 8, true),
-      mat("#15171a", { roughness: 0.27, metalness: 0.2 }),
-      head,
-    );
-    const highlightMaterial = new THREE.MeshBasicMaterial({
-      color: "#a4b0bd",
-      transparent: true,
-      opacity: 0.2,
-      depthWrite: false,
-    });
-    const reflection = mesh(
-      new THREE.PlaneGeometry(0.13, 0.011),
-      highlightMaterial,
-      head,
-      [centerX - 0.05, 0.144, 0.49],
-    );
-    reflection.rotation.z = -0.23;
-    mesh(new THREE.PlaneGeometry(0.07, 0.005), highlightMaterial, head, [
-      centerX + 0.073,
-      0.016,
-      0.49,
-    ]).rotation.z = -0.23;
-  }
-
-  for (const side of [-1, 1]) {
-    const x = side * 0.226;
-    curve(
-      [
-        [x - 0.13, 0.207, 0.392],
-        [x - 0.034, 0.223, 0.416],
-        [x + 0.096, 0.206, 0.405],
-      ],
-      0.024,
-      COLORS.hair,
-      head,
-    );
-    sunglasses(side * 0.235);
-    rod(
-      [side * 0.45, 0.1, 0.487],
-      [side * 0.548, 0.08, -0.018],
-      0.018,
-      COLORS.frame,
-      head,
-    );
-  }
-  curve(
-    [
-      [-0.04, 0.082, 0.491],
-      [0, 0.105, 0.498],
-      [0.04, 0.082, 0.491],
-    ],
-    0.018,
-    COLORS.frame,
-    head,
-  );
-  soft([0.049, 0.096, 0.04], COLORS.skin, head, [0, -0.025, 0.44]);
-  soft([0.075, 0.064, 0.077], COLORS.skin, head, [0, -0.085, 0.455]);
-  for (const side of [-1, 1]) {
-    curve(
-      [
-        [side * 0.012, -0.185, 0.433],
-        [side * 0.077, -0.185, 0.43],
-        [side * 0.127, -0.198, 0.414],
-      ],
-      0.013,
-      "#46342b",
-      head,
-    );
-  }
-  function smilePatch(shape, color, front) {
-    const geometry = new THREE.ShapeGeometry(shape, 20);
-    const positions = geometry.attributes.position;
-    for (let i = 0; i < positions.count; i++) {
-      const x = positions.getX(i);
-      const y = positions.getY(i);
-      const faceY = y - 0.254;
-      const jawRadius = 0.535 * (1 - Math.max(0, -faceY / 0.605) * 0.16);
-      const surface =
-        0.445 *
-        Math.sqrt(Math.max(0, 1 - (x / jawRadius) ** 2 - (faceY / 0.605) ** 2));
-      positions.setZ(i, surface - 0.414);
-    }
-    geometry.computeVertexNormals();
-    return mesh(
-      geometry,
-      mat(color, { roughness: 0.83, side: THREE.DoubleSide }),
-      head,
-      [0, -0.254, front],
-    );
-  }
-  const smile = new THREE.Shape();
-  smile.moveTo(-0.165, 0.043);
-  smile.quadraticCurveTo(-0.081, -0.074, 0, -0.073);
-  smile.quadraticCurveTo(0.096, -0.072, 0.166, 0.045);
-  smile.quadraticCurveTo(0.076, 0.017, 0, 0.013);
-  smile.quadraticCurveTo(-0.075, 0.015, -0.165, 0.043);
-  smilePatch(smile, "#533127", 0.422).name = "friendly-smile";
-  const teeth = new THREE.Shape();
-  teeth.moveTo(-0.143, 0.029);
-  teeth.quadraticCurveTo(0, -0.002, 0.142, 0.03);
-  teeth.quadraticCurveTo(0.113, -0.015, 0, -0.027);
-  teeth.quadraticCurveTo(-0.111, -0.017, -0.143, 0.029);
-  smilePatch(teeth, "#f3e9d6", 0.428).name = "smile-teeth";
-  curve(
-    [
-      [-0.145, -0.236, 0.399],
-      [0, -0.328, 0.383],
-      [0.145, -0.235, 0.399],
-    ],
-    0.012,
-    COLORS.lip,
-    head,
-  );
-  // A warm shadow and a few tiny strokes imply light chin stubble.
-  soft([0.159, 0.028, 0.012], "#94634b", head, [0, -0.418, 0.321], {
-    transparent: true,
-    opacity: 0.45,
-    depthWrite: false,
+  const elbowPosition=new THREE.Vector3(0,-0.43,0),handPosition=new THREE.Vector3(0,-0.34,0);
+  const foldedTargets=arms.map(arm=>{
+    const left=arm.userData.side<0;
+    const upper=new THREE.Quaternion().setFromUnitVectors(DOWN,new THREE.Vector3(...(left?[0.045,-0.83,0.557]:[-0.035,-0.6,0.799])).normalize());
+    const lower=new THREE.Quaternion().setFromUnitVectors(DOWN,new THREE.Vector3(...(left?[0.94,-0.12,0.32]:[-0.95,-0.06,0.3])).normalize());
+    return {upper,elbow:upper.clone().invert().multiply(lower),hand:new THREE.Quaternion().setFromEuler(new THREE.Euler(0,arm.userData.side*0.16,arm.userData.side*0.06))};
   });
-  for (let i = 0; i < 9; i++) {
-    const x = -0.17 + i * 0.0425;
-    const y = -0.397 - (1 - Math.abs(x) / 0.2) * 0.026;
-    const jawRadius = 0.535 * (1 - Math.max(0, -y / 0.605) * 0.16);
-    const z =
-      0.445 *
-        Math.sqrt(Math.max(0, 1 - (x / jawRadius) ** 2 - (y / 0.605) ** 2)) +
-      0.006;
-    curve(
-      [
-        [x, y + 0.008, z],
-        [x + 0.003, y - 0.008, z],
-      ],
-      0.0035,
-      "#85604a",
-      head,
-    );
+  const greetingUpper=new THREE.Quaternion().setFromUnitVectors(DOWN,new THREE.Vector3(-0.3,0.52,0.8).normalize());
+  const greetingLower=new THREE.Quaternion().setFromUnitVectors(DOWN,new THREE.Vector3(-0.2,0.92,0.34).normalize());
+  const greetingElbow=greetingUpper.clone().invert().multiply(greetingLower);
+  const inverseGreetingLower=greetingLower.clone().invert(),waveHand=new THREE.Quaternion(),waveEuler=new THREE.Euler();
+  const clamp=(value,fallback=0)=>THREE.MathUtils.clamp(Number.isFinite(value)?value:fallback,0,1);
+  function update(){root.updateMatrixWorld(true);for(const skeleton of skeletons)skeleton.update();}
+
+  function pose(amount){
+    const standing=clamp(amount,1),angle=(1-standing)*Math.PI/2;
+    body.position.y=-0.48*(1-Math.cos(angle));
+    for(const leg of legs){leg.rotation.set(-angle,0,0);leg.userData.knee.rotation.set(angle,0,0);leg.userData.ankle.rotation.set(0,0,0);}
+    for(const arm of arms){
+      arm.position.set(arm.userData.side*0.485,2.04,-0.008);
+      arm.rotation.set(THREE.MathUtils.lerp(-1,-0.015,standing),0,arm.userData.side*THREE.MathUtils.lerp(0.16,0.085,standing));
+      arm.userData.elbow.position.copy(elbowPosition); arm.userData.elbow.rotation.set(THREE.MathUtils.lerp(-0.55,-0.09,standing),0,0);
+      arm.userData.hand.position.copy(handPosition); arm.userData.hand.rotation.set(THREE.MathUtils.lerp(0.08,0.02,standing),0,0);
+      arm.userData.hand.userData.fingers.forEach(finger=>finger.rotation.set(0,0,0));
+      arm.userData.hand.userData.thumb.rotation.set(0,0,arm.userData.side*0.45);
+    }
+    glasses.position.set(0,0,0); glasses.rotation.set(0,0,0); head.rotation.x=0; head.rotation.z=0;
+    eyes.forEach(eye=>{eye.open.scale.y=1;eye.open.visible=true;eye.closed.visible=false;eye.closed.material.opacity=0;});
+    update(); return standing;
   }
 
-  soft([0.164, 0.22, 0.16], COLORS.skin, body, [0, 2.16, -0.025]).name =
-    "character-neck";
-  mesh(
-    loft([
-      [0, 1.07, 0],
-      [0.325, 1.075, 0.19],
-      [0.395, 1.16, 0.237],
-      [0.394, 1.45, 0.248],
-      [0.46, 1.8, 0.279],
-      [0.473, 1.96, 0.257],
-      [0.389, 2.066, 0.215],
-      [0.215, 2.105, 0.151],
-      [0, 2.12, 0],
-    ]),
-    shirtMaterial,
-    body,
-  );
-  soft([0.34, 0.14, 0.21], COLORS.jeans, body, [0, 1.08, -0.018]).name =
-    "character-hips";
-
-  const neckline = mesh(
-    new THREE.TorusGeometry(0.177, 0.026, 12, 48),
-    mat(COLORS.collar, { roughness: 0.98 }),
-    body,
-    [0, 2.092, -0.008],
-    [1, 0.88, 1],
-  );
-  neckline.rotation.x = Math.PI / 2;
-  neckline.name = "crew-neckline";
-
-  for (const side of [-1, 1]) {
-    const arm = new THREE.Group();
-    arm.name = side < 0 ? "left-arm" : "right-arm";
-    arm.position.set(side * 0.485, 2.04, -0.008);
-    body.add(arm);
-    arms.push(arm);
-    mesh(
-      loft(
-        [
-          [0, -0.325, 0],
-          [0.14, -0.282, 0.147],
-          [0.171, -0.156, 0.17],
-          [0.176, -0.015, 0.17],
-          [0.115, 0.075, 0.117],
-          [0, 0.09, 0],
-        ],
-        22,
-        28,
-      ),
-      shirtMaterial,
-      arm,
-    );
-    soft([0.108, 0.16, 0.11], COLORS.skin, arm, [0, -0.316, 0]);
-    const elbow = new THREE.Group();
-    elbow.name = `${arm.name}-elbow`;
-    elbow.position.y = -0.43;
-    arm.add(elbow);
-    soft([0.104, 0.104, 0.108], COLORS.skin, elbow, [0, 0, 0]);
-    mesh(
-      loft(
-        [
-          [0, -0.365, 0],
-          [0.078, -0.347, 0.081],
-          [0.087, -0.263, 0.089],
-          [0.108, -0.082, 0.106],
-          [0.1, 0.013, 0.099],
-          [0, 0.04, 0],
-        ],
-        24,
-        28,
-      ),
-      mat(COLORS.skin, { roughness: 0.9 }),
-      elbow,
-    );
-    const hand = new THREE.Group();
-    hand.name = `${arm.name}-hand`;
-    hand.position.y = -0.34;
-    elbow.add(hand);
-    soft([0.088, 0.115, 0.064], COLORS.skin, hand, [0, -0.103, 0.009]);
-    for (let finger = 0; finger < 4; finger++) {
-      const length = finger === 0 || finger === 3 ? 0.047 : 0.058;
-      soft([0.021, length, 0.036], COLORS.skin, hand, [
-        -0.058 + finger * 0.037,
-        -0.199 - length * 0.13,
-        0.015,
-      ]);
-    }
-    const thumb = soft([0.043, 0.077, 0.047], COLORS.skin, hand, [
-      -side * 0.078,
-      -0.11,
-      0.025,
-    ]);
-    thumb.rotation.z = side * 0.43;
-    arm.userData = { elbow, hand, side };
-
-    const leg = new THREE.Group();
-    leg.name = side < 0 ? "left-leg" : "right-leg";
-    leg.position.set(side * 0.206, 1.06, 0);
-    body.add(leg);
-    legs.push(leg);
-    const hip = new THREE.Bone();
-    hip.name = `${leg.name}-hip`;
-    const knee = new THREE.Bone();
-    knee.name = `${leg.name}-knee`;
-    knee.position.y = -0.48;
-    const ankle = new THREE.Bone();
-    ankle.name = `${leg.name}-ankle`;
-    ankle.position.y = -0.42;
-    hip.add(knee);
-    knee.add(ankle);
-    const trouserGeometry = loft(
-      [
-        [0, -0.95, 0],
-        [0.128, -0.921, 0.132],
-        [0.135, -0.82, 0.143],
-        [0.161, -0.66, 0.16],
-        [0.176, -0.48, 0.176],
-        [0.192, -0.325, 0.197],
-        [0.218, -0.11, 0.213],
-        [0.205, 0.001, 0.202],
-        [0, 0.039, 0],
-      ],
-      42,
-      32,
-    );
-    const skinIndices = [];
-    const skinWeights = [];
-    const positions = trouserGeometry.attributes.position;
-    for (let i = 0; i < positions.count; i++) {
-      const weight = THREE.MathUtils.smoothstep(-positions.getY(i), 0.35, 0.61);
-      skinIndices.push(0, 1, 0, 0);
-      skinWeights.push(1 - weight, weight, 0, 0);
-    }
-    trouserGeometry.setAttribute(
-      "skinIndex",
-      new THREE.Uint16BufferAttribute(skinIndices, 4),
-    );
-    trouserGeometry.setAttribute(
-      "skinWeight",
-      new THREE.Float32BufferAttribute(skinWeights, 4),
-    );
-    const trousers = new THREE.SkinnedMesh(
-      trouserGeometry,
-      mat(COLORS.jeans, { roughness: 0.98 }),
-    );
-    trousers.name = `${leg.name}-continuous-trousers`;
-    trousers.castShadow = true;
-    trousers.receiveShadow = true;
-    trousers.frustumCulled = false;
-    leg.add(trousers);
-    trousers.add(hip);
-    const skeleton = new THREE.Skeleton([hip, knee, ankle]);
-    trousers.bind(skeleton);
-    skeletons.push(skeleton);
-
-    const foot = new THREE.Group();
-    foot.name = `${leg.name}-shoe`;
-    ankle.add(foot);
-    box([0.35, 0.06, 0.57], COLORS.sole, foot, [0, -0.13, 0.118], 0.027);
-    box([0.327, 0.19, 0.535], COLORS.shoe, foot, [0, -0.044, 0.113], 0.081);
-    box([0.25, 0.037, 0.042], COLORS.sole, foot, [0, -0.031, -0.155], 0.017);
-    for (let lace = 0; lace < 3; lace++)
-      rod(
-        [-0.071, 0.054, 0.12 + lace * 0.041],
-        [0.071, 0.054, 0.132 + lace * 0.041],
-        0.008,
-        COLORS.sole,
-        foot,
-      );
-    leg.userData = { hip, knee, ankle, foot, trousers, side };
+  function portraitPose(amount){
+    const blend=clamp(amount); if(!blend)return blend;
+    arms.forEach((arm,i)=>{const target=foldedTargets[i];arm.quaternion.slerp(target.upper,blend);arm.userData.elbow.quaternion.slerp(target.elbow,blend);arm.userData.hand.quaternion.slerp(target.hand,blend);});
+    update(); return blend;
   }
 
-  const down = new THREE.Vector3(0, -1, 0);
-  const portraitTargets = arms.map((arm) => {
-    const left = arm.userData.side < 0;
-    const upperDirection = new THREE.Vector3(
-      ...(left ? [0.045, -0.83, 0.557] : [-0.035, -0.6, 0.799]),
-    ).normalize();
-    const forearmDirection = new THREE.Vector3(
-      ...(left ? [0.94, -0.12, 0.32] : [-0.95, -0.06, 0.3]),
-    ).normalize();
-    const upper = new THREE.Quaternion().setFromUnitVectors(
-      down,
-      upperDirection,
-    );
-    const lowerWorld = new THREE.Quaternion().setFromUnitVectors(
-      down,
-      forearmDirection,
-    );
-    const elbow = upper.clone().invert().multiply(lowerWorld);
-    const hand = new THREE.Quaternion().setFromEuler(
-      new THREE.Euler(0, arm.userData.side * 0.16, arm.userData.side * 0.06),
-    );
-    return {
-      upper,
-      elbow,
-      hand,
-      position: new THREE.Vector3(arm.userData.side * 0.485, 2.04, -0.008),
-    };
-  });
-  const elbowPosition = new THREE.Vector3(0, -0.43, 0);
-  const handPosition = new THREE.Vector3(0, -0.34, 0);
+  function greetPose(amount,time=0){
+    const blend=clamp(amount); if(!blend)return blend;
+    const arm=arms[0],hand=arm.userData.hand;
+    arm.quaternion.slerp(greetingUpper,blend); arm.userData.elbow.quaternion.slerp(greetingElbow,blend);
+    // The palm faces +Z while the wrist waves gently from side to side.
+    waveEuler.set(0,0,Math.PI+Math.sin((Number.isFinite(time)?time:0)*5.4)*0.16);
+    waveHand.setFromEuler(waveEuler).premultiply(inverseGreetingLower);
+    hand.quaternion.slerp(waveHand,blend);
+    hand.userData.fingers.forEach((finger,i)=>{finger.rotation.z=THREE.MathUtils.lerp(finger.rotation.z,[-0.23,-0.07,0.075,0.24][i],blend);});
+    hand.userData.thumb.rotation.z=THREE.MathUtils.lerp(hand.userData.thumb.rotation.z,0.95,blend);
+    glasses.position.y=Math.max(glasses.position.y,.345*blend);
+    glasses.rotation.x=Math.min(glasses.rotation.x,-.065*blend);
+    update(); return blend;
+  }
 
-  // Apply after the main scene's typing/walking arm updates each frame.
-  // 0 leaves that motion intact; 1 folds the forearms across the red shirt.
-  function portraitPose(amount) {
-    const blend = THREE.MathUtils.clamp(
-      Number.isFinite(amount) ? amount : 0,
-      0,
-      1,
-    );
-    if (blend === 0) return blend;
-    arms.forEach((arm, index) => {
-      const target = portraitTargets[index];
-      arm.position.lerp(target.position, blend);
-      arm.quaternion.slerp(target.upper, blend);
-      arm.userData.elbow.position.lerp(elbowPosition, blend);
-      arm.userData.elbow.quaternion.slerp(target.elbow, blend);
-      arm.userData.hand.position.lerp(handPosition, blend);
-      arm.userData.hand.quaternion.slerp(target.hand, blend);
+  function restPose(sleepAmount,time=0){
+    const sleep=clamp(sleepAmount),seconds=Number.isFinite(time)?time:0;
+    head.rotation.x=THREE.MathUtils.lerp(-0.045,0.3,sleep)+Math.sin(seconds*0.68)*0.012*sleep;
+    head.rotation.z=Math.sin(seconds*0.5)*0.035*sleep;
+    // Footer helper moves shades to the forehead, revealing eyes below them.
+    glasses.position.y=0.345; glasses.rotation.x=-0.065;
+    eyes.forEach(eye=>{eye.open.scale.y=Math.max(0.035,1-sleep*0.97);eye.open.visible=sleep<0.97;eye.closed.visible=sleep>0.18;eye.closed.material.opacity=sleep;});
+    update(); return sleep;
+  }
+
+  function walkPose(amount, travel=1.7){
+    const t=clamp(amount),envelope=Math.sin(Math.PI*t);
+    const {step,fraction,advance}=walkPath(t);
+    const feet=legs.map(leg=>{
+      const left=leg.userData.side<0;
+      const active=left ? step===0 || step===2 : step===1 || step===3;
+      const starts=left ? [0,1/3,1/3,1] : [0,0,2/3,2/3];
+      const ends=left ? [1/3,1/3,1,1] : [0,2/3,2/3,1];
+      const plant=THREE.MathUtils.lerp(starts[step],ends[step],fraction);
+      return {leg,z:(plant-advance)*travel,lift:active?Math.sin(Math.PI*fraction)*.095:0};
     });
-    root.updateMatrixWorld(true);
-    return blend;
+    const reach=Math.max(...feet.map(foot=>Math.abs(foot.z)));
+    body.position.y=Math.min(-.025*envelope,Math.sqrt(Math.max(.01,.9*.9-reach*reach))-.9-.005*envelope);
+    for(const {leg,z,lift} of feet){
+      const vertical=0.9+body.position.y-lift,distance=Math.min(0.9,Math.hypot(vertical,z));
+      const knee=Math.acos(THREE.MathUtils.clamp((distance*distance-0.48*0.48-0.42*0.42)/(2*0.48*0.42),-1,1));
+      const hip=Math.atan2(-z,vertical)-Math.atan2(0.42*Math.sin(knee),0.48+0.42*Math.cos(knee));
+      leg.rotation.x=hip; leg.userData.knee.rotation.x=knee; leg.userData.ankle.rotation.x=-hip-knee;
+    }
+    update(); return t;
   }
 
-  function pose(amount) {
-    const standing = THREE.MathUtils.clamp(
-      Number.isFinite(amount) ? amount : 1,
-      0,
-      1,
-    );
-    const sitting = 1 - standing;
-    const hipAngle = (sitting * Math.PI) / 2;
-    // Counter-rotate the knee so shins and soles remain vertical/horizontal.
-    // Lowering by lost thigh height is the exact floor correction, not a hack
-    // on individual shoe vertices. Both poses keep the sole bottom at y=0.
-    body.position.y = -0.48 * (1 - Math.cos(hipAngle));
-    for (const leg of legs) {
-      leg.rotation.x = -hipAngle;
-      leg.userData.knee.rotation.x = hipAngle;
-      leg.userData.ankle.rotation.x = 0;
-    }
-    for (const arm of arms) {
-      arm.position.set(arm.userData.side * 0.485, 2.04, -0.008);
-      arm.rotation.set(
-        THREE.MathUtils.lerp(-1, -0.015, standing),
-        0,
-        arm.userData.side * THREE.MathUtils.lerp(0.16, 0.085, standing),
-      );
-      arm.userData.elbow.position.copy(elbowPosition);
-      arm.userData.elbow.rotation.set(
-        THREE.MathUtils.lerp(-0.55, -0.09, standing),
-        0,
-        0,
-      );
-      arm.userData.hand.position.copy(handPosition);
-      arm.userData.hand.rotation.set(
-        THREE.MathUtils.lerp(0.08, 0.02, standing),
-        0,
-        0,
-      );
-    }
-    root.updateMatrixWorld(true);
-    for (const skeleton of skeletons) skeleton.update();
-    return standing;
-  }
-
-  pose(seated ? 0 : 1);
-  return { root, body, head, arms, legs, pose, portraitPose };
+  pose(seated?0:1);
+  return {root,body,head,arms,legs,pose,portraitPose,greetPose,restPose,walkPose,glasses,eyes};
 }

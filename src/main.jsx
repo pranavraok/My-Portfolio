@@ -4,6 +4,7 @@ import App from "./App.jsx";
 import "./styles.css";
 import "./experience.css";
 import "./theme.css";
+import "./contact.css";
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <App />

@@ -4,6 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Scene from "./Scene.jsx";
 import { Icon } from "./Icons.jsx";
 import { profile } from "../data.js";
+import DecodedText from "./DecodedText.jsx";
 
 const clamp = (value) => Math.min(1, Math.max(0, value));
 const smooth = (a, b, value) => {
@@ -27,6 +28,7 @@ export default function Experience({ scrollTo, onPhase }) {
     const stack = target.querySelector(".holo-stack");
     const mobileCard = target.querySelector(".mobile-holo-card");
     const status = target.querySelector(".scan-status");
+    const greetingButton = target.querySelector(".hero-greeting");
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let lastPercent = -1;
     let lastCard = false;
@@ -49,11 +51,11 @@ export default function Experience({ scrollTo, onPhase }) {
           (self.progress * target.clientHeight) / height,
           target.clientHeight / height - 1,
         );
-        const walk = smooth(0.035, 0.86, page);
+        const walk = smooth(0.08, 0.94, page);
         const scan = clamp(
           (page - (mobile ? 0.6 : 0.7)) / (mobile ? 1.7 : 1.65),
         );
-        timeline.current = { page, walk, scan };
+        timeline.current = { ...timeline.current, page, walk, scan };
         const rounded = Math.round(scan * 100);
         if (rounded !== lastPercent) {
           setPercent(rounded);
@@ -70,33 +72,32 @@ export default function Experience({ scrollTo, onPhase }) {
           stageBounds.bottom > height * 0.6 &&
           stageBounds.top < height * 0.35
         ) {
-          onPhase(phase);
+          onPhase(phase,page>.95);
         }
-        const roomShift = -page * height * 0.9;
+        const roomShift = -Math.max(0,page-.08) * height * 0.9;
         gsap.set(room, {
           y: roomShift,
           rotation: reduced ? 0 : walk * 3,
           scale: 1 - walk * (mobile ? 0.16 : 0.055),
           borderRadius: walk * 48,
         });
+        timeline.current.roomBottom = clamp((room.getBoundingClientRect().bottom-stageBounds.top)/height);
         gsap.set(title, { opacity: 1 - smooth(0.25, 0.76, page) });
         gsap.set(cue, { opacity: 1 - smooth(0.02, 0.2, page) });
+        gsap.set(greetingButton, {autoAlpha: page < .12 ? 1 : 0});
         const identityReveal = smooth(0.76, 1.04, page);
         const bioReveal = smooth(1.18, 1.48, page);
         const stackReveal = smooth(1.62, 1.98, page);
         gsap.set(identity, {
-          visibility: reduced && identityReveal < 0.5 ? "hidden" : "visible",
-          opacity: identityReveal,
+          autoAlpha: identityReveal,
           x: reduced ? 0 : (1 - identityReveal) * -18,
         });
         gsap.set(bio, {
-          visibility: reduced && bioReveal < 0.5 ? "hidden" : "visible",
-          opacity: bioReveal,
+          autoAlpha: bioReveal,
           x: reduced ? 0 : (1 - bioReveal) * -18,
         });
         gsap.set(stack, {
-          visibility: reduced && stackReveal < 0.5 ? "hidden" : "visible",
-          opacity: stackReveal,
+          autoAlpha: stackReveal,
           x: reduced ? 0 : (1 - stackReveal) * 18,
         });
         gsap.set(mobileCard, {
@@ -133,10 +134,13 @@ export default function Experience({ scrollTo, onPhase }) {
               <span>Pranav</span>
               <span>Rao K</span>
             </h1>
-            <div className="role-sticker">DEVELOPER & ML ENGINEER</div>
+            <div className="role-sticker"><DecodedText text="DEVELOPER & ML ENGINEER" delay={300} /></div>
           </div>
         </div>
         <Scene mode="experience" timeline={timeline} />
+        <button className="hero-greeting" aria-label="Wave hello to Pranav" onClick={() => {
+          timeline.current.greetAt = performance.now() - 850;
+        }} />
         <a
           className="scroll-cue"
           href="#about"
@@ -153,21 +157,20 @@ export default function Experience({ scrollTo, onPhase }) {
         </a>
         <div className="desktop-holo-labels" aria-label="About Pranav">
           <div className="holo-label holo-identity">
-            <strong>Pranav</strong>
+            <strong><DecodedText text="Pranav" active={percent > 5} /></strong>
             <span>
-              <Icon name="pin" size={15} /> Bengaluru, India
+              <Icon name="pin" size={15} /> <DecodedText text="Bengaluru, India" active={percent > 5} delay={150} />
             </span>
             <i className="connector" />
           </div>
           <div className="holo-label holo-bio">
             <p>
-              I build full-stack products and intelligent automation that turn
-              real problems into useful experiences.
+              <DecodedText text="I build full-stack products and intelligent automation that turn real problems into useful experiences." active={percent > 32} />
             </p>
             <i className="connector" />
           </div>
           <div className="holo-label holo-stack">
-            <strong>Skills</strong>
+            <strong><DecodedText text="Skills" active={percent > 55} /></strong>
             <ul>
               <li>React & Next.js</li>
               <li>Flutter & Supabase</li>

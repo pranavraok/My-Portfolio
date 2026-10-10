@@ -1,8 +1,9 @@
 import * as THREE from "three";
 import { drawComputerRadio, speakerState } from "./music.js";
 import { clone as cloneSkeleton } from "three/addons/utils/SkeletonUtils.js";
-import { createCharacter } from "./character.js";
+import { createCharacter, walkPath } from "./character.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { createContactScene } from "./contact-scene.js";
 
 const C = {
   cream: "#e6eeea",
@@ -17,6 +18,7 @@ const C = {
 };
 
 export function createScene(host, mode, getProgress) {
+  if (mode === "contact") return createContactScene(host, getProgress);
   const hologram = mode === "hologram";
   const experience = mode === "experience";
   const scene = new THREE.Scene();
@@ -149,6 +151,7 @@ export function createScene(host, mode, getProgress) {
   let speakerMap = null,
     speakerLed = null,
     lastSpeakerDraw = -1;
+  let chair = null;
   let lastSpeakerPlaying = false,
     lastSpeakerTitle = "";
   if (!hologram) {
@@ -212,15 +215,19 @@ export function createScene(host, mode, getProgress) {
     person.root.rotation.y = Math.PI;
     person.root.scale.setScalar(1);
 
-    const chair = new THREE.Group();
+    chair = new THREE.Group();
+    chair.name = "swivel-chair";
+    chair.position.z = 1.28;
     objects.add(chair);
-    box([1.12, 0.22, 0.93], C.white, chair, [0, 0.7, 1.24], 0.1);
-    box([1.16, 1.1, 0.22], C.white, chair, [0, 1.28, 1.65], 0.1);
-    cylinder(0.09, 0.09, 0.43, "#73787b", chair, [0, 0.33, 1.28]);
+    box([1.12, 0.22, 0.93], C.white, chair, [0, 0.7, -.04], 0.1);
+    const back = box([1.16, 1.1, 0.2], C.white, chair, [0, 1.28, .37], 0.1);
+    back.rotation.x = -.08;
     for (const side of [-1, 1]) {
-      rod([0, 0.12, 1.3], [side * 0.62, 0.1, 0.91], 0.055, "#73787b", chair);
-      rod([0, 0.12, 1.3], [side * 0.62, 0.1, 1.79], 0.055, "#73787b", chair);
+      rod([side*.47,.62,-.39],[side*.47,.13,.36],.045,"#9aabad",chair);
+      rod([side*.47,.13,.36],[side*.47,.10,-.46],.045,"#9aabad",chair);
+      rod([side*.47,.10,-.46],[side*.47,.62,-.39],.045,"#9aabad",chair);
     }
+    rod([-.47,.1,-.46],[.47,.1,-.46],.045,"#9aabad",chair);
     cylinder(0.13, 0.13, 0.35, "#466b56", objects, [-1.8, 1.85, -0.2]);
     for (let i = 0; i < 4; i++)
       rod(
@@ -622,6 +629,17 @@ export function createScene(host, mode, getProgress) {
   const mix = THREE.MathUtils.lerp;
   const originalRig = [],
     hologramRig = [];
+  // The scanner occupies the revealed area below the moving room card.
+  const roomClip = {value:0};
+  scanner.traverse(object => {
+    if(!object.material) return;
+    object.material = object.material.clone();
+    object.material.onBeforeCompile = shader => {
+      shader.uniforms.uRoomClipY=roomClip;
+      shader.fragmentShader="uniform float uRoomClipY;\n"+shader.fragmentShader.replace("void main() {","void main() {\n if(gl_FragCoord.y > uRoomClipY) discard;");
+    };
+    object.material.customProgramCacheKey=()=>"scanner-room-clip-v1";
+  });
   person.root.traverse((o) => originalRig.push(o));
   holo?.traverse((o) => hologramRig.push(o));
   const copyPose = () => {
@@ -670,11 +688,13 @@ export function createScene(host, mode, getProgress) {
   window.addEventListener("pointermove", move, { passive: true });
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   let frame,
-    lastTime = 0;
+    lastTime = 0,
+    introStart = null;
   const tick = (time) => {
     frame = requestAnimationFrame(tick);
     if (!visible || document.hidden || time - lastTime < 14) return;
     lastTime = time;
+    if (introStart === null) introStart = time;
     const t = time * 0.001,
       reduced = motionQuery.matches;
     const data = getProgress();
@@ -683,48 +703,52 @@ export function createScene(host, mode, getProgress) {
       typeof data === "object" ? data.walk : smooth(0.035, 0.86, page);
     const scanProgress =
       typeof data === "object" ? data.scan : Number(data) || 0;
-    const cameraWalk = smooth(0.03, 0.92, page);
-    const standing = smooth(0.03, 0.34, page);
+    roomClip.value=height*renderer.getPixelRatio()*(experience ? 1-(data.roomBottom ?? 1) : 1);
+    const cameraWalk = smooth(0.08, 0.96, page);
+    const chairTurn = smooth(0.015, 0.19, page);
+    const standing = smooth(0.16, 0.37, page);
+    const stepping = smooth(0.32, 0.84, page);
+    const intro = (time-Math.max(introStart,data.greetAt || 0))/1000;
+    const helloWeight = 1-smooth(data.greetAt > introStart ? .12 : 0,data.greetAt > introStart ? .2 : .07,page);
+    const helloTurn = reduced ? 0 : smooth(.2,.8,intro)*(1-smooth(3.4,4.2,intro))*helloWeight;
+    const helloWave = reduced ? 0 : smooth(.6,1,intro)*(1-smooth(2.8,3.3,intro))*helloWeight;
     person.pose(standing);
-    person.root.scale.setScalar(mix(0.9, 1, standing));
-    person.arms.forEach((arm) => {
-      arm.position.y = mix(2.12, 2.04, standing);
-      arm.rotation.x = mix(-1.32, -0.015, standing);
-      arm.userData.elbow.rotation.x = mix(-0.24, -0.09, standing);
-    });
+    person.root.scale.setScalar(mobile ? mix(.9,1,standing) : 1);
     const stride =
-      Math.sin(page * 20) *
-      smooth(0.3, 0.45, page) *
-      (1 - smooth(0.68, 0.86, page));
+      Math.sin(stepping * Math.PI * 4) *
+      smooth(0.32, 0.43, page) *
+      (1 - smooth(0.76, 0.87, page));
     if (!reduced) {
       smoothedPointer.x = mix(smoothedPointer.x, pointer.x, 0.045);
       smoothedPointer.y = mix(smoothedPointer.y, pointer.y, 0.045);
-      person.head.rotation.y =
-        Math.sin(t * 0.45) * 0.035 +
-        (1 - walk) * 0.08 +
-        smoothedPointer.x * 0.065;
-      person.head.rotation.x = smoothedPointer.y * 0.035;
+      person.head.rotation.y = Math.sin(t * 0.45) * 0.025 + smoothedPointer.x * 0.065;
+      person.head.rotation.x = (1-standing)*.045+smoothedPointer.y * 0.025;
       person.arms[0].rotation.x +=
         stride * 0.34 + (1 - standing) * Math.sin(t * 5) * 0.015;
       person.arms[1].rotation.x -= stride * 0.34;
-      person.legs[0].rotation.x += stride * 0.18;
-      person.legs[1].rotation.x -= stride * 0.18;
+      if (standing > .98 && page < .88) person.walkPose?.(stepping);
     }
-    person.portraitPose?.(smooth(0.82, 1.12, page));
+    person.greetPose?.(helloWave,t);
+    const roomLift = Math.max(0,page-.08)*4.4;
+    const carry = roomLift*(1-smooth(.14,.4,page));
+    const facing = mix(Math.PI, .04, chairTurn) + helloTurn*(.5-Math.PI);
+    const seatTurn = facing-Math.PI;
     person.root.position.set(
-      mix(0, 0, walk),
-      mix(0.12, 0.29, standing) + Math.abs(stride) * 0.035,
-      mix(1.06, 3.2, walk),
+      -.22*Math.sin(seatTurn)*(1-stepping),
+      .12+carry+stepping*.17,
+      mix(1.28-.22*Math.cos(seatTurn),3.2,walkPath(stepping).advance),
     );
-    person.root.rotation.y = mix(Math.PI, 0, smooth(0.2, 0.82, page));
-    if (walk > 0.99 && !reduced)
-      person.root.rotation.y += Math.sin(t * 0.3) * 0.025;
+    person.root.rotation.y = facing + smooth(.94,1.12,page)*scanProgress*Math.PI*2;
+    if (chair) {
+      chair.rotation.y = seatTurn;
+      chair.scale.setScalar(mobile ? .9 : 1);
+    }
     const cameraX = mobile ? mix(2.6, 0, cameraWalk) : mix(4.7, 0, cameraWalk);
     const cameraY = mobile
       ? mix(3.7, 3.4, cameraWalk)
       : mix(3.8, 3.05, cameraWalk);
     const cameraZ = mobile
-      ? mix(13.2, 17.8, cameraWalk)
+      ? mix(16.2, 15.2, cameraWalk)
       : mix(9.6, 12.2, cameraWalk);
     camera.position.set(
       cameraX + (reduced ? 0 : smoothedPointer.x * 0.1),
@@ -733,7 +757,7 @@ export function createScene(host, mode, getProgress) {
     );
     target.set(
       0,
-      mobile ? mix(3.5, 0.65, cameraWalk) : mix(1.8, 1.98, cameraWalk),
+      mobile ? mix(3.5, 1.2, smooth(.28,1.1,page)) : mix(1.8, 1.98, cameraWalk),
       mix(0.2, 3.2, cameraWalk),
     );
     camera.lookAt(target);
@@ -745,7 +769,7 @@ export function createScene(host, mode, getProgress) {
       width,
       height,
     );
-    objects.position.y = page * 4.4;
+    objects.position.y = roomLift;
     objects.rotation.z = -walk * 0.035;
     objects.scale.setScalar(1 - walk * 0.055);
     objects.visible = page < (mobile ? 1.10 : 1.16);
@@ -783,6 +807,9 @@ export function createScene(host, mode, getProgress) {
       ring.position.y = scanHeight;
     }
     host.dataset.page = page.toFixed(3);
+    host.dataset.pose = page < .16 ? "swivel" : page < .37 ? "stand" : page < .84 ? "step" : "scan";
+    host.dataset.greeting = helloWave.toFixed(2);
+    host.dataset.chair = (chair?.rotation.y || 0).toFixed(2);
     host.dataset.scan = scanProgress.toFixed(3);
     host.dataset.camera = camera.position
       .toArray()
@@ -810,7 +837,21 @@ export function createScene(host, mode, getProgress) {
         speakerState.playing ? "#8ee5b5" : "#b36a66",
       );
     }
-    renderer.render(scene, camera);
+    if(objects.visible && page > .18) {
+      // Composite the departing room behind the continuous character without
+      // disabling self-occlusion on the head, glasses, clothes, or skeleton.
+      const holoVisible=holo?.visible,scannerVisible=scanner.visible;
+      person.root.visible=false;
+      if(holo) holo.visible=false;
+      renderer.render(scene,camera);
+      renderer.autoClear=false;
+      renderer.clearDepth();
+      objects.visible=false;scanner.visible=false;person.root.visible=true;
+      if(holo) holo.visible=holoVisible;
+      renderer.render(scene,camera);
+      renderer.autoClear=true;
+      objects.visible=true;scanner.visible=scannerVisible;
+    } else renderer.render(scene, camera);
   };
   frame = requestAnimationFrame(tick);
   const lost = (event) => {
@@ -836,6 +877,7 @@ export function createScene(host, mode, getProgress) {
             allMaterials.add(m),
           );
       });
+      materials.forEach(material=>allMaterials.add(material));
       skeletons.forEach((s) => s.dispose());
       geometries.forEach((g) => g.dispose());
       allMaterials.forEach((m) => m.dispose());

@@ -1,6 +1,6 @@
 # Pranav Rao K — React portfolio
 
-A responsive React / Vite portfolio with an original Three.js character and workspace, smooth scrolling, a scroll-driven holographic scan, project pages, video walkthroughs, and updated professional content.
+A responsive React / Vite portfolio with a clay character, opening wave, synchronized chair swivel, grounded stand-up and footsteps, a scroll-driven holographic scan, and an animated contact scene. Includes project pages, video walkthroughs, and updated professional content.
 
 ## Run locally
 
@@ -24,9 +24,12 @@ The production build is written to `dist`. Vercel uses the configuration in `ver
 
 - `src/data.js`: profile, project descriptions, verified links, and achievement dates.
 - `src/scene.js`: one continuous 3D world, scroll-driven camera movement, workspace, lighting, and holographic scan.
-- `src/character.js`: photo-inspired clay character with curly hair, sunglasses, a red patterned shirt, and sitting, standing, walking, and folded-arm poses.
+- `src/character.js`: photo-inspired chibi character with wavy hair, sunglasses, a subtle red shirt, and reversible sitting, standing, greeting, sleeping, walking, and folded-arm poses. Foot plants and body advance share a continuous walking path.
 - `src/components/Experience.jsx`: the synchronized desk-to-scanner narrative, progressive labels, and mobile cards.
 - `src/experience.css`: desktop, phone, and landscape framing for the 3D narrative.
+- `src/contact-scene.js` and `src/components/ContactCharacter.jsx`: parcel-and-letter scene with a sleeping character, scroll-driven wake-up, and a tappable hello wave.
+- `src/contact.css`: responsive contact-scene composition and back-to-top footer.
+- `src/components/DecodedText.jsx`: motion-aware text decoding for the opening role and hologram labels.
 - `src/theme.css`: the personalized mint, forest-green, and coral palette.
 - `src/components/MusicPlayer.jsx`: computer-style music controls with speaker panning, volume, and live audio analysis.
 - `src/music.js`: favorite-track configuration and the desk-monitor radio display. The playlist currently uses the original synthesized ambience; favorite songs will be added once supplied.
