@@ -1,0 +1,262 @@
+:root {
+  --cream: #f7f3ec;
+  --ink: #203b35;
+  --orange: #c64d56;
+  --navy: #315f50;
+  --blue: #183f34;
+  --cyan: #84dfb9;
+  background: #f7f3ec;
+  color: #203b35;
+}
+::selection {
+  background: #f49fa0;
+  color: #183f34;
+}
+.room-card {
+  background: #e6eeea;
+}
+.experience-stage {
+  background: radial-gradient(
+    ellipse at 50% 82%,
+    #376d52 0%,
+    #224e3d 32%,
+    #143a30 74%
+  );
+}
+.experience-stage .blue-dust {
+  background-image: radial-gradient(#75b99b 1px, transparent 1px);
+}
+.site-header nav {
+  background: #d7e2dcdd;
+  color: #274b40;
+}
+.site-header nav a:hover {
+  background: #c3d6c8;
+}
+.sound-button {
+  background: #d4dfd8;
+  color: #274b40;
+}
+.get-in-touch:hover,
+.primary-button:hover {
+  background: #ce454b;
+}
+.is-blue .site-header nav {
+  background: #245644e6;
+  color: #dfede1;
+}
+.is-blue .site-header nav a.active {
+  background: #7cd0b2;
+  color: #143e30;
+}
+.is-blue .site-header nav a:hover {
+  background: #44745a;
+}
+.is-blue .sound-button {
+  background: #285c48;
+  color: #d8f2dc;
+}
+.is-blue .brand {
+  color: #dbefdf;
+}
+.music-toggle.is-playing {
+  box-shadow: 0 0 0 3px #73c39c30;
+}
+.desktop-holo-labels .holo-label {
+  background: linear-gradient(135deg, #386d547d, #234e3966);
+  border-color: #8cd2a180;
+  box-shadow: inset 0 0 12px #85d99c15;
+  color: #e1f2df;
+}
+.holo-label p {
+  color: #d6eed7;
+}
+.desktop-holo-labels .holo-identity > span {
+  color: #bfe2c6;
+}
+.desktop-holo-labels .holo-stack a {
+  color: #b4efc9;
+}
+.connector {
+  background: #8cdfae80;
+}
+.connector:after {
+  background: #a3f2bc;
+  box-shadow: 0 0 12px #8adcae;
+}
+.experience-stage .scan-status strong {
+  background: #163d2bbb;
+  color: #c4f1ce;
+  text-shadow: 0 0 7px #82e4a1;
+}
+.mobile-holo-card {
+  background: linear-gradient(145deg, #325e498c, #214a387d);
+  border-color: #9ddbb0;
+  color: #e0f3df;
+  box-shadow: inset 0 0 14px #85d99c15;
+}
+.mobile-identity {
+  border-color: #a6d0ac55;
+}
+.experience-stage .scan-status > div {
+  background: #7dcf9740;
+}
+.experience-stage .scan-status i {
+  background: #b0e8ba;
+}
+.sticker {
+  border-radius: 3px;
+}
+.project-year {
+  background: #ffffff20;
+}
+.project-card > p,
+.section-intro > p {
+  color: #7c8d7c;
+}
+.new-project .project-visual {
+  background: #e2e8df;
+  border-color: #c1d0c0;
+}
+.new-project:hover .project-visual {
+  background: #d9e4d7;
+}
+.big-plus {
+  color: #718c74;
+}
+.new-project-note {
+  color: #8ba18b;
+}
+.award-image {
+  background: #d9e1d1;
+}
+.award-date,
+.award p {
+  color: #7b8d79;
+}
+.experience-row,
+.journey-education {
+  border-color: #cfddc9;
+}
+.experience-year,
+.journey-education .education-period {
+  color: #839b7e;
+}
+.experience-row p,
+.journey-education p {
+  color: #7f8c79;
+}
+.experience-row .eyebrow {
+  color: #879774;
+}
+.project-tags span {
+  border-color: #cedbc7;
+  color: #798c76;
+}
+.project-page-heading > p,
+.project-story > div > p,
+.project-story li {
+  color: #788b75;
+}
+.project-page-top,
+.back-link {
+  color: #7e8e79;
+}
+.secondary-button {
+  background: #dde6d5;
+  color: #527453;
+}
+.next-project {
+  border-color: #cfddc9;
+}
+.contact-section {
+  background: #173f35;
+  color: #e5efe1;
+}
+.contact-copy > p {
+  color: #a1c4ae;
+}
+.contact-email {
+  color: #e6efe1;
+}
+.social-links > a:not(.resume-link) {
+  background: #2a5745;
+  color: #dbedda;
+}
+.social-links .resume-link {
+  color: #c7ddc6;
+}
+.contact-copy .sticker {
+  background: #e56f72;
+}
+.contact-orbit {
+  border-color: #497458;
+}
+.letter {
+  background: #b6605e;
+  box-shadow: 10px 16px 0 #071a2428;
+}
+.letter-paper {
+  background: #f3eee0;
+}
+.letter-paper > span {
+  color: #3a6450;
+}
+.letter-paper i {
+  background: #cbd8bb;
+}
+.letter-paper b {
+  color: #d06463;
+}
+.envelope-front {
+  background: #e58580;
+}
+.envelope-front:after {
+  background: #cf706e;
+}
+.letter-stamp {
+  background: #b35e61;
+  color: #ffdcd1;
+}
+.letter-shadow {
+  background: #061e1938;
+}
+.spark-one {
+  color: #f09188;
+}
+.spark-two {
+  color: #90c1a3;
+}
+.contact-section footer {
+  border-color: #4c745d;
+  color: #8aad98;
+}
+.contact-section .footer-logo {
+  color: #aac9ad;
+}
+.route-transition {
+  background: #315f50;
+}
+.contact-illustration .letter-paper:before {
+  content: "FROM MY DESK TO YOURS";
+  display: block;
+  font-family: "Space Mono", monospace;
+  font-size: 6px;
+  letter-spacing: 0.08em;
+  color: #8ca28a;
+  margin-bottom: 7px;
+}
+@media (max-width: 600px), (max-width: 900px) and (max-aspect-ratio: 6/5) {
+  .experience-stage .scan-status strong {
+    background: transparent;
+  }
+  .player-headline {
+    font-size: 7px;
+  }
+  .contact-section {
+    background: linear-gradient(145deg, #173f35, #1e4e3b);
+  }
+  .mobile-holo-card p {
+    color: #e0f3df;
+  }
+}

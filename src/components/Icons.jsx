@@ -1,5 +1,34 @@
 export function Icon({ name, size = 22, ...props }) {
   const paths = {
+    music: (
+      <>
+        <path d="M9 18V5l11-2v13M9 8l11-2" />
+        <ellipse cx="6" cy="18" rx="3" ry="2" />
+        <ellipse cx="17" cy="16" rx="3" ry="2" />
+      </>
+    ),
+    computer: (
+      <>
+        <rect x="2" y="3" width="20" height="14" rx="2" />
+        <path d="M8 22h8m-4-5v5" />
+      </>
+    ),
+    play: <path d="m8 4 12 8-12 8Z" fill="currentColor" />,
+    pause: (
+      <>
+        <path d="M8 5v14M16 5v14" strokeWidth="4" />
+      </>
+    ),
+    previous: (
+      <>
+        <path d="M6 5v14m12-14L7 12l11 7Z" fill="currentColor" />
+      </>
+    ),
+    next: (
+      <>
+        <path d="M18 5v14M6 5l11 7-11 7Z" fill="currentColor" />
+      </>
+    ),
     arrow: (
       <>
         <path d="M5 12h14M13 6l6 6-6 6" />
@@ -85,17 +114,22 @@ export function Icon({ name, size = 22, ...props }) {
 export function Logo() {
   return (
     <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
-      <path
-        d="m24 3 19 11v22L24 47 5 36V14Zm0 0v22m19-11L24 25 5 14m19 11v22"
+      <rect
+        x="4"
+        y="4"
+        width="40"
+        height="40"
+        rx="12"
         stroke="currentColor"
-        strokeWidth="2.4"
+        strokeWidth="2"
+      />
+      <path
+        d="M12 34V14h7a6 6 0 0 1 0 12h-7M28 34V14h4a6 6 0 0 1 0 12h-4m4 0 6 8"
+        stroke="currentColor"
+        strokeWidth="2.6"
         strokeLinejoin="round"
       />
-      <path
-        d="m19 21-7 4 7 4m10-8 7 4-7 4"
-        stroke="currentColor"
-        strokeWidth="2.4"
-      />
+      <circle cx="40" cy="8" r="4" fill="#e75c60" />
     </svg>
   );
 }

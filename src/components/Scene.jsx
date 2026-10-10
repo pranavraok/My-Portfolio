@@ -47,14 +47,14 @@ export default function Scene({ mode, progress, timeline }) {
       role="img"
       aria-label={
         mode === "workspace" || mode === "experience"
-          ? "An original 3D model of Pranav at his desk, with glasses, swept black hair, and a light blue shirt"
+          ? "Pranav at his desk: curly black hair, sunglasses, a smile, and his red patterned shirt"
           : "Pranav’s 3D character on a glowing holographic platform"
       }
     >
       {failed ? (
         <img
           className="scene-fallback"
-          src="/media/portrait.webp"
+          src="/media/pranav-red-shirt.png"
           alt="Pranav Rao K"
         />
       ) : (

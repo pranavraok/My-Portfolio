@@ -41,9 +41,14 @@ export default function Experience({ scrollTo, onPhase }) {
           ease: "power3.out",
         });
       const update = (self) => {
-        const mobile = matchMedia("(max-width: 600px)").matches;
+        const mobile = matchMedia(
+          "(max-width: 600px), (max-width: 900px) and (max-aspect-ratio: 6/5)",
+        ).matches;
         const height = stage.clientHeight;
-        const page = Math.min(self.progress * target.clientHeight / height, target.clientHeight / height - 1);
+        const page = Math.min(
+          (self.progress * target.clientHeight) / height,
+          target.clientHeight / height - 1,
+        );
         const walk = smooth(0.035, 0.86, page);
         const scan = clamp(
           (page - (mobile ? 0.6 : 0.7)) / (mobile ? 1.7 : 1.65),
@@ -61,7 +66,10 @@ export default function Experience({ scrollTo, onPhase }) {
         }
         const phase = page > 0.28 ? "about" : "";
         const stageBounds = stage.getBoundingClientRect();
-        if (stageBounds.bottom > height * .6 && stageBounds.top < height * .35) {
+        if (
+          stageBounds.bottom > height * 0.6 &&
+          stageBounds.top < height * 0.35
+        ) {
           onPhase(phase);
         }
         const roomShift = -page * height * 0.9;
@@ -77,17 +85,17 @@ export default function Experience({ scrollTo, onPhase }) {
         const bioReveal = smooth(1.18, 1.48, page);
         const stackReveal = smooth(1.62, 1.98, page);
         gsap.set(identity, {
-          visibility: reduced && identityReveal < .5 ? "hidden" : "visible",
+          visibility: reduced && identityReveal < 0.5 ? "hidden" : "visible",
           opacity: identityReveal,
           x: reduced ? 0 : (1 - identityReveal) * -18,
         });
         gsap.set(bio, {
-          visibility: reduced && bioReveal < .5 ? "hidden" : "visible",
+          visibility: reduced && bioReveal < 0.5 ? "hidden" : "visible",
           opacity: bioReveal,
           x: reduced ? 0 : (1 - bioReveal) * -18,
         });
         gsap.set(stack, {
-          visibility: reduced && stackReveal < .5 ? "hidden" : "visible",
+          visibility: reduced && stackReveal < 0.5 ? "hidden" : "visible",
           opacity: stackReveal,
           x: reduced ? 0 : (1 - stackReveal) * 18,
         });

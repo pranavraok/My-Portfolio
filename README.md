@@ -24,9 +24,12 @@ The production build is written to `dist`. Vercel uses the configuration in `ver
 
 - `src/data.js`: profile, project descriptions, verified links, and achievement dates.
 - `src/scene.js`: one continuous 3D world, scroll-driven camera movement, workspace, lighting, and holographic scan.
-- `src/character.js`: original clay character with a sitting, standing, and walking rig.
+- `src/character.js`: photo-inspired clay character with curly hair, sunglasses, a red patterned shirt, and sitting, standing, walking, and folded-arm poses.
 - `src/components/Experience.jsx`: the synchronized desk-to-scanner narrative, progressive labels, and mobile cards.
 - `src/experience.css`: desktop, phone, and landscape framing for the 3D narrative.
+- `src/theme.css`: the personalized mint, forest-green, and coral palette.
+- `src/components/MusicPlayer.jsx`: computer-style music controls with speaker panning, volume, and live audio analysis.
+- `src/music.js`: favorite-track configuration and the desk-monitor radio display. The playlist currently uses the original synthesized ambience; favorite songs will be added once supplied.
 - `src/App.jsx`: page layouts, navigation, route transitions, and opt-in ambient sound.
 - `src/styles.css`: responsive styling and reduced-motion support.
 - `public/media`: optimized photos, thumbnails, full-length project videos, and resume.

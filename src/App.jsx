@@ -3,77 +3,13 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import Experience from "./components/Experience.jsx";
+import MusicPlayer from "./components/MusicPlayer.jsx";
 import { Icon, Logo } from "./components/Icons.jsx";
 import { profile, projects, awards } from "./data.js";
 
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.config({ ignoreMobileResize: true });
 const external = { target: "_blank", rel: "noopener noreferrer" };
-
-function SoundButton() {
-  const [enabled, setEnabled] = useState(false);
-  const audio = useRef(null);
-  useEffect(
-    () => () => {
-      audio.current?.close();
-    },
-    [],
-  );
-  async function toggle() {
-    if (enabled) {
-      await audio.current?.suspend();
-      setEnabled(false);
-      return;
-    }
-    try {
-      if (!audio.current) {
-        const context = new (
-          window.AudioContext || window.webkitAudioContext
-        )();
-        const master = context.createGain();
-        master.gain.value = 0.035;
-        master.connect(context.destination);
-        const filter = context.createBiquadFilter();
-        filter.type = "lowpass";
-        filter.frequency.value = 520;
-        filter.connect(master);
-        [130.81, 164.81, 196, 261.63].forEach((frequency, index) => {
-          const tone = context.createOscillator();
-          tone.type = "sine";
-          tone.frequency.value = frequency;
-          tone.detune.value = index % 2 ? 3 : -3;
-          const volume = context.createGain();
-          volume.gain.value = 0.12;
-          tone.connect(volume);
-          volume.connect(filter);
-          tone.start();
-          const lfo = context.createOscillator();
-          lfo.frequency.value = 0.07 + index * 0.025;
-          const depth = context.createGain();
-          depth.gain.value = 0.05;
-          lfo.connect(depth);
-          depth.connect(volume.gain);
-          lfo.start();
-        });
-        audio.current = context;
-      }
-      await audio.current.resume();
-      setEnabled(true);
-    } catch {
-      setEnabled(false);
-    }
-  }
-  return (
-    <button
-      className="sound-button"
-      onClick={toggle}
-      aria-label={enabled ? "Disable sounds" : "Enable sounds"}
-      aria-pressed={enabled}
-    >
-      <Icon name={enabled ? "sound" : "mute"} />
-    </button>
-  );
-}
 
 function ProjectCover({ project, large = false }) {
   if (project.cover === "tradeledger")
@@ -640,7 +576,7 @@ export default function App() {
           <a className="get-in-touch" href={`mailto:${profile.email}`}>
             Get in touch <Icon name="arrow" size={16} />
           </a>
-          <SoundButton />
+          <MusicPlayer />
         </div>
       </header>
       {home ? (

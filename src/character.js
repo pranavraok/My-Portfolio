@@ -5,9 +5,8 @@ const COLORS = {
   skinShade: "#a96f54",
   hair: "#24201e",
   hairLight: "#302b27",
-  shirt: "#98bacf",
-  collar: "#bfd5e0",
-  seam: "#7e9fb3",
+  shirt: "#ed4854",
+  collar: "#d73746",
   jeans: "#2a3848",
   shoe: "#263341",
   sole: "#f2eee4",
@@ -35,6 +34,54 @@ export function createCharacter(
   const arms = [];
   const legs = [];
   const skeletons = [];
+  const shirtPattern = texture(
+    (ctx, w, h) => {
+      // An original repeatable cloud camouflage, drawn rather than extracted
+      // from the portrait. Three reds keep the pattern tonal in warm clay light.
+      let seed = 1847;
+      const random = () => {
+        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+        return seed / 4294967296;
+      };
+      ctx.fillStyle = COLORS.shirt;
+      ctx.fillRect(0, 0, w, h);
+      const shades = ["#d53544", "#df3d4b", "#f05a63"];
+      for (let row = 0; row < 18; row++) {
+        for (let col = 0; col < 18; col++) {
+          const x = ((col + 0.5) * w) / 18 + (random() - 0.5) * 25;
+          const y = ((row + 0.5) * h) / 18 + (random() - 0.5) * 25;
+          const radius = 23 + random() * 15;
+          const lobes = Array.from({ length: 12 }, (_, i) => {
+            const angle = (i * Math.PI) / 6;
+            const reach = radius * (0.45 + random() * 0.55);
+            return [Math.cos(angle) * reach, Math.sin(angle) * reach * 0.78];
+          });
+          const color = shades[(row + col) % shades.length];
+          for (const dx of [-w, 0, w]) {
+            for (const dy of [-h, 0, h]) {
+              ctx.fillStyle = color;
+              ctx.beginPath();
+              for (let i = 0; i < lobes.length; i++) {
+                const p = lobes[i];
+                const q = lobes[(i + 1) % lobes.length];
+                const mx = x + dx + (p[0] + q[0]) / 2;
+                const my = y + dy + (p[1] + q[1]) / 2;
+                if (i === 0) ctx.moveTo(mx, my);
+                else ctx.quadraticCurveTo(x + dx + p[0], y + dy + p[1], mx, my);
+              }
+              ctx.closePath();
+              ctx.fill();
+            }
+          }
+        }
+      }
+    },
+    1024,
+    1024,
+  );
+  shirtPattern.wrapS = THREE.RepeatWrapping;
+  shirtPattern.wrapT = THREE.RepeatWrapping;
+  const shirtMaterial = mat("#ffffff", { map: shirtPattern, roughness: 0.97 });
 
   const soft = (size, color, parent, position, options = {}) =>
     mesh(
@@ -123,8 +170,8 @@ export function createCharacter(
     ]);
   }
 
-  // The hair is one asymmetric cap, with a high front hairline and lower back.
-  // Its swept crown stays below y=3.45 in the standing pose.
+  // A short, wavy cap and interlocking clay curls personalize the silhouette.
+  // The smaller underlying crown leaves room for curls below y=3.45.
   const hairPositions = [];
   const hairIndices = [];
   const hairSides = 48;
@@ -139,8 +186,9 @@ export function createCharacter(
       const x = 0.552 * Math.sin(theta) * Math.cos(phi);
       const z = 0.462 * Math.sin(theta) * Math.sin(phi) - 0.018;
       const sweep =
-        Math.exp(-((x + 0.17) ** 2 / 0.07 + (z - 0.16) ** 2 / 0.08)) * 0.072;
-      hairPositions.push(x, 0.63 * Math.cos(theta) + sweep + 0.018, z);
+        Math.exp(-((x + 0.17) ** 2 / 0.07 + (z - 0.16) ** 2 / 0.08)) * 0.046;
+      const wave = Math.sin(phi * 7 + theta * 5) * 0.01 * Math.sin(theta);
+      hairPositions.push(x, 0.605 * Math.cos(theta) + sweep + 0.023 + wave, z);
       if (ring < hairRings && side < hairSides) {
         const a = ring * (hairSides + 1) + side;
         const b = a + hairSides + 1;
@@ -156,19 +204,54 @@ export function createCharacter(
   hairGeometry.setIndex(hairIndices);
   hairGeometry.computeVertexNormals();
   mesh(hairGeometry, mat(COLORS.hair, { roughness: 0.98 }), head);
-  const quiff = soft(
-    [0.44, 0.22, 0.34],
-    COLORS.hair,
-    head,
-    [-0.12, 0.45, 0.14],
-    { roughness: 0.78 },
-  );
-  quiff.rotation.z = -0.12;
-  // Narrow relaxed eyes, eyelids, and restrained highlights avoid a shocked
-  // expression. The glasses are rounded rectangles rather than round goggles.
-  function glassesPath(centerX) {
-    const w = 0.421;
-    const h = 0.267;
+  const curlRows = [
+    {
+      theta: 0.21,
+      count: 5,
+      start: 0,
+      span: Math.PI * 2,
+      size: [0.091, 0.044, 0.084],
+    },
+    {
+      theta: 0.58,
+      count: 8,
+      start: 0,
+      span: Math.PI * 2,
+      size: [0.107, 0.057, 0.09],
+    },
+    {
+      theta: 0.96,
+      count: 7,
+      start: 0.24,
+      span: Math.PI - 0.48,
+      size: [0.09, 0.054, 0.082],
+    },
+  ];
+  for (const row of curlRows) {
+    for (let i = 0; i < row.count; i++) {
+      const phi = row.start + (i / row.count) * row.span;
+      const theta = row.theta + Math.sin(i * 2.1) * 0.025;
+      const x = 0.543 * Math.sin(theta) * Math.cos(phi);
+      const z = 0.453 * Math.sin(theta) * Math.sin(phi) - 0.018;
+      const sweep =
+        Math.exp(-((x + 0.17) ** 2 / 0.07 + (z - 0.16) ** 2 / 0.08)) * 0.046;
+      const y = 0.605 * Math.cos(theta) + sweep + 0.012;
+      const curl = soft(
+        row.size,
+        i % 4 === 0 ? COLORS.hairLight : COLORS.hair,
+        head,
+        [x, y, z],
+        { roughness: 0.96 },
+      );
+      curl.rotation.set(0.14 * Math.sin(phi), -phi, Math.sin(i * 1.8) * 0.23);
+    }
+  }
+
+  // Opaque glossy lenses, thicker rectangular frames, and modest reflections
+  // match the sunglasses in the supplied red-shirt portrait.
+  function sunglasses(centerX) {
+    const w = 0.434;
+    const h = 0.299;
     const r = 0.055;
     const shape = new THREE.Shape();
     shape.moveTo(-w / 2 + r, -h / 2);
@@ -180,51 +263,50 @@ export function createCharacter(
     shape.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - r);
     shape.lineTo(-w / 2, -h / 2 + r);
     shape.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + r, -h / 2);
+    const lens = mesh(
+      new THREE.ShapeGeometry(shape, 16),
+      mat("#11141b", {
+        roughness: 0.15,
+        metalness: 0.32,
+        side: THREE.DoubleSide,
+      }),
+      head,
+      [centerX, 0.065, 0.481],
+    );
+    lens.name = "sunglass-lens";
     const path = new THREE.CatmullRomCurve3(
       shape
         .getPoints(8)
-        .map((p) => new THREE.Vector3(p.x + centerX, p.y + 0.063, 0.475)),
+        .map((p) => new THREE.Vector3(p.x + centerX, p.y + 0.065, 0.487)),
       true,
     );
-    return mesh(
-      new THREE.TubeGeometry(path, 72, 0.012, 8, true),
-      mat(COLORS.frame, { roughness: 0.38, metalness: 0.45 }),
+    mesh(
+      new THREE.TubeGeometry(path, 72, 0.018, 8, true),
+      mat("#15171a", { roughness: 0.27, metalness: 0.2 }),
       head,
     );
+    const highlightMaterial = new THREE.MeshBasicMaterial({
+      color: "#a4b0bd",
+      transparent: true,
+      opacity: 0.2,
+      depthWrite: false,
+    });
+    const reflection = mesh(
+      new THREE.PlaneGeometry(0.13, 0.011),
+      highlightMaterial,
+      head,
+      [centerX - 0.05, 0.144, 0.49],
+    );
+    reflection.rotation.z = -0.23;
+    mesh(new THREE.PlaneGeometry(0.07, 0.005), highlightMaterial, head, [
+      centerX + 0.073,
+      0.016,
+      0.49,
+    ]).rotation.z = -0.23;
   }
 
   for (const side of [-1, 1]) {
     const x = side * 0.226;
-    soft([0.101, 0.119, 0.033], COLORS.eye, head, [x, 0.047, 0.411], {
-      roughness: 0.56,
-    });
-    soft([0.05, 0.073, 0.012], COLORS.iris, head, [x + 0.007, 0.03, 0.446], {
-      roughness: 0.62,
-    });
-    soft([0.031, 0.047, 0.008], "#231e1b", head, [x + 0.008, 0.03, 0.457]);
-    soft([0.013, 0.017, 0.004], "#fffaf1", head, [x - 0.005, 0.052, 0.465]);
-    curve(
-      [
-        [x - 0.098, 0.07, 0.425],
-        [x - 0.061, 0.147, 0.437],
-        [x + 0.006, 0.161, 0.441],
-        [x + 0.078, 0.131, 0.434],
-        [x + 0.101, 0.07, 0.422],
-      ],
-      0.007,
-      COLORS.skin,
-      head,
-    );
-    curve(
-      [
-        [x - 0.1, 0.024, 0.423],
-        [x, -0.071, 0.434],
-        [x + 0.1, 0.024, 0.423],
-      ],
-      0.009,
-      COLORS.skinShade,
-      head,
-    );
     curve(
       [
         [x - 0.13, 0.207, 0.392],
@@ -235,22 +317,22 @@ export function createCharacter(
       COLORS.hair,
       head,
     );
-    glassesPath(side * 0.232);
+    sunglasses(side * 0.235);
     rod(
-      [side * 0.446, 0.1, 0.475],
+      [side * 0.45, 0.1, 0.487],
       [side * 0.548, 0.08, -0.018],
-      0.011,
+      0.018,
       COLORS.frame,
       head,
     );
   }
   curve(
     [
-      [-0.034, 0.082, 0.48],
-      [0, 0.098, 0.492],
-      [0.034, 0.082, 0.48],
+      [-0.04, 0.082, 0.491],
+      [0, 0.105, 0.498],
+      [0.04, 0.082, 0.491],
     ],
-    0.012,
+    0.018,
     COLORS.frame,
     head,
   );
@@ -268,17 +350,74 @@ export function createCharacter(
       head,
     );
   }
+  function smilePatch(shape, color, front) {
+    const geometry = new THREE.ShapeGeometry(shape, 20);
+    const positions = geometry.attributes.position;
+    for (let i = 0; i < positions.count; i++) {
+      const x = positions.getX(i);
+      const y = positions.getY(i);
+      const faceY = y - 0.254;
+      const jawRadius = 0.535 * (1 - Math.max(0, -faceY / 0.605) * 0.16);
+      const surface =
+        0.445 *
+        Math.sqrt(Math.max(0, 1 - (x / jawRadius) ** 2 - (faceY / 0.605) ** 2));
+      positions.setZ(i, surface - 0.414);
+    }
+    geometry.computeVertexNormals();
+    return mesh(
+      geometry,
+      mat(color, { roughness: 0.83, side: THREE.DoubleSide }),
+      head,
+      [0, -0.254, front],
+    );
+  }
+  const smile = new THREE.Shape();
+  smile.moveTo(-0.165, 0.043);
+  smile.quadraticCurveTo(-0.081, -0.074, 0, -0.073);
+  smile.quadraticCurveTo(0.096, -0.072, 0.166, 0.045);
+  smile.quadraticCurveTo(0.076, 0.017, 0, 0.013);
+  smile.quadraticCurveTo(-0.075, 0.015, -0.165, 0.043);
+  smilePatch(smile, "#533127", 0.422).name = "friendly-smile";
+  const teeth = new THREE.Shape();
+  teeth.moveTo(-0.143, 0.029);
+  teeth.quadraticCurveTo(0, -0.002, 0.142, 0.03);
+  teeth.quadraticCurveTo(0.113, -0.015, 0, -0.027);
+  teeth.quadraticCurveTo(-0.111, -0.017, -0.143, 0.029);
+  smilePatch(teeth, "#f3e9d6", 0.428).name = "smile-teeth";
   curve(
     [
-      [-0.113, -0.245, 0.403],
-      [0, -0.26, 0.422],
-      [0.113, -0.243, 0.403],
+      [-0.145, -0.236, 0.399],
+      [0, -0.328, 0.383],
+      [0.145, -0.235, 0.399],
     ],
-    0.01,
+    0.012,
     COLORS.lip,
     head,
   );
-  soft([0.081, 0.015, 0.018], "#b2735b", head, [0, -0.28, 0.402]);
+  // A warm shadow and a few tiny strokes imply light chin stubble.
+  soft([0.159, 0.028, 0.012], "#94634b", head, [0, -0.418, 0.321], {
+    transparent: true,
+    opacity: 0.45,
+    depthWrite: false,
+  });
+  for (let i = 0; i < 9; i++) {
+    const x = -0.17 + i * 0.0425;
+    const y = -0.397 - (1 - Math.abs(x) / 0.2) * 0.026;
+    const jawRadius = 0.535 * (1 - Math.max(0, -y / 0.605) * 0.16);
+    const z =
+      0.445 *
+        Math.sqrt(Math.max(0, 1 - (x / jawRadius) ** 2 - (y / 0.605) ** 2)) +
+      0.006;
+    curve(
+      [
+        [x, y + 0.008, z],
+        [x + 0.003, y - 0.008, z],
+      ],
+      0.0035,
+      "#85604a",
+      head,
+    );
+  }
 
   soft([0.164, 0.22, 0.16], COLORS.skin, body, [0, 2.16, -0.025]).name =
     "character-neck";
@@ -294,51 +433,21 @@ export function createCharacter(
       [0.215, 2.105, 0.151],
       [0, 2.12, 0],
     ]),
-    mat(COLORS.shirt, { roughness: 0.96 }),
+    shirtMaterial,
     body,
   );
   soft([0.34, 0.14, 0.21], COLORS.jeans, body, [0, 1.08, -0.018]).name =
     "character-hips";
 
-  for (const side of [-1, 1]) {
-    const collarShape = new THREE.Shape();
-    collarShape.moveTo(side * 0.025, 0.025);
-    collarShape.quadraticCurveTo(side * 0.087, 0.06, side * 0.205, 0.037);
-    collarShape.lineTo(side * 0.153, -0.135);
-    collarShape.quadraticCurveTo(side * 0.07, -0.104, side * 0.025, 0.025);
-    mesh(
-      new THREE.ExtrudeGeometry(collarShape, {
-        depth: 0.023,
-        steps: 1,
-        bevelEnabled: true,
-        bevelSize: 0.011,
-        bevelThickness: 0.011,
-        bevelSegments: 3,
-      }),
-      mat(COLORS.collar, { roughness: 0.96, side: THREE.DoubleSide }),
-      body,
-      [0, 2.071, 0.19],
-    );
-  }
-  box([0.048, 0.27, 0.019], COLORS.seam, body, [0, 1.915, 0.273], 0.013);
-  for (const y of [1.995, 1.903, 1.815])
-    soft([0.017, 0.017, 0.009], COLORS.sole, body, [0, y, 0.29]);
-  panel(
-    [0.093, 0.1],
-    texture(
-      (ctx, w, h) => {
-        ctx.clearRect(0, 0, w, h);
-        ctx.fillStyle = "#2a4e6c";
-        ctx.font = "bold 155px Arial, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("P", w / 2, h * 0.73);
-      },
-      256,
-      256,
-    ),
+  const neckline = mesh(
+    new THREE.TorusGeometry(0.177, 0.026, 12, 48),
+    mat(COLORS.collar, { roughness: 0.98 }),
     body,
-    [0.246, 1.852, 0.257],
+    [0, 2.092, -0.008],
+    [1, 0.88, 1],
   );
+  neckline.rotation.x = Math.PI / 2;
+  neckline.name = "crew-neckline";
 
   for (const side of [-1, 1]) {
     const arm = new THREE.Group();
@@ -359,7 +468,7 @@ export function createCharacter(
         22,
         28,
       ),
-      mat(COLORS.shirt, { roughness: 0.96 }),
+      shirtMaterial,
       arm,
     );
     soft([0.108, 0.16, 0.11], COLORS.skin, arm, [0, -0.316, 0]);
@@ -482,6 +591,59 @@ export function createCharacter(
     leg.userData = { hip, knee, ankle, foot, trousers, side };
   }
 
+  const down = new THREE.Vector3(0, -1, 0);
+  const portraitTargets = arms.map((arm) => {
+    const left = arm.userData.side < 0;
+    const upperDirection = new THREE.Vector3(
+      ...(left ? [0.045, -0.83, 0.557] : [-0.035, -0.6, 0.799]),
+    ).normalize();
+    const forearmDirection = new THREE.Vector3(
+      ...(left ? [0.94, -0.12, 0.32] : [-0.95, -0.06, 0.3]),
+    ).normalize();
+    const upper = new THREE.Quaternion().setFromUnitVectors(
+      down,
+      upperDirection,
+    );
+    const lowerWorld = new THREE.Quaternion().setFromUnitVectors(
+      down,
+      forearmDirection,
+    );
+    const elbow = upper.clone().invert().multiply(lowerWorld);
+    const hand = new THREE.Quaternion().setFromEuler(
+      new THREE.Euler(0, arm.userData.side * 0.16, arm.userData.side * 0.06),
+    );
+    return {
+      upper,
+      elbow,
+      hand,
+      position: new THREE.Vector3(arm.userData.side * 0.485, 2.04, -0.008),
+    };
+  });
+  const elbowPosition = new THREE.Vector3(0, -0.43, 0);
+  const handPosition = new THREE.Vector3(0, -0.34, 0);
+
+  // Apply after the main scene's typing/walking arm updates each frame.
+  // 0 leaves that motion intact; 1 folds the forearms across the red shirt.
+  function portraitPose(amount) {
+    const blend = THREE.MathUtils.clamp(
+      Number.isFinite(amount) ? amount : 0,
+      0,
+      1,
+    );
+    if (blend === 0) return blend;
+    arms.forEach((arm, index) => {
+      const target = portraitTargets[index];
+      arm.position.lerp(target.position, blend);
+      arm.quaternion.slerp(target.upper, blend);
+      arm.userData.elbow.position.lerp(elbowPosition, blend);
+      arm.userData.elbow.quaternion.slerp(target.elbow, blend);
+      arm.userData.hand.position.lerp(handPosition, blend);
+      arm.userData.hand.quaternion.slerp(target.hand, blend);
+    });
+    root.updateMatrixWorld(true);
+    return blend;
+  }
+
   function pose(amount) {
     const standing = THREE.MathUtils.clamp(
       Number.isFinite(amount) ? amount : 1,
@@ -500,15 +662,24 @@ export function createCharacter(
       leg.userData.ankle.rotation.x = 0;
     }
     for (const arm of arms) {
-      arm.rotation.x = THREE.MathUtils.lerp(-1, -0.015, standing);
-      arm.rotation.z =
-        arm.userData.side * THREE.MathUtils.lerp(0.16, 0.085, standing);
-      arm.userData.elbow.rotation.x = THREE.MathUtils.lerp(
-        -0.55,
-        -0.09,
-        standing,
+      arm.position.set(arm.userData.side * 0.485, 2.04, -0.008);
+      arm.rotation.set(
+        THREE.MathUtils.lerp(-1, -0.015, standing),
+        0,
+        arm.userData.side * THREE.MathUtils.lerp(0.16, 0.085, standing),
       );
-      arm.userData.hand.rotation.x = THREE.MathUtils.lerp(0.08, 0.02, standing);
+      arm.userData.elbow.position.copy(elbowPosition);
+      arm.userData.elbow.rotation.set(
+        THREE.MathUtils.lerp(-0.55, -0.09, standing),
+        0,
+        0,
+      );
+      arm.userData.hand.position.copy(handPosition);
+      arm.userData.hand.rotation.set(
+        THREE.MathUtils.lerp(0.08, 0.02, standing),
+        0,
+        0,
+      );
     }
     root.updateMatrixWorld(true);
     for (const skeleton of skeletons) skeleton.update();
@@ -516,5 +687,5 @@ export function createCharacter(
   }
 
   pose(seated ? 0 : 1);
-  return { root, body, head, arms, legs, pose };
+  return { root, body, head, arms, legs, pose, portraitPose };
 }

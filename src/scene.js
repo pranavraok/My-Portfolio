@@ -1,18 +1,19 @@
 import * as THREE from "three";
+import { drawComputerRadio, speakerState } from "./music.js";
 import { clone as cloneSkeleton } from "three/addons/utils/SkeletonUtils.js";
 import { createCharacter } from "./character.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
 const C = {
-  cream: "#f5efe4",
-  white: "#fffaf1",
-  blue: "#9ebed3",
+  cream: "#e6eeea",
+  white: "#f3f6ee",
+  blue: "#b8cab8",
   ink: "#292e34",
-  navy: "#18336c",
+  navy: "#315f50",
   skin: "#ba825d",
   hair: "#25211f",
-  orange: "#ff930d",
-  cyan: "#41e5ff",
+  orange: "#e75c60",
+  cyan: "#84dfb9",
 };
 
 export function createScene(host, mode, getProgress) {
@@ -117,8 +118,8 @@ export function createScene(host, mode, getProgress) {
   }
   scene.add(
     new THREE.HemisphereLight(
-      hologram ? "#8ebfff" : "#fff3d8",
-      hologram ? "#052762" : "#a89173",
+      hologram ? "#bfead0" : "#f1f4df",
+      hologram ? "#163d2e" : "#76917c",
       1.7,
     ),
   );
@@ -134,7 +135,7 @@ export function createScene(host, mode, getProgress) {
   });
   keyLight.shadow.normalBias = 0.035;
   scene.add(keyLight);
-  scene.add(new THREE.DirectionalLight("#9bbfff", 1.1));
+  scene.add(new THREE.DirectionalLight("#c1ddd0", 1.1));
 
   const person = createCharacter(
     { mesh, mat, box, ball, cylinder, rod, texture, panel },
@@ -145,38 +146,23 @@ export function createScene(host, mode, getProgress) {
     if (o.isMesh) o.receiveShadow = false;
   });
   let scan, solidPlane, wirePlane, ring, holo;
+  let speakerMap = null,
+    speakerLed = null,
+    lastSpeakerDraw = -1;
+  let lastSpeakerPlaying = false,
+    lastSpeakerTitle = "";
   if (!hologram) {
     // A self-contained clay workspace, modeled from original geometry.
-    box([7, 0.12, 4.8], "#edb038", objects, [0, -0.26, 0], 0.12);
-    box([6.35, 0.025, 4.1], "#eade82", objects, [0, -0.19, 0], 0.01);
-    box([5.65, 0.026, 3.4], "#f4c362", objects, [0, -0.17, 0], 0.01);
-    box([4.9, 0.027, 2.7], "#e9d47d", objects, [0, -0.15, 0], 0.01);
+    box([7, 0.12, 4.8], "#698d72", objects, [0, -0.26, 0], 0.12);
+    box([6.35, 0.025, 4.1], "#c8d9c0", objects, [0, -0.19, 0], 0.01);
+    box([5.65, 0.026, 3.4], "#dfb7a1", objects, [0, -0.17, 0], 0.01);
+    box([4.9, 0.027, 2.7], "#c4d6b7", objects, [0, -0.15, 0], 0.01);
     box([4.8, 0.19, 1.7], C.white, objects, [0, 1.6, -0.45], 0.095);
     for (const x of [-2.03, 2.03])
       for (const z of [-1.08, 0.18])
-        cylinder(0.105, 0.095, 1.55, "#bc9768", objects, [x, 0.72, z]);
+        cylinder(0.105, 0.095, 1.55, "#78947b", objects, [x, 0.72, z]);
     const screenMaps = [
-      texture((ctx, w, h) => {
-        ctx.fillStyle = "#242c39";
-        ctx.fillRect(0, 0, w, h);
-        ctx.fillStyle = "#333f50";
-        ctx.fillRect(0, 0, 116, h);
-        for (let i = 0; i < 11; i++) {
-          ctx.fillStyle = i === 2 ? "#809ecc" : "#607089";
-          ctx.fillRect(22, 26 + i * 23, 65 - (i % 3) * 8, 5);
-        }
-        ctx.fillStyle = "#edb545";
-        ctx.font = "bold 25px monospace";
-        ctx.fillText("PRANAV.DEV", 143, 43);
-        ctx.fillStyle = "#dfe8f0";
-        ctx.font = "18px monospace";
-        ctx.fillText("A little curiosity.", 143, 89);
-        ctx.fillText("A lot of code.", 143, 119);
-        for (let i = 0; i < 7; i++) {
-          ctx.fillStyle = ["#87c6af", "#d6a1ce", "#dda770"][i % 3];
-          ctx.fillRect(145 + (i % 3) * 12, 163 + i * 18, 90 + (i % 4) * 31, 5);
-        }
-      }),
+      texture((ctx, w, h) => drawComputerRadio(ctx, w, h)),
       texture((ctx, w, h) => {
         ctx.fillStyle = "#262b37";
         ctx.fillRect(0, 0, w, h);
@@ -200,6 +186,7 @@ export function createScene(host, mode, getProgress) {
         }
       }),
     ];
+    speakerMap = screenMaps[0];
     for (let i = 0; i < 2; i++) {
       const monitor = new THREE.Group();
       monitor.position.set(i === 0 ? -1.05 : 1.01, 2.36, -0.87);
@@ -234,7 +221,7 @@ export function createScene(host, mode, getProgress) {
       rod([0, 0.12, 1.3], [side * 0.62, 0.1, 0.91], 0.055, "#73787b", chair);
       rod([0, 0.12, 1.3], [side * 0.62, 0.1, 1.79], 0.055, "#73787b", chair);
     }
-    cylinder(0.13, 0.13, 0.35, "#466b93", objects, [-1.8, 1.85, -0.2]);
+    cylinder(0.13, 0.13, 0.35, "#466b56", objects, [-1.8, 1.85, -0.2]);
     for (let i = 0; i < 4; i++)
       rod(
         [-1.88 + i * 0.05, 1.85, -0.2],
@@ -254,8 +241,8 @@ export function createScene(host, mode, getProgress) {
     const board = new THREE.Group();
     board.position.set(0.12, 3.52, -1.55);
     objects.add(board);
-    box([2.8, 1.5, 0.12], "#d8c090", board, [0, 0, 0], 0.11);
-    box([2.61, 1.29, 0.045], "#a68d77", board, [0, 0, 0.075], 0.075);
+    box([2.8, 1.5, 0.12], "#bed0b7", board, [0, 0, 0], 0.11);
+    box([2.61, 1.29, 0.045], "#8fa589", board, [0, 0, 0.075], 0.075);
     for (const [x, y, rotation, color, word] of [
       [-0.75, 0.1, -0.12, "#b8d4e4", "BUILD"],
       [0.53, -0.17, 0.14, "#f4e8c2", "CREATE"],
@@ -280,7 +267,7 @@ export function createScene(host, mode, getProgress) {
       );
       ball([0.07, 0.07, 0.05], "#e67778", note, [0, 0.34, 0.08]);
     }
-    box([1.45, 0.1, 0.4], "#d3b88b", objects, [-2.46, 2.96, -1.39], 0.04);
+    box([1.45, 0.1, 0.4], "#afc5a7", objects, [-2.46, 2.96, -1.39], 0.04);
     for (let i = 0; i < 3; i++) {
       const book = box(
         [0.19, 0.6 + i * 0.045, 0.26],
@@ -359,7 +346,7 @@ export function createScene(host, mode, getProgress) {
       );
       leaf.rotation.set(Math.cos(angle) * 0.55, angle, -Math.sin(angle) * 0.65);
     }
-    box([0.41, 0.58, 0.32], "#e2b03e", objects, [2.05, 1.94, -0.75], 0.05);
+    box([0.41, 0.58, 0.32], "#e38584", objects, [2.05, 1.94, -0.75], 0.05);
     const speaker = mesh(
       new THREE.CircleGeometry(0.14, 32),
       mat("#455167"),
@@ -371,6 +358,12 @@ export function createScene(host, mode, getProgress) {
       mat("#86939d"),
       objects,
       [2.05, 1.95, -0.58],
+    );
+    speakerLed = mesh(
+      new THREE.CircleGeometry(0.025, 16),
+      new THREE.MeshBasicMaterial({ color: "#b36a66", toneMapped: false }),
+      objects,
+      [2.05, 1.74, -0.578],
     );
     const puzzle = new THREE.Group();
     puzzle.position.set(1.45, 1.77, -0.55);
@@ -408,8 +401,8 @@ export function createScene(host, mode, getProgress) {
     frame.position.set(3.15, 2.92, -1.45);
     frame.rotation.z = -0.09;
     objects.add(frame);
-    box([1.35, 1.0, 0.12], "#88b8d1", frame, [0, 0, 0], 0.11);
-    box([1.13, 0.78, 0.04], "#acc9db", frame, [0, 0, 0.076], 0.04);
+    box([1.35, 1.0, 0.12], "#85b89c", frame, [0, 0, 0], 0.11);
+    box([1.13, 0.78, 0.04], "#bad7c2", frame, [0, 0, 0.076], 0.04);
     panel(
       [1.02, 0.7],
       texture((ctx, w, h) => {
@@ -436,7 +429,7 @@ export function createScene(host, mode, getProgress) {
       [0, 0, 0.104],
     );
     const floor = mesh(
-      new THREE.PlaneGeometry(100, 100),
+      new THREE.PlaneGeometry(8.3, 6),
       new THREE.ShadowMaterial({ opacity: 0.12 }),
       objects,
       [0, -0.325, 0],
@@ -448,10 +441,10 @@ export function createScene(host, mode, getProgress) {
   }
   if (hologram || experience) {
     scanner.position.z = 3.2;
-    cylinder(0.92, 0.97, 0.14, "#123971", scanner, [0, 0.02, 0]);
-    cylinder(0.94, 0.94, 0.08, "#12487a", scanner, [0, 0.12, 0]);
-    cylinder(0.89, 0.92, 0.12, "#175185", scanner, [0, 0.22, 0]);
-    const light = new THREE.PointLight("#00d4ff", 2.5, 7, 1.8);
+    cylinder(0.92, 0.97, 0.14, "#184d38", scanner, [0, 0.02, 0]);
+    cylinder(0.94, 0.94, 0.08, "#1b5740", scanner, [0, 0.12, 0]);
+    cylinder(0.89, 0.92, 0.12, "#245f46", scanner, [0, 0.22, 0]);
+    const light = new THREE.PointLight("#8ee5b5", 2.5, 7, 1.8);
     light.name = "scan-light";
     light.position.set(0, 1, 1.5);
     scanner.add(light);
@@ -467,7 +460,7 @@ export function createScene(host, mode, getProgress) {
     const beam = mesh(
       new THREE.CylinderGeometry(0.46, 0.83, 3.35, 40, 1, true),
       new THREE.MeshBasicMaterial({
-        color: "#00bfff",
+        color: "#7ad6aa",
         transparent: true,
         opacity: 0.045,
         depthWrite: false,
@@ -478,7 +471,7 @@ export function createScene(host, mode, getProgress) {
       [0, 1.9, 0],
     );
     beam.name = "scan-beam";
-    const grid = new THREE.GridHelper(25, 50, "#0d8cba", "#0b477d");
+    const grid = new THREE.GridHelper(25, 50, "#4e9873", "#32644b");
     grid.position.y = -0.13;
     grid.material.transparent = true;
     grid.material.opacity = 0.27;
@@ -502,7 +495,7 @@ export function createScene(host, mode, getProgress) {
       object.userData = data;
     });
     const hologramMaterial = new THREE.MeshBasicMaterial({
-      color: "#10d9ff",
+      color: "#96efbb",
       transparent: true,
       opacity: 1,
       depthWrite: true,
@@ -531,7 +524,7 @@ export function createScene(host, mode, getProgress) {
         )
         .replace(
           "#include <color_fragment>",
-          "#include <color_fragment>\nfloat stripe=pow(0.5+0.5*sin(vHoloPosition.y*145.0-uTime*1.2),5.0);\nfloat edge=pow(1.0-abs(dot(normalize(vHoloNormal),normalize(cameraPosition-vHoloPosition))),2.4);\ndiffuseColor.rgb=vec3(0.0,0.58,1.0)*(0.28+edge*1.15+stripe*0.55);\ndiffuseColor.a=uOpacity*(0.16+edge*0.60+stripe*0.22);",
+          "#include <color_fragment>\nfloat stripe=pow(0.5+0.5*sin(vHoloPosition.y*145.0-uTime*1.2),5.0);\nfloat edge=pow(1.0-abs(dot(normalize(vHoloNormal),normalize(cameraPosition-vHoloPosition))),2.4);\ndiffuseColor.rgb=vec3(0.23,1.0,0.58)*(0.28+edge*1.15+stripe*0.55);\ndiffuseColor.a=uOpacity*(0.16+edge*0.60+stripe*0.22);",
         );
     };
     hologramMaterial.customProgramCacheKey = () => "pranav-hologram-v2";
@@ -549,7 +542,7 @@ export function createScene(host, mode, getProgress) {
     scan = mesh(
       new THREE.CylinderGeometry(0.9, 0.9, 0.021, 64),
       new THREE.MeshBasicMaterial({
-        color: "#34e6ff",
+        color: "#b3f4c8",
         transparent: true,
         opacity: 0.25,
         depthWrite: false,
@@ -560,7 +553,7 @@ export function createScene(host, mode, getProgress) {
     );
     ring = mesh(
       new THREE.TorusGeometry(0.8, 0.009, 6, 100),
-      new THREE.MeshBasicMaterial({ color: "#80f7ff" }),
+      new THREE.MeshBasicMaterial({ color: "#d2fadd" }),
       scanner,
       [0, 0, 0],
     );
@@ -575,8 +568,8 @@ export function createScene(host, mode, getProgress) {
           h / 2,
           w / 2,
         );
-        grad.addColorStop(0, "rgba(20,217,255,.25)");
-        grad.addColorStop(1, "rgba(0,80,150,0)");
+        grad.addColorStop(0, "rgba(132,223,185,.25)");
+        grad.addColorStop(1, "rgba(22,73,45,0)");
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, w, h);
       },
@@ -609,7 +602,7 @@ export function createScene(host, mode, getProgress) {
       new THREE.Points(
         geo,
         new THREE.PointsMaterial({
-          color: "#67c7ff",
+          color: "#a9ddb8",
           size: 0.023,
           transparent: true,
           opacity: 0.43,
@@ -646,7 +639,7 @@ export function createScene(host, mode, getProgress) {
     const rect = host.getBoundingClientRect();
     width = rect.width;
     height = rect.height;
-    mobile = width <= 600;
+    mobile = width <= 600 || (width <= 900 && width / height <= 1.2);
     if (!width || !height) return;
     renderer.setPixelRatio(
       Math.min(window.devicePixelRatio, mobile ? 1.35 : 1.75),
@@ -717,6 +710,7 @@ export function createScene(host, mode, getProgress) {
       person.legs[0].rotation.x += stride * 0.18;
       person.legs[1].rotation.x -= stride * 0.18;
     }
+    person.portraitPose?.(smooth(0.82, 1.12, page));
     person.root.position.set(
       mix(0, 0, walk),
       mix(0.12, 0.29, standing) + Math.abs(stride) * 0.035,
@@ -754,7 +748,7 @@ export function createScene(host, mode, getProgress) {
     objects.position.y = page * 4.4;
     objects.rotation.z = -walk * 0.035;
     objects.scale.setScalar(1 - walk * 0.055);
-    objects.visible = page < 1.3;
+    objects.visible = page < (mobile ? 1.10 : 1.16);
     const reveal = smooth(0.2, 0.78, page);
     scanner.visible = reveal > 0.001;
     scanner.traverse((o) => {
@@ -780,9 +774,9 @@ export function createScene(host, mode, getProgress) {
       }
       const scanHeight = mix(0.28, 3.85, scanProgress);
       const beam = scanner.getObjectByName("scan-beam");
-      const beamHeight = Math.max(.02, scanHeight - .28);
+      const beamHeight = Math.max(0.02, scanHeight - 0.28);
       beam.scale.y = beamHeight / 3.35;
-      beam.position.y = .28 + beamHeight / 2;
+      beam.position.y = 0.28 + beamHeight / 2;
       solidPlane.constant = reveal > 0.95 ? -scanHeight : 100;
       wirePlane.constant = scanHeight;
       scan.position.y = scanHeight;
@@ -794,6 +788,28 @@ export function createScene(host, mode, getProgress) {
       .toArray()
       .map((v) => v.toFixed(2))
       .join(",");
+    if (
+      speakerMap &&
+      objects.visible &&
+      ((speakerState.playing && time - lastSpeakerDraw > 90) ||
+        lastSpeakerPlaying !== speakerState.playing ||
+        lastSpeakerTitle !== speakerState.title)
+    ) {
+      const canvas = speakerMap.image;
+      drawComputerRadio(
+        canvas.getContext("2d"),
+        canvas.width,
+        canvas.height,
+        t,
+      );
+      speakerMap.needsUpdate = true;
+      lastSpeakerDraw = time;
+      lastSpeakerPlaying = speakerState.playing;
+      lastSpeakerTitle = speakerState.title;
+      speakerLed.material.color.set(
+        speakerState.playing ? "#8ee5b5" : "#b36a66",
+      );
+    }
     renderer.render(scene, camera);
   };
   frame = requestAnimationFrame(tick);
