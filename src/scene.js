@@ -169,10 +169,10 @@ export async function createScene(host, mode, getProgress) {
     lastSpeakerTitle = "";
   if (!hologram) {
     // A self-contained clay workspace, modeled from original geometry.
-    box([7, 0.12, 4.8], "#698d72", objects, [0, -0.26, 0], 0.12);
-    box([6.35, 0.025, 4.1], "#c8d9c0", objects, [0, -0.19, 0], 0.01);
-    box([5.65, 0.026, 3.4], "#dfb7a1", objects, [0, -0.17, 0], 0.01);
-    box([4.9, 0.027, 2.7], "#c4d6b7", objects, [0, -0.15, 0], 0.01);
+    box([7, 0.12, 4.8], "#698d72", objects, [0, -0.20, 0], 0.12);
+    box([6.35, 0.004, 4.1], "#c8d9c0", objects, [0, -0.137, 0], 0.002);
+    box([5.65, 0.003, 3.4], "#dfb7a1", objects, [0, -0.1345, 0], 0.0015);
+    box([4.9, 0.002, 2.7], "#c4d6b7", objects, [0, -0.1325, 0], 0.001);
     box([4.8, 0.19, 1.7], C.white, objects, [0, 1.6, -0.45], 0.095);
     for (const x of [-2.03, 2.03])
       for (const z of [-1.08, 0.18])
@@ -736,8 +736,7 @@ export async function createScene(host, mode, getProgress) {
     const cameraWalk = smooth(0.08, 0.96, page);
     const chairTurn = smooth(0.015, 0.19, page);
     const standing = smooth(0.20, 0.44, page);
-    const stepping = smooth(0.43, 0.90, page);
-    contactShadow.material.opacity=.19*smooth(.35,.48,page);
+    const stepping = smooth(0.48, 0.90, page);
     const intro = (time-Math.max(introStart,data.greetAt || 0))/1000;
     const helloWeight = 1-smooth(data.greetAt > introStart ? .12 : 0,data.greetAt > introStart ? .2 : .07,page);
     const helloTurn = reduced ? 0 : smooth(.2,.8,intro)*(1-smooth(3.4,4.2,intro))*helloWeight;
@@ -760,8 +759,11 @@ export async function createScene(host, mode, getProgress) {
       person.arms[1].rotation.x -= stride * 0.34;
       if (standing > .98 && page < .94) person.walkPose?.(stepping,1.24);
     }
-    const roomLift = Math.max(0,page-.08)*4.4;
-    const carry = roomLift*(1-standing);
+    // Finish the chair turn and stand on the rug before the room departs.
+    // Moving the floor during the rise made planted feet appear suspended.
+    const roomDeparture=smooth(.44,1.10,page);
+    const roomLift=roomDeparture*4.4;
+    contactShadow.material.opacity=.19*smooth(.02,.16,roomDeparture);
     const facing = mix(Math.PI, .04, chairTurn) + helloTurn*(.5-Math.PI);
     const seatTurn = facing-Math.PI;
     const kneeBend=(1-standing)*Math.PI/2;
@@ -769,7 +771,7 @@ export async function createScene(host, mode, getProgress) {
     const risenRootZ=seatRootZ+person.rigDimensions.thigh*(1-Math.sin(kneeBend));
     person.root.position.set(
       -.22*Math.sin(seatTurn)*(1-stepping),
-      -.132+carry,
+      -.132,
       mix(risenRootZ,3.2,walkPath(stepping).advance),
     );
     person.root.rotation.y = facing + smooth(.94,1.12,page)*scanProgress*Math.PI*2;
@@ -789,8 +791,8 @@ export async function createScene(host, mode, getProgress) {
       chair.scale.setScalar(1);
     }
     objects.position.y = roomLift;
-    objects.rotation.z = -walk * 0.035;
-    objects.scale.setScalar(1 - walk * 0.055);
+    objects.rotation.z = -roomDeparture * 0.035;
+    objects.scale.setScalar(1 - roomDeparture * 0.055);
     const workBlend=(1-smooth(.05,.07,page))*(1-smooth(0,.2,helloTurn));
     if(mouse) {
       mouse.position.x=.79+(reduced ? 0 : Math.sin(t*.82)*.014+Math.sin(t*1.7)*.004)*workBlend;
@@ -802,10 +804,11 @@ export async function createScene(host, mode, getProgress) {
     }
     if(chairSeat){
       chairSeat.updateWorldMatrix(true,false);
-      person.arms.forEach((arm,index)=>chairSeat.localToWorld(armrestWrists[index].set(-arm.userData.side*.55,1.358,-.24)));
-      const restBlend=(1-standing)*(1-workBlend);
+      person.arms.forEach((arm,index)=>chairSeat.localToWorld(armrestWrists[index].set(-arm.userData.side*.55,1.367,-.24)));
+      const restBlend=standing===0 ? 1-workBlend : 0;
       person.armrestPose?.(restBlend,armrestWrists);
-      if(restBlend>.98){const wrists=person.getWorldWrists();host.dataset.armrestContact=Math.max(...wrists.map((w,index)=>w.distanceTo(armrestWrists[index]))).toFixed(4);}
+      if(standing>0&&standing<1)person.risePose?.(standing,armrestWrists);
+      if(restBlend>.98 || (standing>0&&standing<=.12)){const wrists=person.getWorldWrists();host.dataset.armrestContact=Math.max(...wrists.map((w,index)=>w.distanceTo(armrestWrists[index]))).toFixed(4);}
       else host.dataset.armrestContact='released';
     }
     person.greetPose?.(helloWave,intro,1);
@@ -818,8 +821,9 @@ export async function createScene(host, mode, getProgress) {
     const cameraY = mobile
       ? mix(3.4, 2.37, cameraWalk)
       : mix(3.8, 2.62, cameraWalk);
+    const visitorFrame=1-(1-helloTurn)*(1-chairTurn);
     const cameraZ = mobile
-      ? mix(12.0, 12.7, cameraWalk)
+      ? mix(12.0+visitorFrame*.95, 12.7, cameraWalk)
       : mix(9.6, 11.8, cameraWalk);
     camera.position.set(
       cameraX + (reduced ? 0 : smoothedPointer.x * 0.1),
@@ -875,8 +879,8 @@ export async function createScene(host, mode, getProgress) {
     } else {person.head.rotation.set(0,0,0);host.dataset.gaze='still';}
     person.updateFace?.(t);
     objects.position.y = roomLift;
-    objects.rotation.z = -walk * 0.035;
-    objects.scale.setScalar(1 - walk * 0.055);
+    objects.rotation.z = -roomDeparture * 0.035;
+    objects.scale.setScalar(1 - roomDeparture * 0.055);
     objects.visible = page < (mobile ? 1.10 : 1.16);
     const reveal = smooth(0.2, 0.78, page);
     scanner.visible = reveal > 0.001;

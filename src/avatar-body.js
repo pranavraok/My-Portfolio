@@ -149,25 +149,28 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     item.position.y=item.position.y*torsoRatio+torsoOffset;
   }
 
+  const garmentAnchor=new THREE.Bone();garmentAnchor.name='hoodie-torso-anchor';body.add(garmentAnchor);
   for(const side of [-1,1]) {
-    // A fixed shoulder yoke overlaps the moving sleeve at every arm angle.
-    soft([.105,.100,.133],C.shirt,body,[side*.321,SHOULDER_HEIGHT-.042,-.012],{roughness:.92,sheen:.35,sheenColor:new THREE.Color('#41464b'),sheenRoughness:.9}).name='hoodie-shoulder-yoke';
     const arm=new THREE.Group(); arm.name=side<0?"left-arm":"right-arm";
     arm.position.set(side*SHOULDER_OFFSET,SHOULDER_HEIGHT,-.008); body.add(arm); arms.push(arm);
     const shoulder=new THREE.Bone();shoulder.name=`${arm.name}-shoulder`;arm.add(shoulder);
     const elbow=new THREE.Bone(); elbow.name=`${arm.name}-elbow`; elbow.position.y=-UPPER_ARM; shoulder.add(elbow);
     const bendBone=new THREE.Bone();bendBone.name=`${arm.name}-soft-bend`;bendBone.position.y=-UPPER_ARM;shoulder.add(bendBone);
-    const hand=new THREE.Bone(); hand.name=`${arm.name}-hand`; hand.position.y=-FOREARM;hand.scale.set(.92,.92,.92); elbow.add(hand);
-    const sleeveGeometry=loft([[.063,-.978,.068],[.067,-.940,.074],[.080,-.820,.087],[.090,-.640,.100],[.096,-.510,.104],[.112,-.315,.124],[.130,-.120,.142],[.124,.008,.134],[.055,.058,.060],[0,.072,0]],64,40);
+    const hand=new THREE.Bone(); hand.name=`${arm.name}-hand`; hand.position.y=-FOREARM;hand.scale.setScalar(1); elbow.add(hand);
+    const sleeveGeometry=loft([[.057,-.962,.062],[.062,-.930,.068],[.075,-.820,.082],[.084,-.640,.091],[.091,-.510,.096],[.102,-.315,.110],[.118,-.120,.126],[.110,.008,.122],[.050,.024,.056],[0,.034,0]],64,40);
     const sleeveIndices=[],sleeveWeights=[];
     for(let i=0;i<sleeveGeometry.attributes.position.count;i++){
-      const depth=-sleeveGeometry.attributes.position.getY(i),pre=THREE.MathUtils.smoothstep(depth,UPPER_ARM-.20,UPPER_ARM),post=THREE.MathUtils.smoothstep(depth,UPPER_ARM,UPPER_ARM+.20);
-      sleeveIndices.push(0,1,2,0);sleeveWeights.push(1-pre,pre*(1-post),post,0);
+      const depth=-sleeveGeometry.attributes.position.getY(i),attachment=THREE.MathUtils.smoothstep(depth,-.025,.21),pre=THREE.MathUtils.smoothstep(depth,UPPER_ARM-.15,UPPER_ARM),post=THREE.MathUtils.smoothstep(depth,UPPER_ARM,UPPER_ARM+.15);
+      sleeveIndices.push(0,1,2,3);sleeveWeights.push(1-attachment,attachment*(1-pre),attachment*pre*(1-post),attachment*post);
     }
     sleeveGeometry.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(sleeveIndices,4));sleeveGeometry.setAttribute('skinWeight',new THREE.Float32BufferAttribute(sleeveWeights,4));
-    const sleeve=new THREE.SkinnedMesh(sleeveGeometry,shirtMaterial);sleeve.name=arm.name+'-continuous-sleeve';sleeve.castShadow=sleeve.receiveShadow=true;sleeve.frustumCulled=false;arm.add(sleeve);
-    const sleeveSkeleton=new THREE.Skeleton([shoulder,bendBone,elbow,hand]);arm.updateWorldMatrix(true,true);sleeve.bind(sleeveSkeleton);skeletons.push(sleeveSkeleton);
-    const cuff=mesh(new THREE.TorusGeometry(.066,.0075,10,32),mat(C.neckline,{roughness:1}),elbow,[0,-FOREARM-.012,0]);cuff.rotation.x=Math.PI/2;
+    // The shoulder end belongs to the torso, while the elbow and cuff follow
+    // the arm. A rotating cap must never peel away from the sweatshirt.
+    sleeveGeometry.translate(...arm.position.toArray());
+    const sleeve=new THREE.SkinnedMesh(sleeveGeometry,shirtMaterial);sleeve.name=arm.name+'-continuous-sleeve';sleeve.castShadow=sleeve.receiveShadow=true;sleeve.frustumCulled=false;body.add(sleeve);
+    const sleeveSkeleton=new THREE.Skeleton([garmentAnchor,shoulder,bendBone,elbow,hand]);body.updateWorldMatrix(true,true);sleeve.bind(sleeveSkeleton);skeletons.push(sleeveSkeleton);
+    const cuff=mesh(new THREE.TorusGeometry(.059,.006,10,32),mat(C.neckline,{roughness:1}),elbow,[0,-FOREARM,0]);cuff.rotation.x=Math.PI/2;
+    soft([.045,.050,.036],C.skin,hand,[0,-.008,0],{roughness:.84}).name=arm.name+'-wrist-joint';
     const palm=mesh(loft([[0,-.012,0],[.054,-.020,.034],[.083,-.061,.043],[.092,-.115,.037],[.079,-.166,.031],[.058,-.194,.026],[0,-.207,0]],32,40),mat(C.skin,{roughness:.84}),hand);
     palm.name=arm.name+"-anatomical-palm";
     curve([[-.058,-.077,.040],[-.014,-.095,.043],[.046,-.082,.040]],.0011,C.skinShade,hand);
@@ -287,20 +290,20 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
   const restTargets=arms.map(arm=>({wrist:new THREE.Vector3(arm.userData.side*.55,SHOULDER_HEIGHT-.38,.02),pole:new THREE.Vector3(arm.userData.side*.20,-1,-.28)}));
 
   function pose(amount){
-    const standing=clamp(amount,1),angle=(1-standing)*Math.PI/2;
+    const standing=clamp(amount,1),angle=(1-standing)*Math.PI/2,armStanding=THREE.MathUtils.smoothstep(standing,.12,.58);
     body.position.x=0;
     body.position.y=-THIGH*(1-Math.cos(angle));
     for(const leg of legs){leg.rotation.set(-angle,0,0);leg.userData.knee.rotation.set(angle,0,0);leg.userData.ankle.rotation.set(0,0,0);}
     for(const arm of arms){
       arm.position.set(arm.userData.side*SHOULDER_OFFSET,SHOULDER_HEIGHT,-.008);
-      arm.rotation.set(THREE.MathUtils.lerp(-1,-0.015,standing),0,arm.userData.side*THREE.MathUtils.lerp(0.16,0.085,standing));
-      arm.userData.elbow.position.copy(elbowPosition); arm.userData.elbow.rotation.set(THREE.MathUtils.lerp(-0.55,-0.09,standing),0,0);
-      arm.userData.hand.position.copy(handPosition); arm.userData.hand.rotation.set(THREE.MathUtils.lerp(0.08,0.02,standing),0,0);
+      arm.rotation.set(THREE.MathUtils.lerp(-1,-0.015,armStanding),0,arm.userData.side*THREE.MathUtils.lerp(0.16,0.085,armStanding));
+      arm.userData.elbow.position.copy(elbowPosition); arm.userData.elbow.rotation.set(THREE.MathUtils.lerp(-0.55,-0.09,armStanding),0,0);
+      arm.userData.hand.position.copy(handPosition); arm.userData.hand.rotation.set(THREE.MathUtils.lerp(0.08,0.02,armStanding),0,0);
       arm.userData.hand.userData.fingers.forEach((finger,i)=>{finger.rotation.set(-.12-i*.012,0,0);const middle=finger.getObjectByName(finger.name+"-middle"),tip=finger.getObjectByName(finger.name+"-tip");if(middle)middle.rotation.set(-.22,0,0);if(tip)tip.rotation.set(-.14,0,0);});
-      arm.userData.hand.userData.thumb.rotation.set(0,0,arm.userData.side*0.45);
+      arm.userData.hand.userData.thumb.rotation.set(-.12,0,-arm.userData.side*.52);
       arm.userData.hand.userData.thumbTip.rotation.x=-.18;
     }
-    arms.forEach((arm,index)=>reachArm(arm,restTargets[index].wrist,restTargets[index].pole,restHandRotation,1-standing));
+    arms.forEach((arm,index)=>reachArm(arm,restTargets[index].wrist,restTargets[index].pole,restHandRotation,1-armStanding));
     glasses.position.set(0,0,0); glasses.rotation.set(0,0,0); glasses.visible=true; head.rotation.x=0; head.rotation.z=0;
     faceSleep=0;blinkPose(0);
     update(); return standing;
@@ -348,8 +351,41 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     targets.forEach((target,index)=>{
       wristTarget.copy(target);body.worldToLocal(wristTarget);
       reachArm(arms[index],wristTarget,new THREE.Vector3(arms[index].userData.side*.20,-1,-.28),handRotation,blend);
+      arms[index].userData.hand.userData.fingers.forEach(finger=>{
+        finger.rotation.x=THREE.MathUtils.lerp(finger.rotation.x,-.025,blend);
+        const middle=finger.getObjectByName(finger.name+'-middle'),tip=finger.getObjectByName(finger.name+'-tip');
+        middle.rotation.x=THREE.MathUtils.lerp(middle.rotation.x,-.06,blend);
+        tip.rotation.x=THREE.MathUtils.lerp(tip.rotation.x,-.06,blend);
+      });
     });
     update();
+  }
+
+  function risePose(standing,targets){
+    const release=THREE.MathUtils.smoothstep(standing,.12,.58);
+    if(release===1){update();return release;}
+    body.updateWorldMatrix(true,false);
+    body.getWorldQuaternion(bodyRotation).invert();
+    root.getWorldQuaternion(handRotation).multiply(restHandRotation).premultiply(bodyRotation);
+    arms.forEach((arm,index)=>{
+      const side=arm.userData.side;
+      wristTarget.copy(targets[index]);body.worldToLocal(wristTarget);
+      const relaxedUpper=new THREE.Quaternion().setFromEuler(new THREE.Euler(-.015,0,side*.085));
+      const relaxedLower=relaxedUpper.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-.09,0,0)));
+      const upperOffset=new THREE.Vector3(0,-UPPER_ARM,0).applyQuaternion(relaxedUpper);
+      const relaxed=arm.position.clone().add(upperOffset).add(new THREE.Vector3(0,-FOREARM,0).applyQuaternion(relaxedLower));
+      wristTarget.lerp(relaxed,release);
+      const relaxedRotation=relaxedLower.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(.02,0,0)));
+      const orientation=handRotation.clone().slerp(relaxedRotation,release);
+      const elbowHint=new THREE.Vector3(side*.16,-1,-.28).lerp(upperOffset.clone().normalize(),release);
+      reachArm(arm,wristTarget,elbowHint,orientation);
+      arm.userData.hand.userData.fingers.forEach((finger,i)=>{
+        finger.rotation.set(THREE.MathUtils.lerp(-.025,-.12-i*.012,release),0,0);
+        finger.getObjectByName(finger.name+'-middle').rotation.x=THREE.MathUtils.lerp(-.06,-.22,release);
+        finger.getObjectByName(finger.name+'-tip').rotation.x=THREE.MathUtils.lerp(-.06,-.14,release);
+      });
+    });
+    update();return release;
   }
 
   function greetPose(amount,time=0,armIndex=0){
@@ -413,9 +449,9 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     // independently from the shoulder/elbow hierarchy.
     const swing=Math.sin(gait)*envelope;
     for(const arm of arms){
-      arm.rotation.set(-.025+arm.userData.side*.16*swing,0,arm.userData.side*.07);
-      arm.userData.elbow.rotation.set(-.18-.045*Math.abs(swing),0,0);
-      arm.userData.hand.rotation.set(.04,0,0);
+      arm.rotation.set(-.015+arm.userData.side*.16*swing,0,arm.userData.side*.085);
+      arm.userData.elbow.rotation.set(-.09-.07*Math.abs(swing),0,0);
+      arm.userData.hand.rotation.set(.02,0,0);
     }
     update(); return t;
   }
@@ -427,5 +463,5 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
   function blinkPose(amount){return headBlink(amount);}
   function updateFace(seconds=0){const close=headUpdateFace(seconds,faceSleep);update();return close;}
   function setFaceMap(){return false;}
-  return {root,body,head,arms,legs,pose,portraitPose,greetPose,restPose,walkPose,deskPose,armrestPose,glasses,eyes,rigDimensions,getWorldWrists,faceMesh,faceBounds,faceUV:mapping,setFaceMap,headphones,blinkPose,updateFace};
+  return {root,body,head,arms,legs,pose,portraitPose,greetPose,restPose,walkPose,deskPose,armrestPose,risePose,glasses,eyes,rigDimensions,getWorldWrists,faceMesh,faceBounds,faceUV:mapping,setFaceMap,headphones,blinkPose,updateFace};
 }

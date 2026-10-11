@@ -82,12 +82,13 @@ export default function Experience({ scrollTo, onPhase }) {
         ) {
           onPhase(phase,page>.95);
         }
-        const roomShift = -Math.max(0,page-.08) * height * 0.9;
+        const roomDeparture=smooth(.44,1.10,page);
+        const roomShift=-roomDeparture*height*1.08;
         gsap.set(room, {
           y: roomShift,
-          rotation: reduced ? 0 : walk * 3,
-          scale: 1 - walk * (mobile ? 0.16 : 0.055),
-          borderRadius: walk * 48,
+          rotation: reduced ? 0 : roomDeparture * 3,
+          scale: 1 - roomDeparture * (mobile ? 0.16 : 0.055),
+          borderRadius: roomDeparture * 48,
         });
         timeline.current.roomBottom = clamp((room.getBoundingClientRect().bottom-stageBounds.top)/height);
         gsap.set(title, { opacity: 1 - smooth(0.25, 0.76, page) });
