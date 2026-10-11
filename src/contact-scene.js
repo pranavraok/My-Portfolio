@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { createCharacter } from "./character.js";
 import { loadApprovedHead } from "./approved-avatar.js";
+import { footerGreeting } from "./footer-motion.js";
 
 export async function createContactScene(host, getProgress) {
   await loadApprovedHead();
@@ -41,9 +42,9 @@ export async function createContactScene(host, getProgress) {
     const map = new THREE.CanvasTexture(canvas); map.colorSpace = THREE.SRGBColorSpace; maps.add(map); return map;
   };
   const panel = (size, map, parent, pos) => mesh(new THREE.PlaneGeometry(...size), new THREE.MeshBasicMaterial({ map, transparent: true }), parent, pos);
-  const person = await createCharacter({ mesh, mat, box, ball, cylinder, rod, texture, panel });
+  const person = await createCharacter({ mesh, mat, box, ball, cylinder, rod, texture, panel,animateEyes:true });
   scene.add(person.root);
-  person.root.position.set(0, .02, .35);
+  person.root.position.set(0, -.012, .35);
   person.root.traverse(o => { if (o.isMesh) o.receiveShadow = false; });
   scene.add(new THREE.HemisphereLight("#fff9ed", "#8eaa91", 1.35));
   const light = new THREE.DirectionalLight("#fff2dc", 1.8);
@@ -80,7 +81,7 @@ export async function createContactScene(host, getProgress) {
   }
   let width = 0, height = 0, mobile = false, visible = false, frame, last = 0;
   const pointer = {x:0,y:0}, followPointer = {x:0,y:0};
-  let sleep = 1, wakeAt = -100, hasWoken = false;
+  let sleep = 1, wakeAt = -100, waveAt = -100, lastWaveRequest=-100, hasWoken = false,waveBlend=0,unfoldBlend=0;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const resize = () => {
     const rect = host.getBoundingClientRect(); width = rect.width; height = rect.height;
@@ -95,48 +96,73 @@ export async function createContactScene(host, getProgress) {
   const visibleObserver = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }); visibleObserver.observe(host);
   const move = event => { if(mobile) return; const r = host.getBoundingClientRect(); pointer.x = (event.clientX-r.left)/r.width*2-1; pointer.y = (event.clientY-r.top)/r.height*2-1; };
   window.addEventListener("pointermove",move,{passive:true});
-  const smooth = (a,b,v) => { const p = THREE.MathUtils.clamp((v-a)/(b-a),0,1); return p*p*p*(p*(p*6-15)+10); };
+  const resetPointer=()=>{pointer.x=0;pointer.y=0;};
+  document.addEventListener('pointerleave',resetPointer);window.addEventListener('blur',resetPointer);
+  let firstFrame=false,resolveReady,animationTime=0;
+  const ready=new Promise(resolve=>{resolveReady=resolve;});
   function tick(time) {
     frame = requestAnimationFrame(tick);
-    if(!visible || document.hidden || time-last < 20) return;
+    if((firstFrame&&(!visible||document.hidden)) || time-last < 14) return;
     const delta=Math.min(.05,(time-last)/1000 || 1/60); last=time;
-    const t=time/1000, data=getProgress() || {};
-    sleep=THREE.MathUtils.lerp(sleep,data.sleep ?? 1,reduced.matches ? 1 : 1-Math.exp(-delta*7));
-    if(sleep>.85) hasWoken=false;
-    if(!hasWoken && sleep<.35) {wakeAt=t;hasWoken=true;}
-    const since=t-Math.max(data.waveAt ?? -100,wakeAt+.28);
-    const greeting=reduced.matches ? 0 : (1-smooth(2.15,3.05,since))*smooth(0,.55,since)*(1-sleep);
-    const wakeTime=t-wakeAt;
-    const stretch=reduced.matches ? 0 : smooth(0,.3,wakeTime)*(1-smooth(.45,1.05,wakeTime))*(1-sleep);
+    const t=(animationTime+=delta), data=getProgress() || {};
+    const requestedSleep=THREE.MathUtils.clamp(data.readSleep ? data.readSleep() : data.sleep ?? 1,0,1);
+    const manualWave=(data.waveAt ?? -100)>lastWaveRequest;
+    if(manualWave){
+      lastWaveRequest=data.waveAt;waveAt=t;
+      if(!hasWoken||sleep>.35)wakeAt=t;
+      hasWoken=true;
+    } else if(hasWoken&&requestedSleep>.9){hasWoken=false;waveAt=-100;}
+    else if(!hasWoken&&requestedSleep<.30){wakeAt=t;waveAt=t;hasWoken=true;}
+    // Once the footer is revealed, finish waking even if scrolling stops.
+    // A separate return threshold prevents tiny swipes from restarting it.
+    const sleepTarget=hasWoken?0:1;
+    const sleepStep=(sleepTarget-sleep)*(1-Math.exp(-delta*3.2));
+    sleep=reduced.matches?sleepTarget:sleep+THREE.MathUtils.clamp(sleepStep,-delta*.65,delta*.45);
+    const since=t-waveAt,movement=footerGreeting(since,sleep);
+    const settle=1-Math.exp(-delta*12);
+    waveBlend=reduced.matches?0:THREE.MathUtils.lerp(waveBlend,movement.wave,settle);
+    unfoldBlend=reduced.matches?0:THREE.MathUtils.lerp(unfoldBlend,movement.unfold,settle);
+    const greeting=waveBlend;
+    const stretch=reduced.matches?0:movement.stretch;
     person.pose(1);
-    person.restPose?.(sleep,t);
-    person.portraitPose?.((1-sleep)*(1-greeting)*(1-stretch));
+    person.restPose?.(sleep,reduced.matches?0:t);
+    // Folded arms remain quiet during sleep. Release them before lifting
+    // the greeting arm, then fold them again only after the hand lowers.
+    person.portraitPose?.(1-unfoldBlend);
     person.arms.forEach((arm,i)=>{
-      arm.rotation.x-=stretch*.22;
-      arm.rotation.z+=(i===0 ? -.12 : .12)*stretch;
+      arm.rotation.x-=stretch*.07;
+      arm.rotation.z+=(i===0 ? -.025 : .025)*stretch;
     });
-    if(!reduced.matches) person.greetPose?.(greeting,since+2.8);
+    if(!reduced.matches) person.greetPose?.(greeting,movement.waveTime,1,.12);
     if(!reduced.matches) {
       const gaze=1-Math.exp(-delta*3.5);
       followPointer.x=THREE.MathUtils.lerp(followPointer.x,pointer.x,gaze);
       followPointer.y=THREE.MathUtils.lerp(followPointer.y,pointer.y,gaze);
       person.head.rotation.y=(1-sleep)*(Math.sin(t*.45)*.045+followPointer.x*.11);
-      person.head.rotation.x+=(1-sleep)*(Math.sin(t*.9)*.025+followPointer.y*.035);
-      person.head.rotation.z+=(1-sleep)*Math.sin(t*.63)*.018;
-      person.body.scale.y=1+Math.sin(t*1.45)*.0025;
+      person.head.rotation.x+=sleep*.06+(1-sleep)*(Math.sin(t*.9)*.012+followPointer.y*.025);
+      person.head.rotation.z+=sleep*.08+(1-sleep)*Math.sin(t*.63)*.009;
+      person.body.scale.y=1+Math.sin(t*1.05)*(.0025+sleep*.0015);
+    } else {
+      person.body.scale.y=1;person.head.rotation.y=0;
     }
     person.root.rotation.y = -.035 + (reduced.matches ? 0 : followPointer.x*.06);
-    person.updateFace?.(t);
-    if(mobile) { camera.position.set(.2,2.45,8.4); camera.lookAt(0,1.72,.35); }
+    const eyelids=person.updateFace?.(reduced.matches?0:t,reduced.matches?0:movement.blink*(t-wakeAt<2?1:0));
+    if(mobile) { camera.position.set(.2,2.25,9.2); camera.lookAt(0,1.50,.35); }
     else { camera.position.set(.4,2.55,8.5); camera.lookAt(0,1.73,.25); }
     camera.clearViewOffset();
+    host.parentElement.style.setProperty('--sleep',sleep.toFixed(3));
     host.dataset.sleep=sleep.toFixed(2); host.dataset.greeting=greeting.toFixed(2);host.dataset.glasses='worn';
-    host.dataset.pose=sleep>.65 ? 'dozing' : stretch>.2 ? 'waking' : greeting>.1 ? 'greeting' : 'relaxed';
+    const animationActive=!reduced.matches&&(movement.active||waveBlend>.001||unfoldBlend>.001);
+    host.dataset.eyelids=eyelids.toFixed(3);host.dataset.animationActive=String(animationActive);
+    host.dataset.pose=sleep>.85 ? 'sleeping' : sleep>.15||stretch>.2 ? 'waking' : greeting>.1 ? 'greeting' : 'relaxed';
+    const greetingButton=host.parentElement.querySelector('.character-greeting');
+    if(greetingButton)greetingButton.disabled=animationActive;
     renderer.render(scene,camera);
+    if(!firstFrame){firstFrame=true;host.dataset.frameReady='true';resolveReady();}
   }
   frame=requestAnimationFrame(tick);
-  return { dispose() {
-    cancelAnimationFrame(frame); sizeObserver.disconnect(); visibleObserver.disconnect(); window.removeEventListener("pointermove",move);
+  return {ready,dispose() {
+    cancelAnimationFrame(frame); sizeObserver.disconnect(); visibleObserver.disconnect(); window.removeEventListener("pointermove",move);document.removeEventListener('pointerleave',resetPointer);window.removeEventListener('blur',resetPointer);
     const geometry=new Set(), material=new Set(), skeletons=new Set();
     scene.traverse(o => { if(o.geometry)geometry.add(o.geometry); if(o.isSkinnedMesh)skeletons.add(o.skeleton); if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>material.add(m)); });
     const avatarMaps=new Set();material.forEach(m=>{for(const value of Object.values(m))if(value?.isTexture)avatarMaps.add(value);});avatarMaps.forEach(map=>map.dispose());

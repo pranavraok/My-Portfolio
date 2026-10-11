@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { addEyelidAnimation } from './face-eyelids.js';
 
 export const AVATAR_SKIN='#e0bea0';
 let headPromise;
@@ -11,7 +12,7 @@ export function loadApprovedHead(){
 
 // The face, hair, glasses and headphones are the approved Meshy geometry.
 // Each renderer owns its clone so footer disposal cannot invalidate the hero.
-export function createApprovedHead(head,template){
+export function createApprovedHead(head,template,{animateEyes=false}={}){
   if(!template)throw new Error('Approved avatar head has not loaded');
   const model=template.clone(true),textureCopies=new Map();
   model.name='pranav-approved-meshy-head';
@@ -40,5 +41,12 @@ export function createApprovedHead(head,template){
   // Compatibility handles stay hidden; actual accessories are attached in GLB.
   glasses.visible=false;headphones.visible=false;head.add(glasses,headphones);
   let faceMesh;model.traverse(object=>{if(object.isMesh&&!faceMesh)faceMesh=object;});
-  return {faceMesh,glasses,headphones,eyes:[],faceBounds:{height:size.y*scale},blinkPose:()=>0,updateFace:()=>0};
+  const blinkPose=animateEyes?addEyelidAnimation(model):()=>0;
+  const ease=(a,b,value)=>{const t=THREE.MathUtils.clamp((value-a)/(b-a),0,1);return t*t*t*(10+t*(-15+6*t));};
+  const updateFace=(seconds=0,sleep=0,extraBlink=0)=>{
+    const phase=((seconds%5.4)+5.4)%5.4;
+    const blink=ease(4.60,4.71,phase)*(1-ease(4.78,4.97,phase));
+    return blinkPose(Math.max(sleep,extraBlink,blink));
+  };
+  return {faceMesh,glasses,headphones,eyes:[],faceBounds:{height:size.y*scale},blinkPose,updateFace};
 }

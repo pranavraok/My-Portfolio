@@ -39,6 +39,7 @@
   border-radius: 50%;
 }
 .character-greeting:focus-visible { outline: 2px dashed var(--navy); outline-offset: -8px; }
+.character-greeting:disabled { cursor: default; }
 .sleep-symbols { position: absolute; left: 58%; top: 26%; opacity: var(--sleep); pointer-events: none; }
 .sleep-symbols span { position: absolute; font-size: 30px; font-weight: 700; animation: doze 3s ease-in-out infinite; }
 .sleep-symbols span:nth-child(2) { left: 32px; top: -32px; font-size: 35px; animation-delay: .8s; }
@@ -66,13 +67,13 @@
   .contact-stage .social-links { gap: 10px; }
 }
 @media (max-width: 600px) {
-  .contact-stage { height: 960px; min-height: 0; border-radius: 28px; }
+  .contact-stage { height: clamp(760px, 112svh, 900px); min-height: 0; border-radius: 28px; }
   .contact-stage .contact-copy { top: 55px; left: 5%; width: 90%; }
   .contact-stage .contact-copy h2 { font-size: clamp(40px, 11vw, 52px); }
   .contact-stage .social-links { margin-top: 22px; gap: 14px; }
-  .contact-character { top: 300px; }
+  .contact-character { top: 250px; }
   .character-greeting { top: 10%; left: 17%; width: 62%; height: 82%; }
-  .sleep-symbols { top: 20%; left: 68%; }
+  .sleep-symbols { top: 15%; left: 68%; }
   .sleep-symbols span { font-size: 23px; }
   .sleep-symbols span:nth-child(2) { left: 22px; top: -24px; font-size: 26px; }
   .sleep-symbols span:nth-child(3) { left: 41px; top: -49px; font-size: 21px; }

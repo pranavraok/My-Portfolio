@@ -60,7 +60,7 @@ export function walkPath(amount) {
 }
 
 /** Original stylized human hero, with a separate adult rig and wearable accessories. */
-export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, faceMap=null, faceUV={} }, seated = false) {
+export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, faceMap=null, faceUV={},animateEyes=false }, seated = false) {
   faceMap=null; // This avatar is sculpted; photographic maps are intentionally unused.
   const root = new THREE.Group();
   root.name = "Pranav-hero";
@@ -139,7 +139,7 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
   },512,512);floralMap.wrapS=floralMap.wrapT=THREE.RepeatWrapping;
   const floralMaterial=mat("#ffffff",{map:floralMap,roughness:.96});
 
-  const {faceMesh,glasses,eyes:headEyes,headphones,faceBounds,blinkPose:headBlink,updateFace:headUpdateFace}=createApprovedHead(head,headTemplate);
+  const {faceMesh,glasses,eyes:headEyes,headphones,faceBounds,blinkPose:headBlink,updateFace:headUpdateFace}=createApprovedHead(head,headTemplate,{animateEyes});
   eyes.push(...headEyes);
 
   mesh(loft([[0,2.996,0],[.115,3.015,.110],[.090,3.10,.091],[.085,3.19,.088],[.09,3.23,.095],[0,3.25,0]],36,40),unmappedSkin,body,[0,0,-.023]).name="avatar-neck";
@@ -492,7 +492,7 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     update();return release;
   }
 
-  function greetPose(amount,time=0,armIndex=0){
+  function greetPose(amount,time=0,armIndex=0,clearance=0){
     const blend=clamp(amount); if(!blend)return blend;
     const arm=arms[armIndex],hand=arm.userData.hand,side=arm.userData.side,seconds=Number.isFinite(time)?time:0;
     currentArm(arm);
@@ -501,7 +501,7 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     // Animate the joints, rather than rocking an isolated palm around a
     // fixed wrist. The upper arm stays close; the bent forearm carries the
     // side-to-side arc, with a small delayed rotation through the wrist.
-    const upperDirection=new THREE.Vector3(side*(.43+.025*motion.shoulder*activity),-.54,.725).normalize();
+    const upperDirection=new THREE.Vector3(side*(.43+THREE.MathUtils.clamp(clearance,0,.2)+.025*motion.shoulder*activity),-.54,.725).normalize();
     const forearmDirection=new THREE.Vector3(side*(.08+.32*motion.forearm*activity),1,-.14).normalize();
     // A shared bend axis keeps the elbow a hinge. The shortest rotation
     // from DOWN to an almost vertical forearm flips its axial twist.
@@ -538,7 +538,7 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     const sleep=clamp(sleepAmount),seconds=Number.isFinite(time)?time:0;
     head.rotation.x=THREE.MathUtils.lerp(-0.035,0.245,sleep)+Math.sin(seconds*0.58)*0.009*sleep;
     head.rotation.z=Math.sin(seconds*0.5)*0.035*sleep;
-    faceSleep=sleep*.86;blinkPose(faceSleep);
+    faceSleep=interval(.16,.88,sleep);blinkPose(faceSleep);
     // Clear spectacles and headphones stay attached while the head nods.
     update(); return sleep;
   }
@@ -620,7 +620,7 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
   const rigDimensions={seatedRootY:.06,standingHeight,upperArm:UPPER_ARM,forearm:FOREARM,thigh:THIGH,shin:SHIN,hipHeight:HIP_HEIGHT,headHeight:HEAD_HEIGHT,headScale:HEAD_SCALE,shoulderHeight:SHOULDER_HEIGHT,shoulderOffset:SHOULDER_OFFSET,seatHeight:HIP_HEIGHT-THIGH+.06,seatedShoulderHeight:SHOULDER_HEIGHT-THIGH+.06};
   const getWorldWrists=()=>{update();return arms.map(arm=>arm.userData.hand.getWorldPosition(new THREE.Vector3()));};
   function blinkPose(amount){return headBlink(amount);}
-  function updateFace(seconds=0){const close=headUpdateFace(seconds,faceSleep);update();return close;}
+  function updateFace(seconds=0,extraBlink=0){const close=headUpdateFace(seconds,faceSleep,extraBlink);update();return close;}
   function setFaceMap(){return false;}
   return {root,body,head,arms,legs,pose,portraitPose,greetPose,restPose,walkPose,swivelPose,deskPose,armrestPose,seatedHands,risePose,glasses,eyes,rigDimensions,getWorldWrists,faceMesh,faceBounds,faceUV:mapping,setFaceMap,headphones,blinkPose,updateFace};
 }
