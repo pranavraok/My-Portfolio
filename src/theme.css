@@ -246,7 +246,7 @@
   color: #8ca28a;
   margin-bottom: 7px;
 }
-@media (max-width: 600px), (max-width: 900px) and (max-aspect-ratio: 6/5) {
+@media (max-width: 600px), (max-width: 900px) and (max-aspect-ratio: 6/5), (max-width: 900px) and (max-height: 520px) {
   .experience-stage .scan-status strong {
     background: transparent;
   }

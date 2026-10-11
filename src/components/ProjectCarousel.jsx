@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "./Icons.jsx";
+import AssetImage from "./AssetImage.jsx";
 
-function ProjectCard({ project, navigate, duplicate }) {
+function ProjectCard({ project, navigate, duplicate, preload }) {
   const image = project.images[0];
   return (
     <li>
@@ -13,7 +14,7 @@ function ProjectCard({ project, navigate, duplicate }) {
         style={{ "--card-accent": project.color }}
       >
         <div className="carousel-project-image">
-          <img src={image.src} alt={duplicate ? "" : image.alt} width={image.width} height={image.height} loading="lazy" decoding="async" />
+          <AssetImage src={image.src} alt={duplicate ? "" : image.alt} width={image.width} height={image.height} loading={preload ? "eager" : "lazy"} />
           <span className="carousel-project-open" aria-hidden="true"><Icon name="arrow" size={22} /></span>
         </div>
         <div className="carousel-project-copy">
@@ -30,10 +31,15 @@ export default function ProjectCarousel({ projects, navigate }) {
   const host = useRef(null);
   const [paused, setPaused] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [preload, setPreload] = useState(false);
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), { rootMargin: "100px" });
     observer.observe(host.current);
-    return () => observer.disconnect();
+    const assetObserver = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setPreload(true); assetObserver.disconnect(); }
+    }, { rootMargin: "1000px" });
+    assetObserver.observe(host.current);
+    return () => { observer.disconnect(); assetObserver.disconnect(); };
   }, []);
   const rows = [projects.slice(0, 6), projects.slice(6, 12)];
   const resetScroll = () => host.current?.querySelectorAll(".project-carousel-row").forEach(row => { row.scrollLeft = 0; });
@@ -55,7 +61,7 @@ export default function ProjectCarousel({ projects, navigate }) {
             <div className="project-carousel-track">
               {[false, true].map(duplicate => (
                 <ul key={String(duplicate)} className="project-carousel-group" aria-hidden={duplicate ? true : undefined} data-duplicate={duplicate}>
-                  {row.map(project => <ProjectCard key={project.slug} project={project} navigate={navigate} duplicate={duplicate} />)}
+                  {row.map(project => <ProjectCard key={project.slug} project={project} navigate={navigate} duplicate={duplicate} preload={preload} />)}
                 </ul>
               ))}
             </div>

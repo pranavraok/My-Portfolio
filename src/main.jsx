@@ -7,6 +7,7 @@ import "./theme.css";
 import "./contact.css";
 import "./projects.css";
 import "./work-experience.css";
+import "./responsive.css";
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <App />

@@ -6,7 +6,7 @@ import { createHeroCharacter, walkPath, heroGreeting, waveMotion, chairRise, cha
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { createContactScene } from "./contact-scene.js";
 import { loadApprovedHead } from "./approved-avatar.js";
-import { watchSceneContext } from "./scene-context.js";
+import { watchSceneContext, scenePixelRatio } from "./scene-context.js";
 
 const C = {
   cream: "#e6eeea",
@@ -683,12 +683,12 @@ export async function createScene(host, mode, getProgress) {
     width = rect.width;
     height = rect.height;
     // Match the page layout, even when the music dock shortens the 3D stage.
-    mobile = window.matchMedia('(max-width: 600px), (max-width: 900px) and (max-aspect-ratio: 6/5)').matches;
+    mobile = window.matchMedia('(max-width: 600px), (max-width: 900px) and (max-aspect-ratio: 6/5), (max-width: 900px) and (max-height: 520px)').matches;
     if(speakerRig)speakerRig.position.set(mobile?.88:2.05,1.565,mobile?-.30:-.75);
     if (!width || !height) return;
-    renderer.setPixelRatio(
-      Math.min(window.devicePixelRatio, mobile ? 1.35 : 1.75),
-    );
+    const renderScale = scenePixelRatio(width, height, mobile);
+    renderer.setPixelRatio(renderScale);
+    host.dataset.renderScale = renderScale.toFixed(2);
     renderer.setSize(width, height);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
@@ -837,14 +837,15 @@ export async function createScene(host, mode, getProgress) {
       ? mix(3.4, 2.37, cameraWalk)
       : mix(3.8, 2.62, cameraWalk);
     const visitorFrame=1-(1-helloTurn)*(1-chairTurn);
+    const compactPhone=mobile&&width/height>1.2&&height<=520;
     const cameraZ = mobile
-      ? mix(12.0+visitorFrame*.95, 12.7, cameraWalk)
+      ? mix((compactPhone?16:12.0)+visitorFrame*.95, 12.7, cameraWalk)*Math.min(1.12,Math.max(1,.46/(width/height)))
       : mix(9.6, 11.8, cameraWalk);
     const parallax=reduced||mobile?0:1-smooth(.05,.65,page);
     camera.position.set(cameraX+smoothedPointer.x*.72*parallax,cameraY-smoothedPointer.y*.38*parallax,cameraZ);
     target.set(
       smoothedPointer.x*.07*parallax,
-      (mobile ? mix(2.85, 1.21, smooth(.28,1.1,page)) : mix(1.55, 1.25, cameraWalk))-smoothedPointer.y*.035*parallax,
+      (mobile ? mix(width/height>1.2?3.15:2.60, 1.21, smooth(.28,1.1,page)) : mix(1.55, 1.25, cameraWalk))-smoothedPointer.y*.035*parallax,
       mix(0.2, 3.2, cameraWalk),
     );
     camera.lookAt(target);
@@ -852,7 +853,7 @@ export async function createScene(host, mode, getProgress) {
     camera.setViewOffset(
       width,
       height,
-      -width * (mobile ? 0.11 : 0.175) * (1 - cameraWalk),
+      -width * (mobile ? compactPhone?0:0.11 : 0.175) * (1 - cameraWalk),
       0,
       width,
       height,

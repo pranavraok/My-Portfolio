@@ -6,6 +6,7 @@ import { Icon } from "./Icons.jsx";
 import { profile } from "../data.js";
 import DecodedText from "./DecodedText.jsx";
 import { speakerState, toggleBackgroundMusic } from "../music.js";
+import { advanceScrollPage } from "../scroll-motion.js";
 
 const skills = [
   "Product Development",
@@ -62,7 +63,7 @@ export default function Experience({ scrollTo, onPhase }) {
         });
       const renderPage = (page) => {
         const mobile = matchMedia(
-          "(max-width: 600px), (max-width: 900px) and (max-aspect-ratio: 6/5)",
+          "(max-width: 600px), (max-width: 900px) and (max-aspect-ratio: 6/5), (max-width: 900px) and (max-height: 520px)",
         ).matches;
         const height = stage.clientHeight;
         const walk = smooth(0.08, 0.94, page);
@@ -121,25 +122,21 @@ export default function Experience({ scrollTo, onPhase }) {
         });
         gsap.set(status, { opacity: smooth(0.75, 1.02, page) });
         stage.dataset.phase = page < 0.75 ? "workspace" : "hologram";
+        stage.dataset.scrollLag=Math.abs(requestedPage-page).toFixed(3);
       };
-      const update=self=>{
+      const update=(self, instant=false)=>{
+        const previousRequest=requestedPage;
         requestedPage=Math.min((self.progress*target.clientHeight)/stage.clientHeight,target.clientHeight/stage.clientHeight-1);
-        if(reduced||!initialized){displayPage=requestedPage;initialized=true;renderPage(displayPage);}
+        if(instant||reduced||!initialized||Math.abs(requestedPage-previousRequest)>1.25){displayPage=requestedPage;initialized=true;renderPage(displayPage);}
       };
       settleScroll=(_time,deltaMs)=>{
-        if(reduced||Math.abs(requestedPage-displayPage)<.00001)return;
+        if(document.hidden||reduced||requestedPage===displayPage)return;
         // A shared clock keeps the chair, hands, camera and room card together
         // when a wheel tick or a touch swipe jumps across several poses.
-        const delta=Math.min(deltaMs,50)/1000;
-        let step=(requestedPage-displayPage)*(1-Math.exp(-delta*9));
-        // A short touch swipe must leave time to swivel, stand and step.
-        // Skip the speed limit when scrolling beyond the workspace entirely.
-        if(requestedPage<=1.15&&displayPage<=.94){
-          const riseOrSit=displayPage>.18&&displayPage<.46;
-          const limit=delta*(riseOrSit ? .14 : .18);
-          step=Math.max(-limit,Math.min(limit,step));
-        }
-        displayPage+=step;
+        const bounds=stage.getBoundingClientRect();
+        displayPage=bounds.bottom<=0||bounds.top>=window.innerHeight
+          ? requestedPage
+          : advanceScrollPage(displayPage,requestedPage,deltaMs);
         renderPage(displayPage);
       };
       gsap.ticker.add(settleScroll);
@@ -148,7 +145,7 @@ export default function Experience({ scrollTo, onPhase }) {
         start: "top top",
         end: "bottom top",
         onUpdate: update,
-        onRefresh: update,
+        onRefresh: self=>update(self,true),
       });
       update(trigger);
     }, target);
@@ -170,6 +167,7 @@ export default function Experience({ scrollTo, onPhase }) {
           <div className="hero-copy">
             <h1 id="hero-title">
               <span>Pranav</span>
+              {" "}
               <span>Rao K</span>
             </h1>
             <div className="role-sticker"><DecodedText text="DEVELOPER & PRODUCT BUILDER" delay={300} /></div>

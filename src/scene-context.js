@@ -1,4 +1,9 @@
 // Keep an existing scene alive when the browser temporarily releases its GPU.
+export function scenePixelRatio(width, height, mobile, deviceRatio = window.devicePixelRatio) {
+  const pixelBudget = mobile ? 1400000 : 4500000;
+  return Math.min(deviceRatio, mobile ? 1.35 : 1.75, Math.sqrt(pixelBudget / Math.max(1, width * height)));
+}
+
 export function watchSceneContext(renderer, host) {
   let lost = false;
   const canvas = renderer.domElement;

@@ -3,7 +3,7 @@ import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.j
 import { createCharacter } from "./character.js";
 import { loadApprovedHead } from "./approved-avatar.js";
 import { footerGreeting,desktopFooterGreeting,desktopFooterAwake,footerSleepRequest } from "./footer-motion.js";
-import { watchSceneContext } from "./scene-context.js";
+import { watchSceneContext, scenePixelRatio } from "./scene-context.js";
 
 export async function createContactScene(host, getProgress) {
   await loadApprovedHead();
@@ -90,12 +90,14 @@ export async function createContactScene(host, getProgress) {
   const resize = () => {
     const rect = host.getBoundingClientRect(); width = rect.width; height = rect.height;
     if(!width || !height) return;
-    mobile = width <= 600 || width / height < 1;
+    mobile = matchMedia('(max-width: 600px), (max-width: 900px) and (max-aspect-ratio: 6/5), (max-width: 900px) and (max-height: 520px)').matches;
     const parcelScale=mobile ? .48 : Math.min(.98,(width/height)*.52);
     packages.scale.setScalar(parcelScale);
     const halfWidth=Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*(8.5-.35)*width/height;
     packages.position.x = mobile ? -.03 : halfWidth*.59-parcelCenter.x*parcelScale;
-    renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.35 : 1.7)); renderer.setSize(width,height);
+    const renderScale = scenePixelRatio(width, height, mobile);
+    renderer.setPixelRatio(renderScale); renderer.setSize(width,height);
+    host.dataset.renderScale = renderScale.toFixed(2);
     camera.aspect = width / height; camera.updateProjectionMatrix();
   };
   const sizeObserver = new ResizeObserver(resize); sizeObserver.observe(host); resize();

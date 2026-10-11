@@ -8,6 +8,7 @@ import ContactCharacter from "./components/ContactCharacter.jsx";
 import ProjectCarousel from "./components/ProjectCarousel.jsx";
 import ProjectGallery from "./components/ProjectGallery.jsx";
 import WorkExperience from "./components/WorkExperience.jsx";
+import AssetImage from "./components/AssetImage.jsx";
 import { Icon, Logo } from "./components/Icons.jsx";
 import { profile, projects, awards } from "./data.js";
 import { finishStartup } from "./startup.js";
@@ -34,7 +35,7 @@ function Home({ navigate, scrollTo, onPhase }) {
           {awards.map((award) => (
             <article key={award.title} className="award reveal">
               <div className={`award-image ${award.image === "startup-pitch" ? "award-group-photo" : ""}`}>
-                <img
+                <AssetImage
                   src={`/media/awards/${award.image}.webp`}
                   alt={`${award.title} achievement`}
                   loading="lazy"
@@ -210,6 +211,7 @@ export default function App() {
   const [active, setActive] = useState("");
   const [sceneBlue, setSceneBlue] = useState(false);
   const [transition, setTransition] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const lenis = useRef(null);
   const transitionTimer = useRef(null);
   const routeScroll = useRef(null);
@@ -222,11 +224,13 @@ export default function App() {
     setSceneBlue(dark);
   },[]);
   function scrollTo(id) {
+    setMenuOpen(false);
     const el = document.getElementById(id);
     if (!el) return;
-    if (lenis.current)
+    if (lenis.current) {
+      lenis.current.resize();
       lenis.current.scrollTo(el, { offset: -18, duration: 1.3 });
-    else el.scrollIntoView({ behavior: "auto" });
+    } else el.scrollIntoView({ behavior: "auto" });
   }
   function navigate(event, target, section) {
     if (
@@ -238,6 +242,7 @@ export default function App() {
     )
       return;
     event?.preventDefault();
+    setMenuOpen(false);
     if (target === path) {
       if (section) scrollTo(section);
       return;
@@ -266,11 +271,13 @@ export default function App() {
     const pop = () => {
       setPath(window.location.pathname);
       setTransition(false);
+      setMenuOpen(false);
     };
     window.addEventListener("popstate", pop);
     const jump = event => {
       if(document.querySelector("dialog[open]") || !lenis.current || !["Home","End"].includes(event.key) || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
       event.preventDefault();
+      lenis.current.resize();
       lenis.current.scrollTo(event.key === "Home" ? 0 : document.documentElement.scrollHeight, {immediate:true});
     };
     window.addEventListener("keydown",jump);
@@ -280,6 +287,60 @@ export default function App() {
       clearTimeout(transitionTimer.current);
       lenis.current?.destroy();
       lenis.current = null;
+    };
+  }, []);
+  useEffect(() => {
+    if (!menuOpen) return;
+    document.querySelector("#main-navigation a")?.focus();
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        document.querySelector(".mobile-menu-toggle")?.focus();
+      }
+    };
+    const closeOutside = (event) => { if (!event.target.closest(".site-header")) setMenuOpen(false); };
+    window.addEventListener("keydown", closeOnEscape);
+    document.addEventListener("pointerdown", closeOutside);
+    return () => {
+      window.removeEventListener("keydown", closeOnEscape);
+      document.removeEventListener("pointerdown", closeOutside);
+    };
+  }, [menuOpen]);
+  useEffect(() => {
+    let frame, timer, disposed = false;
+    let viewportWidth = window.innerWidth, viewportHeight = window.innerHeight;
+    const refresh = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+          if (disposed) return;
+          lenis.current?.resize();
+          ScrollTrigger.refresh();
+        });
+      }, 100);
+    };
+    const resize = () => {
+      // Ignore the small height changes caused by a phone's address bar.
+      if (window.innerWidth !== viewportWidth || Math.abs(window.innerHeight - viewportHeight) > 96) {
+        if (window.innerWidth !== viewportWidth) setMenuOpen(false);
+        viewportWidth = window.innerWidth;
+        viewportHeight = window.innerHeight;
+        refresh();
+      }
+    };
+    const observer = new ResizeObserver(refresh);
+    observer.observe(root.current);
+    document.fonts?.ready.then(() => { if (!disposed) refresh(); });
+    window.addEventListener("resize", resize, { passive: true });
+    window.addEventListener("orientationchange", refresh);
+    return () => {
+      disposed = true;
+      observer.disconnect();
+      clearTimeout(timer);
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("orientationchange", refresh);
     };
   }, []);
   useEffect(() => {
@@ -295,7 +356,7 @@ export default function App() {
             opacity: 0,
             duration: 0.65,
             ease: "power2.out",
-            scrollTrigger: { trigger: el, start: "top 94%", once: true },
+            scrollTrigger: { trigger: el, start: "top 94%", once: true, fastScrollEnd: true },
           }),
         );
       }
@@ -352,7 +413,7 @@ export default function App() {
         >
           {home ? <Logo /> : <Icon name="back" size={25} />}
         </a>
-        <nav aria-label="Main navigation">
+        <nav id="main-navigation" aria-label="Main navigation" data-open={menuOpen}>
           {["about", "projects", "milestones", "experience", "contact"].map((id) => (
             <a
               key={id}
@@ -372,6 +433,9 @@ export default function App() {
           ))}
         </nav>
         <div className="header-actions">
+          <button className="mobile-menu-toggle" aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setMenuOpen(value => !value)}>
+            <Icon name={menuOpen ? "close" : "menu"} size={21} />
+          </button>
           <a className="get-in-touch" href={`mailto:${profile.email}`}>
             Get in touch <Icon name="arrow" size={16} />
           </a>

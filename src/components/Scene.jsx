@@ -14,7 +14,7 @@ export default function Scene({ mode, progress, timeline }) {
   useEffect(() => {
     let disposed = false;
     const target = host.current;
-    let observer,started=false,retryTimer,attempts=0;
+    let observer,started=false,retryTimer,readyTimer,attempts=0;
     const initialize = async () => {
       if (started || api.current || disposed) return;
       started=true;
@@ -22,6 +22,7 @@ export default function Scene({ mode, progress, timeline }) {
       setFailed(false);
       target.dataset.ready="false";
       target.dataset.loadState="loading";
+      target.setAttribute("aria-busy", "true");
       observer?.disconnect();
       try {
         const instance = await createScene(target, mode, () =>
@@ -29,12 +30,18 @@ export default function Scene({ mode, progress, timeline }) {
         );
         if (disposed) { instance.dispose(); return; }
         api.current = instance;
-        await instance.ready;
+        await Promise.race([
+          instance.ready,
+          new Promise((_, reject) => { readyTimer = setTimeout(() => reject(new Error("Character frame timed out")), 12000); }),
+        ]);
+        clearTimeout(readyTimer);
         if(disposed)return;
         target.dataset.ready = "true";
         target.dataset.loadState = "ready";
+        target.setAttribute("aria-busy", "false");
         if(mode==='experience'||mode==='workspace')finishStartup();
       } catch (error) {
+        clearTimeout(readyTimer);
         if(disposed)return;
         api.current?.dispose();
         api.current=null;
@@ -49,6 +56,7 @@ export default function Scene({ mode, progress, timeline }) {
           error.message,
         );
         target.dataset.loadState="failed";
+        target.setAttribute("aria-busy", "false");
         setFailed(true);
         if(mode==='experience'||mode==='workspace')finishStartup();
       }
@@ -67,12 +75,13 @@ export default function Scene({ mode, progress, timeline }) {
     else {
       observer = new IntersectionObserver(([entry])=>{
         if(entry.isIntersecting)void initialize();
-      },{rootMargin:'250px'});
+      },{rootMargin:'1100px'});
       observer.observe(target);
     }
     return () => {
       disposed = true;
       clearTimeout(retryTimer);
+      clearTimeout(readyTimer);
       retry.current=null;
       window.removeEventListener("online",recoverOnline);
       observer?.disconnect();
@@ -111,6 +120,7 @@ export default function Scene({ mode, progress, timeline }) {
           <span />
           <span />
           <span />
+          <small className="scene-loading-label">Getting ready…</small>
         </div>
       )}
     </div>

@@ -1,13 +1,45 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { addEyelidAnimation } from './face-eyelids.js';
+import { updateStartup } from './startup.js';
 
 export const AVATAR_SKIN='#e0bea0';
 let headPromise;
 
 export function loadApprovedHead(){
-  if(!headPromise)headPromise=new GLTFLoader().loadAsync('/media/pranav-approved-head-fast.glb').then(gltf=>gltf.scene).catch(error=>{headPromise=null;throw error;});
+  if(!headPromise)headPromise=downloadHead().catch(error=>{headPromise=null;throw error;});
   return headPromise;
+}
+
+async function downloadHead() {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 45000);
+  try {
+    updateStartup(4);
+    const response = await fetch('/media/pranav-approved-head-fast.glb', { signal: controller.signal });
+    if (!response.ok) throw new Error(`Character download failed (${response.status})`);
+    const total = Number(response.headers.get('content-length'));
+    let buffer;
+    if (response.body && total > 0) {
+      const reader = response.body.getReader(), chunks = [];
+      let received = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        received += value.byteLength;
+        updateStartup(4 + Math.min(1, received / total) * 78);
+      }
+      const bytes = new Uint8Array(received);
+      let offset = 0;
+      for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+      buffer = bytes.buffer;
+    } else buffer = await response.arrayBuffer();
+    updateStartup(86, "Preparing my character");
+    const gltf = await new GLTFLoader().parseAsync(buffer, '/media/');
+    updateStartup(94, "Setting up my workspace");
+    return gltf.scene;
+  } finally { clearTimeout(timeout); }
 }
 
 // The face, hair, glasses and headphones are the approved Meshy geometry.
