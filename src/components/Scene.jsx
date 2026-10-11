@@ -18,9 +18,11 @@ export default function Scene({ mode, progress, timeline }) {
         try {
           const { createScene } = await import("../scene.js");
           if (disposed) return;
-          api.current = createScene(target, mode, () =>
+          const instance = await createScene(target, mode, () =>
             timeline ? timeline.current : currentProgress.current || 0,
           );
+          if (disposed) { instance.dispose(); return; }
+          api.current = instance;
           target.dataset.ready = "true";
         } catch (error) {
           console.warn(
@@ -47,7 +49,7 @@ export default function Scene({ mode, progress, timeline }) {
       role="img"
       aria-label={
         mode === "workspace" || mode === "experience"
-          ? "Pranav at his desk: curly black hair, sunglasses, a smile, and his red patterned shirt"
+          ? "Pranav’s approved 3D avatar with swept black hair, clear glasses, headphones, a black hoodie and floral shorts, at a wheeled desk chair"
           : mode === "contact"
             ? "Pranav dozing beside parcels, then waking up and waving hello"
             : "Pranav’s 3D character on a glowing holographic platform"

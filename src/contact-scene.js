@@ -1,13 +1,15 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { createCharacter } from "./character.js";
+import { loadApprovedHead } from "./approved-avatar.js";
 
-export function createContactScene(host, getProgress) {
+export async function createContactScene(host, getProgress) {
+  await loadApprovedHead();
   const scene = new THREE.Scene();
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "low-power" });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.15;
+  renderer.toneMappingExposure = .98;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.domElement.setAttribute("aria-hidden", "true");
@@ -16,7 +18,7 @@ export function createContactScene(host, getProgress) {
   const maps = new Set(), materials = new Map();
   const mat = (color, options = {}) => {
     const key = color + JSON.stringify(options);
-    if (!materials.has(key)) materials.set(key, new THREE.MeshStandardMaterial({ color, roughness: .82, ...options }));
+    if (!materials.has(key)) materials.set(key, new (options.sheen ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial)({ color, roughness: .82, ...options }));
     return materials.get(key);
   };
   function mesh(geometry, material, parent, pos = [0, 0, 0], scale = [1, 1, 1]) {
@@ -39,12 +41,12 @@ export function createContactScene(host, getProgress) {
     const map = new THREE.CanvasTexture(canvas); map.colorSpace = THREE.SRGBColorSpace; maps.add(map); return map;
   };
   const panel = (size, map, parent, pos) => mesh(new THREE.PlaneGeometry(...size), new THREE.MeshBasicMaterial({ map, transparent: true }), parent, pos);
-  const person = createCharacter({ mesh, mat, box, ball, cylinder, rod, texture, panel });
+  const person = await createCharacter({ mesh, mat, box, ball, cylinder, rod, texture, panel });
   scene.add(person.root);
   person.root.position.set(0, .02, .35);
   person.root.traverse(o => { if (o.isMesh) o.receiveShadow = false; });
-  scene.add(new THREE.HemisphereLight("#fff9ed", "#8eaa91", 2.5));
-  const light = new THREE.DirectionalLight("#fff2dc", 3.3);
+  scene.add(new THREE.HemisphereLight("#fff9ed", "#8eaa91", 1.35));
+  const light = new THREE.DirectionalLight("#fff2dc", 1.8);
   light.position.set(-3, 7, 7); light.castShadow = true;
   light.shadow.mapSize.set(1024, 1024);
   Object.assign(light.shadow.camera, { left: -8, right: 8, top: 8, bottom: -8 });
@@ -124,8 +126,9 @@ export function createContactScene(host, getProgress) {
       person.body.scale.y=1+Math.sin(t*1.45)*.0025;
     }
     person.root.rotation.y = -.035 + (reduced.matches ? 0 : followPointer.x*.06);
-    if(mobile) { camera.position.set(.2,3.2,10.4); camera.lookAt(0,2.5,.35); }
-    else { camera.position.set(.4,3.35,9.6); camera.lookAt(0,2.5,.25); }
+    person.updateFace?.(t);
+    if(mobile) { camera.position.set(.2,2.45,8.4); camera.lookAt(0,1.72,.35); }
+    else { camera.position.set(.4,2.55,8.5); camera.lookAt(0,1.73,.25); }
     camera.clearViewOffset();
     host.dataset.sleep=sleep.toFixed(2); host.dataset.greeting=greeting.toFixed(2);host.dataset.glasses='worn';
     host.dataset.pose=sleep>.65 ? 'dozing' : stretch>.2 ? 'waking' : greeting>.1 ? 'greeting' : 'relaxed';
@@ -136,6 +139,7 @@ export function createContactScene(host, getProgress) {
     cancelAnimationFrame(frame); sizeObserver.disconnect(); visibleObserver.disconnect(); window.removeEventListener("pointermove",move);
     const geometry=new Set(), material=new Set(), skeletons=new Set();
     scene.traverse(o => { if(o.geometry)geometry.add(o.geometry); if(o.isSkinnedMesh)skeletons.add(o.skeleton); if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>material.add(m)); });
+    const avatarMaps=new Set();material.forEach(m=>{for(const value of Object.values(m))if(value?.isTexture)avatarMaps.add(value);});avatarMaps.forEach(map=>map.dispose());
     skeletons.forEach(s=>s.dispose()); geometry.forEach(g=>g.dispose()); material.forEach(m=>m.dispose()); maps.forEach(m=>m.dispose()); renderer.dispose(); renderer.domElement.remove();
   }};
 }

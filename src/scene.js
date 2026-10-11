@@ -5,6 +5,7 @@ import { clone as cloneSkeleton } from "three/addons/utils/SkeletonUtils.js";
 import { createHeroCharacter, walkPath } from "./hero-character.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { createContactScene } from "./contact-scene.js";
+import { loadApprovedHead } from "./approved-avatar.js";
 
 const C = {
   cream: "#e6eeea",
@@ -18,8 +19,9 @@ const C = {
   cyan: "#84dfb9",
 };
 
-export function createScene(host, mode, getProgress) {
+export async function createScene(host, mode, getProgress) {
   if (mode === "contact") return createContactScene(host, getProgress);
+  await loadApprovedHead();
   const hologram = mode === "hologram";
   const experience = mode === "experience";
   const scene = new THREE.Scene();
@@ -34,7 +36,7 @@ export function createScene(host, mode, getProgress) {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.08;
+  renderer.toneMappingExposure = .98;
   renderer.localClippingEnabled = true;
   renderer.domElement.setAttribute("aria-hidden", "true");
   host.appendChild(renderer.domElement);
@@ -50,7 +52,7 @@ export function createScene(host, mode, getProgress) {
     if (!materials.has(key))
       materials.set(
         key,
-        new THREE.MeshStandardMaterial({ color, roughness: 0.67, ...options }),
+        new (options.sheen ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial)({ color, roughness: 0.67, ...options }),
       );
     return materials.get(key);
   };
@@ -123,10 +125,10 @@ export function createScene(host, mode, getProgress) {
     new THREE.HemisphereLight(
       hologram ? "#bfead0" : "#f1f4df",
       hologram ? "#163d2e" : "#76917c",
-      1.7,
+      1.35,
     ),
   );
-  const keyLight = new THREE.DirectionalLight("#fff8e8", 3.2);
+  const keyLight = new THREE.DirectionalLight("#fff8e8", 1.8);
   keyLight.position.set(-4, 8, 6);
   keyLight.castShadow = true;
   keyLight.shadow.mapSize.set(1024, 1024);
@@ -140,7 +142,7 @@ export function createScene(host, mode, getProgress) {
   scene.add(keyLight);
   scene.add(new THREE.DirectionalLight("#c1ddd0", 1.1));
 
-  const person = createHeroCharacter(
+  const person = await createHeroCharacter(
     { mesh, mat, box, ball, cylinder, rod, texture, panel },
     !hologram,
   );
@@ -148,7 +150,7 @@ export function createScene(host, mode, getProgress) {
   person.root.traverse((o) => {
     if (o.isMesh) o.receiveShadow = false;
   });
-  let scan, solidPlane, wirePlane, ring, holo;
+  let scan, solidPlane, wirePlane, ring, holo, scanMaterial;
   let speakerMap = null,
     speakerLed = null,
     lastSpeakerDraw = -1;
@@ -168,7 +170,7 @@ export function createScene(host, mode, getProgress) {
     box([4.8, 0.19, 1.7], C.white, objects, [0, 1.6, -0.45], 0.095);
     for (const x of [-2.03, 2.03])
       for (const z of [-1.08, 0.18])
-        cylinder(0.105, 0.095, 1.55, "#78947b", objects, [x, 0.72, z]);
+        cylinder(0.105, 0.095, 1.55, "#78947b", objects, [x, 0.72, z]).name='desk-support';
     const screenMaps = [
       texture((ctx, w, h) => drawComputerRadio(ctx, w, h)),
       texture((ctx, w, h) => drawDeskCode(ctx,w,h)),
@@ -204,7 +206,7 @@ export function createScene(host, mode, getProgress) {
     chair.name = "swivel-chair";
     chair.position.z = 1.08;
     objects.add(chair);
-    chairSeat = new THREE.Group(); chair.add(chairSeat);
+    chairSeat = new THREE.Group(); chairSeat.position.y=-.18; chair.add(chairSeat);
     box([1.12, 0.22, 0.93], C.white, chairSeat, [0, 0.7, -.04], 0.1);
     const back = box([1.16, 1.1, 0.2], C.white, chairSeat, [0, 1.28, .37], 0.1);
     back.rotation.x = -.08;
@@ -212,7 +214,7 @@ export function createScene(host, mode, getProgress) {
       rod([side*.48,.77,-.16],[side*.55,1.25,-.35],.033,'#a1b3a8',chairSeat);
       box([.18,.075,.56],'#466352',chairSeat,[side*.55,1.285,-.4],.036);
     }
-    cylinder(.055,.07,.48,"#bac7c3",chair,[0,.38,0]);
+    cylinder(.055,.07,.30,"#bac7c3",chair,[0,.29,0]);
     cylinder(.1,.1,.14,"#3c4f45",chair,[0,.15,0]);
     for(let i=0;i<5;i++) {
       const angle=i*Math.PI*2/5, x=Math.cos(angle)*.54,z=Math.sin(angle)*.54;
@@ -444,6 +446,12 @@ export function createScene(host, mode, getProgress) {
     objects.children.slice(4).forEach((o) => {
       if (o.position.y > 0.2) o.position.y -= 0.2;
     });
+    // Fit the work surface to the approved avatar's shorter torso.
+    objects.children.slice(4).forEach(object=>{
+      if(object.position.y>.2&&object.position.y<2.5)object.position.y-=.22;
+      if(object.name==='desk-support'){object.position.y=.475;object.scale.y=1.23/1.55;}
+    });
+    puzzle.position.y=1.425;penguin.position.y=1.415;
   }
   if (hologram || experience) {
     scanner.position.z = 3.2;
@@ -510,6 +518,7 @@ export function createScene(host, mode, getProgress) {
       toneMapped: false,
     });
     hologramMaterial.name = "hologram-material";
+    scanMaterial=hologramMaterial;
     const scanUniforms = { uTime: { value: 0 }, uOpacity: { value: 0 } };
     hologramMaterial.userData.scanUniforms = scanUniforms;
     hologramMaterial.onBeforeCompile = (shader) => {
@@ -709,8 +718,8 @@ export function createScene(host, mode, getProgress) {
     roomClip.value=height*renderer.getPixelRatio()*(experience ? 1-(data.roomBottom ?? 1) : 1);
     const cameraWalk = smooth(0.08, 0.96, page);
     const chairTurn = smooth(0.015, 0.19, page);
-    const standing = smooth(0.16, 0.37, page);
-    const stepping = smooth(0.32, 0.84, page);
+    const standing = smooth(0.20, 0.44, page);
+    const stepping = smooth(0.43, 0.90, page);
     const intro = (time-Math.max(introStart,data.greetAt || 0))/1000;
     const helloWeight = 1-smooth(data.greetAt > introStart ? .12 : 0,data.greetAt > introStart ? .2 : .07,page);
     const helloTurn = reduced ? 0 : smooth(.2,.8,intro)*(1-smooth(3.4,4.2,intro))*helloWeight;
@@ -727,21 +736,36 @@ export function createScene(host, mode, getProgress) {
       smoothedPointer.y = mix(smoothedPointer.y, pointer.y, follow);
       const idle = 1-smooth(.14,.5,page);
       person.body.rotation.z = Math.sin(t*.52)*.008*(1-smooth(.08,.3,page));
+      person.body.rotation.x = Math.sin(Math.PI*standing)*.18*(1-stepping);
       person.body.scale.y = 1+Math.sin(t*1.25)*.0025*idle;
       person.arms[0].rotation.x += stride * 0.34;
       person.arms[1].rotation.x -= stride * 0.34;
-      if (standing > .98 && page < .88) person.walkPose?.(stepping);
+      if (standing > .98 && page < .94) person.walkPose?.(stepping,1.24);
     }
     const roomLift = Math.max(0,page-.08)*4.4;
     const carry = roomLift*(1-smooth(.14,.4,page));
     const facing = mix(Math.PI, .04, chairTurn) + helloTurn*(.5-Math.PI);
     const seatTurn = facing-Math.PI;
+    const kneeBend=(1-standing)*Math.PI/2;
+    const seatRootZ=1.08-.22*Math.cos(seatTurn);
+    const risenRootZ=seatRootZ+person.rigDimensions.thigh*(1-Math.sin(kneeBend));
     person.root.position.set(
       -.22*Math.sin(seatTurn)*(1-stepping),
-      mix(person.rigDimensions.seatedRootY,.12,standing)+carry+stepping*.17,
-      mix(1.08-.22*Math.cos(seatTurn),3.2,walkPath(stepping).advance),
+      mix(-.132,.30,walkPath(stepping).advance)+carry,
+      mix(risenRootZ,3.2,walkPath(stepping).advance),
     );
     person.root.rotation.y = facing + smooth(.94,1.12,page)*scanProgress*Math.PI*2;
+    if(standing>0&&standing<1&&stepping<.01){
+      person.root.updateMatrixWorld(true);
+      for(const leg of person.legs){
+        const planted=new THREE.Vector3(leg.position.x,.16,person.rigDimensions.thigh*Math.sin(kneeBend));
+        person.root.localToWorld(planted);person.body.worldToLocal(planted);planted.sub(leg.position);
+        const vertical=-planted.y,z=planted.z,{thigh,shin}=person.rigDimensions,distance=Math.min(thigh+shin,Math.hypot(vertical,z));
+        const knee=Math.acos(THREE.MathUtils.clamp((distance*distance-thigh*thigh-shin*shin)/(2*thigh*shin),-1,1));
+        const hip=Math.atan2(-z,vertical)-Math.atan2(shin*Math.sin(knee),thigh+shin*Math.cos(knee));
+        leg.rotation.x=hip;leg.userData.knee.rotation.x=knee;leg.userData.ankle.rotation.x=-hip-knee-person.body.rotation.x;
+      }
+    }
     if (chair) {
       chairSeat.rotation.y = seatTurn;
       chair.scale.setScalar(1);
@@ -754,23 +778,23 @@ export function createScene(host, mode, getProgress) {
       mouse.position.x=.79+(reduced ? 0 : Math.sin(t*.82)*.014+Math.sin(t*1.7)*.004)*workBlend;
       mouse.position.z=.22+(reduced ? 0 : Math.sin(t*.61)*.012)*workBlend;
       objects.updateMatrixWorld(true);
-      objects.localToWorld(mouseWrist.set(mouse.position.x,mouse.position.y+.119,mouse.position.z+.096));
-      objects.localToWorld(keyboardWrist.set(-.26,1.877,.33));
+      objects.localToWorld(mouseWrist.set(mouse.position.x,mouse.position.y+.087,mouse.position.z+.110));
+      objects.localToWorld(keyboardWrist.set(-.26,1.422,.33));
       person.deskPose?.(workBlend,mouseWrist,keyboardWrist,reduced ? 0 : t);
     }
-    person.greetPose?.(helloWave,t,1);
+    person.greetPose?.(helloWave,intro,1);
     if(workBlend>.98) {
       person.root.updateMatrixWorld(true);
       person.arms[0].userData.hand.getWorldPosition(actualWrist);
       host.dataset.mouseContact=actualWrist.distanceTo(mouseWrist).toFixed(4);
     } else host.dataset.mouseContact='released';
-    const cameraX = mobile ? mix(2.6, 0, cameraWalk) : mix(4.7, 0, cameraWalk);
+    const cameraX = mobile ? mix(2.2, 0, cameraWalk) : mix(4.7, 0, cameraWalk);
     const cameraY = mobile
-      ? mix(3.7, 3.4, cameraWalk)
+      ? mix(3.4, 2.8, cameraWalk)
       : mix(3.8, 3.05, cameraWalk);
     const cameraZ = mobile
-      ? mix(15.0, 15.8, cameraWalk)
-      : mix(9.6, 12.8, cameraWalk);
+      ? mix(12.0, 12.7, cameraWalk)
+      : mix(9.6, 11.8, cameraWalk);
     camera.position.set(
       cameraX + (reduced ? 0 : smoothedPointer.x * 0.1),
       cameraY,
@@ -778,7 +802,7 @@ export function createScene(host, mode, getProgress) {
     );
     target.set(
       0,
-      mobile ? mix(3.5, 1.2, smooth(.28,1.1,page)) : mix(1.8, 1.98, cameraWalk),
+      mobile ? mix(2.85, 1.64, smooth(.28,1.1,page)) : mix(1.55, 1.68, cameraWalk),
       mix(0.2, 3.2, cameraWalk),
     );
     camera.lookAt(target);
@@ -794,7 +818,7 @@ export function createScene(host, mode, getProgress) {
       // World-space targets make the gaze land on each monitor, not drift.
       const cycle=((time-introStart)/1000)%18;
       const right=cycle<5?0:cycle<8?smooth(5,8,cycle):cycle<13?1:1-smooth(13,17,cycle);
-      objects.localToWorld(gazePoint.set(mix(-1.05,1.01,right),2.38,-.79));
+      objects.localToWorld(gazePoint.set(mix(-1.05,1.01,right),1.94,-.79));
       gazePoint.lerp(camera.position,1-workBlend);
       person.root.updateMatrixWorld(true);
       person.head.getWorldPosition(headPoint);
@@ -807,6 +831,7 @@ export function createScene(host, mode, getProgress) {
       person.head.rotation.set(gazePitch+Math.sin(t*.7)*.008,gazeYaw,Math.sin(t*.63)*.009);
       host.dataset.gaze=workBlend>.9?(right<.2?'left-monitor':right>.8?'right-monitor':'between-monitors'):'visitor';
     } else {person.head.rotation.set(0,0,0);host.dataset.gaze='still';}
+    person.updateFace?.(t);
     objects.position.y = roomLift;
     objects.rotation.z = -walk * 0.035;
     objects.scale.setScalar(1 - walk * 0.055);
@@ -827,9 +852,7 @@ export function createScene(host, mode, getProgress) {
     if (holo) {
       copyPose();
       holo.visible = reveal > 0.001;
-      const material = holo.children[0].children[0].children.find(
-        (o) => o.isMesh,
-      )?.material;
+      const material = scanMaterial;
       if (material?.userData.scanUniforms) {
         material.userData.scanUniforms.uTime.value = t;
         material.userData.scanUniforms.uOpacity.value = reveal;
@@ -845,7 +868,7 @@ export function createScene(host, mode, getProgress) {
       ring.position.y = scanHeight;
     }
     host.dataset.page = page.toFixed(3);
-    host.dataset.pose = page < .16 ? "swivel" : page < .37 ? "stand" : page < .84 ? "step" : "scan";
+    host.dataset.pose = page < .20 ? "swivel" : page < .44 ? "stand" : page < .90 ? "step" : "scan";
     host.dataset.greeting = helloWave.toFixed(2);
     host.dataset.chair = (chairSeat?.rotation.y || 0).toFixed(2);
     host.dataset.scan = scanProgress.toFixed(3);
@@ -935,6 +958,7 @@ export function createScene(host, mode, getProgress) {
       skeletons.forEach((s) => s.dispose());
       geometries.forEach((g) => g.dispose());
       allMaterials.forEach((m) => m.dispose());
+      const modelTextures=new Set();allMaterials.forEach(material=>{for(const value of Object.values(material))if(value?.isTexture)modelTextures.add(value);});modelTextures.forEach(texture=>texture.dispose());
       textures.forEach((t) => t.dispose());
       renderer.dispose();
       renderer.domElement.remove();

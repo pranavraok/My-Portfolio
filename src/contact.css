@@ -52,6 +52,8 @@
   font-size: 13px; line-height: 1.5;
 }
 .contact-section footer > span { display: block; }
+.contact-section footer .avatar-credit { font-size: 10px; opacity: .75; }
+.avatar-credit a { text-decoration: underline; text-underline-offset: 3px; }
 .contact-section footer .back-to-top {
   position: absolute; top: 34px; left: 50%; transform: translateX(-50%);
   width: 45px; height: 45px; border: 1px solid #d7dfce; border-radius: 50%;

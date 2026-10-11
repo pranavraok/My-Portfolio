@@ -269,6 +269,7 @@ function Contact({ scrollTo }) {
           else window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth"});
         }}><Icon name="down" size={25}/></a>
         <span>Made with curiosity & code.</span>
+        <span className="avatar-credit">Avatar created with <a href="https://www.meshy.ai/" {...external}>Meshy</a>.</span>
         <span>© {new Date().getFullYear()} Pranav Rao K</span>
       </footer>
     </section>

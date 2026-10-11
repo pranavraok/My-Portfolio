@@ -8,7 +8,7 @@ export const ambientTrack = {
   title: "Window Light",
   artist: "Pranav FM · Lo-fi",
   kind: "lofi",
-  src: "/music/studio-lofi.wav",
+  src: "/music/soft-lofi.ogg",
   loop: true,
 };
 

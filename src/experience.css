@@ -522,6 +522,13 @@
     bottom: 5%;
   }
 }
+@media (max-height: 450px) and (min-width: 601px) {
+  .experience-stage .role-sticker {
+    font-size: 13px;
+    padding: 6px 10px;
+    margin: 9px 0 0;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .mobile-card-face {
     transition: none;
