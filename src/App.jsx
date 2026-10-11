@@ -7,6 +7,7 @@ import MusicPlayer from "./components/MusicPlayer.jsx";
 import ContactCharacter from "./components/ContactCharacter.jsx";
 import { Icon, Logo } from "./components/Icons.jsx";
 import { profile, projects, awards } from "./data.js";
+import { finishStartup } from "./startup.js";
 
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.config({ ignoreMobileResize: true });
@@ -404,6 +405,7 @@ export default function App() {
   const root = useRef(null);
   const project = projects.find((p) => path === `/project/${p.slug}`);
   const home = path === "/";
+  useEffect(()=>{if(!home)finishStartup();},[home]);
   const onExperiencePhase = useCallback((phase,dark) => {
     setActive(phase);
     setSceneBlue(dark);

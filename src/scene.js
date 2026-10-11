@@ -721,9 +721,11 @@ export async function createScene(host, mode, getProgress) {
   let frame,
     lastTime = 0,
     introStart = null;
+  let firstFrame=false,resolveReady;
+  const ready=new Promise(resolve=>{resolveReady=resolve;});
   const tick = (time) => {
     frame = requestAnimationFrame(tick);
-    if (!visible || document.hidden || time - lastTime < 14) return;
+    if ((firstFrame&&(!visible||document.hidden)) || time - lastTime < 14) return;
     const delta = Math.min(.05,(time-lastTime)/1000 || 1/60);
     lastTime = time;
     if (introStart === null) introStart = time;
@@ -814,7 +816,7 @@ export async function createScene(host, mode, getProgress) {
     }
     if(chairSeat){
       chairSeat.updateWorldMatrix(true,false);
-      person.arms.forEach((arm,index)=>chairSeat.localToWorld(armrestWrists[index].set(-arm.userData.side*.55,1.367,-.34)));
+      person.arms.forEach((arm,index)=>chairSeat.localToWorld(armrestWrists[index].set(-arm.userData.side*.55,1.367,-.375)));
       const restBlend=standing===0 ? 1-workBlend : 0;
       if(standing===0)person.seatedHands?.(workBlend,armrestWrists,[mouseWrist,keyboardWrist],reduced?0:t);
       if(standing>0&&standing<1)person.risePose?.(standing,armrestWrists);
@@ -994,6 +996,7 @@ export async function createScene(host, mode, getProgress) {
       renderer.autoClear=true;
       objects.visible=true;scanner.visible=scannerVisible;
     } else renderer.render(scene, camera);
+    if(!firstFrame){firstFrame=true;host.dataset.frameReady='true';resolveReady();}
   };
   frame = requestAnimationFrame(tick);
   const lost = (event) => {
@@ -1003,7 +1006,9 @@ export async function createScene(host, mode, getProgress) {
   };
   renderer.domElement.addEventListener("webglcontextlost", lost);
   return {
+    ready,
     dispose() {
+      resolveReady();
       cancelAnimationFrame(frame);
       resizeObserver.disconnect();
       visibleObserver.disconnect();

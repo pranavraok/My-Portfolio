@@ -5,7 +5,7 @@ export const AVATAR_SKIN='#e0bea0';
 let headPromise;
 
 export function loadApprovedHead(){
-  if(!headPromise)headPromise=new GLTFLoader().loadAsync('/media/pranav-approved-head.glb').then(gltf=>gltf.scene).catch(error=>{headPromise=null;throw error;});
+  if(!headPromise)headPromise=new GLTFLoader().loadAsync('/media/pranav-approved-head-fast.glb').then(gltf=>gltf.scene).catch(error=>{headPromise=null;throw error;});
   return headPromise;
 }
 

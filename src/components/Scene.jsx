@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { finishStartup } from "../startup.js";
 
 export default function Scene({ mode, progress, timeline }) {
   const host = useRef(null);
@@ -11,33 +12,41 @@ export default function Scene({ mode, progress, timeline }) {
   useEffect(() => {
     let disposed = false;
     const target = host.current;
-    const observer = new IntersectionObserver(
-      async ([entry]) => {
-        if (!entry.isIntersecting || api.current || disposed) return;
-        observer.disconnect();
-        try {
-          const { createScene } = await import("../scene.js");
-          if (disposed) return;
-          const instance = await createScene(target, mode, () =>
-            timeline ? timeline.current : currentProgress.current || 0,
-          );
-          if (disposed) { instance.dispose(); return; }
-          api.current = instance;
-          target.dataset.ready = "true";
-        } catch (error) {
-          console.warn(
-            "3D scene unavailable; displaying portrait fallback.",
-            error.message,
-          );
-          if (!disposed) setFailed(true);
-        }
-      },
-      { rootMargin: "250px" },
-    );
-    observer.observe(target);
+    let observer,started=false;
+    const initialize = async () => {
+      if (started || api.current || disposed) return;
+      started=true;
+      observer?.disconnect();
+      try {
+        const { createScene } = await import("../scene.js");
+        if (disposed) return;
+        const instance = await createScene(target, mode, () =>
+          timeline ? timeline.current : currentProgress.current || 0,
+        );
+        if (disposed) { instance.dispose(); return; }
+        api.current = instance;
+        await instance.ready;
+        if(disposed)return;
+        target.dataset.ready = "true";
+        if(mode==='experience'||mode==='workspace')finishStartup();
+      } catch (error) {
+        console.warn(
+          "3D scene unavailable; displaying portrait fallback.",
+          error.message,
+        );
+        if (!disposed) setFailed(true);
+      }
+    };
+    if(mode==='experience'||mode==='workspace')void initialize();
+    else {
+      observer = new IntersectionObserver(([entry])=>{
+        if(entry.isIntersecting)void initialize();
+      },{rootMargin:'250px'});
+      observer.observe(target);
+    }
     return () => {
       disposed = true;
-      observer.disconnect();
+      observer?.disconnect();
       api.current?.dispose();
       api.current = null;
     };
@@ -60,6 +69,8 @@ export default function Scene({ mode, progress, timeline }) {
           className="scene-fallback"
           src="/media/pranav-red-shirt.png"
           alt="Pranav Rao K"
+          onLoad={()=>{if(mode==='experience'||mode==='workspace')finishStartup();}}
+          onError={()=>{if(mode==='experience'||mode==='workspace')finishStartup();}}
         />
       ) : (
         <div className="scene-placeholder" aria-hidden="true">

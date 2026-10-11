@@ -188,16 +188,16 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     sleeveGeometry.translate(...arm.position.toArray());
     const sleeve=new THREE.SkinnedMesh(sleeveGeometry,shirtMaterial);sleeve.name=arm.name+'-continuous-sleeve';sleeve.castShadow=sleeve.receiveShadow=true;sleeve.frustumCulled=false;body.add(sleeve);
     const sleeveSkeleton=new THREE.Skeleton([garmentAnchor,shoulder,bendBone,elbow,hand]);body.updateWorldMatrix(true,true);sleeve.bind(sleeveSkeleton);skeletons.push(sleeveSkeleton);
-    const cuff=mesh(new THREE.TorusGeometry(.059,.006,10,32),mat(C.neckline,{roughness:1}),elbow,[0,-FOREARM,0]);cuff.rotation.x=Math.PI/2;
-    soft([.045,.050,.036],C.skin,hand,[0,-.008,0],{roughness:.84}).name=arm.name+'-wrist-joint';
-    const palm=mesh(loft([[0,-.012,0],[.054,-.020,.034],[.083,-.061,.043],[.092,-.115,.037],[.079,-.166,.031],[.058,-.194,.026],[0,-.207,0]],32,40),mat(C.skin,{roughness:.84}),hand);
+    mesh(loft([[.058,-FOREARM+.020,.063],[.059,-FOREARM-.002,.063],[.051,-FOREARM-.018,.054]],8,32),shirtMaterial,elbow).name=arm.name+'-soft-cuff';
+    // One uninterrupted surface joins the narrow wrist to the palm; a
+    // separate wrist sphere made the hands look like detachable mittens.
+    const palm=mesh(loft([[0,.025,0],[.036,.012,.030],[.046,-.026,.032],[.069,-.073,.040],[.079,-.121,.043],[.072,-.165,.033],[.049,-.190,.025],[0,-.197,0]],40,40),mat(C.skin,{roughness:.84}),hand);
     palm.name=arm.name+"-anatomical-palm";
-    curve([[-.058,-.077,.040],[-.014,-.095,.043],[.046,-.082,.040]],.0011,C.skinShade,hand);
-    curve([[-.039,-.112,.038],[.004,-.137,.038],[.058,-.126,.034]],.0010,C.skinShade,hand);
+    soft([.027,.042,.017],C.skin,hand,[-side*.052,-.090,.016],{roughness:.84}).name=arm.name+'-thumb-pad';
     const fingers=[];
     for(let i=0;i<4;i++){
       const finger=new THREE.Bone(); finger.name=`${arm.name}-finger-${i}`;
-      finger.position.set(-0.056+i*0.0375,-0.168,0.011); hand.add(finger);
+      finger.position.set(-.0525+i*.035,[-.159,-.171,-.171,-.159][i],.009); hand.add(finger);
       const lengths=side>0?[.158,.180,.169,.135]:[.135,.169,.180,.158];
       const length=lengths[i]*.83,radius=i===0||i===3?.016:.018;
       const proximal=length*.39,middle=length*.34,distal=length*.27;
@@ -215,14 +215,14 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
       soft([radius*.67,distal*.33,.003], "#e1b39c",tip,[0,-distal*.68,-radius*.82],{roughness:.49});
       fingers.push(finger);
     }
-    const thumb=new THREE.Bone(); thumb.name=`${arm.name}-thumb`; thumb.position.set(-side*.083,-.079,.024); hand.add(thumb);
-    const thumbTip=new THREE.Bone();thumbTip.name=thumb.name+'-tip';thumbTip.position.y=-.058;thumb.add(thumbTip);
-    const thumbGeometry=loft([[0,-.116,0],[.014,-.109,.013],[.019,-.095,.019],[.023,-.058,.023],[.027,-.024,.025],[.020,.006,.017],[0,.019,0]],32,24);
-    const ti=[],tw=[];for(let i=0;i<thumbGeometry.attributes.position.count;i++){const w=THREE.MathUtils.smoothstep(-thumbGeometry.attributes.position.getY(i),.04,.08);ti.push(0,1,0,0);tw.push(1-w,w,0,0);}
+    const thumb=new THREE.Bone(); thumb.name=`${arm.name}-thumb`; thumb.position.set(-side*.070,-.085,.016); hand.add(thumb);
+    const thumbTip=new THREE.Bone();thumbTip.name=thumb.name+'-tip';thumbTip.position.y=-.050;thumb.add(thumbTip);
+    const thumbGeometry=loft([[0,-.103,0],[.013,-.097,.012],[.017,-.084,.018],[.021,-.050,.022],[.025,-.021,.024],[.020,.005,.017],[0,.016,0]],32,24);
+    const ti=[],tw=[];for(let i=0;i<thumbGeometry.attributes.position.count;i++){const w=THREE.MathUtils.smoothstep(-thumbGeometry.attributes.position.getY(i),.034,.069);ti.push(0,1,0,0);tw.push(1-w,w,0,0);}
     thumbGeometry.translate(...thumb.position.toArray());thumbGeometry.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(ti,4));thumbGeometry.setAttribute('skinWeight',new THREE.Float32BufferAttribute(tw,4));
     const thumbSurface=new THREE.SkinnedMesh(thumbGeometry,unmappedSkin);thumbSurface.name=thumb.name+'-smooth-surface';thumbSurface.castShadow=thumbSurface.receiveShadow=true;thumbSurface.frustumCulled=false;hand.add(thumbSurface);
     const thumbSkeleton=new THREE.Skeleton([thumb,thumbTip]);hand.updateWorldMatrix(true,true);thumbSurface.bind(thumbSkeleton);skeletons.push(thumbSkeleton);
-    soft([.014,.019,.003],"#edc9ae",thumbTip,[0,-.033,-.018],{roughness:.49});thumb.rotation.z=side*.45;
+    soft([.013,.017,.003],"#edc9ae",thumbTip,[0,-.030,-.017],{roughness:.49});thumb.rotation.z=side*.45;
     hand.userData={fingers,thumb,thumbTip}; arm.userData={shoulder,elbow,bendBone,hand,side};
 
     const leg=new THREE.Group(); leg.name=side<0?"left-leg":"right-leg";
@@ -471,7 +471,7 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     const activity=interval(.45,.95,blend),phase=(seconds-4.05)*Math.PI*1.6;
     const sway=Math.sin(phase)*activity;
     const wrist=new THREE.Vector3(side*(.49+sway*.065),SHOULDER_HEIGHT+.20+Math.cos(phase)*.018*activity,.29+Math.sin(phase+.6)*.020*activity);
-    waveEuler.set(-.15+Math.sin(phase+.55)*.055*activity,side*(.08+Math.sin(phase-.45)*.055*activity),Math.PI+side*sway*.31);waveHand.setFromEuler(waveEuler);
+    waveEuler.set(-.12+Math.sin(phase+.55)*.08*activity,side*(.06+Math.sin(phase-.45)*.045*activity),Math.PI+side*sway*.25);waveHand.setFromEuler(waveEuler);
     // The shoulder starts the lift. The elbow follows, and the wrist unfurls
     // last. Stable joint rotations avoid an IK pole flip during the lift.
     const upperLift=blend**.82,elbowLift=blend**1.14,palmLift=blend**1.32;
@@ -488,7 +488,7 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
       finger.getObjectByName(finger.name+'-middle').rotation.x=THREE.MathUtils.lerp(finger.getObjectByName(finger.name+'-middle').rotation.x,-.14+curl,palmLift);
       finger.getObjectByName(finger.name+'-tip').rotation.x=THREE.MathUtils.lerp(finger.getObjectByName(finger.name+'-tip').rotation.x,-.095+curl*.5,palmLift);
     });
-    hand.userData.thumb.rotation.z=THREE.MathUtils.lerp(hand.userData.thumb.rotation.z,-side*.77,palmLift);
+    hand.userData.thumb.rotation.z=THREE.MathUtils.lerp(hand.userData.thumb.rotation.z,-side*.64,palmLift);
     hand.userData.thumb.rotation.x=THREE.MathUtils.lerp(hand.userData.thumb.rotation.x,-.14,palmLift);
     hand.userData.thumbTip.rotation.x=THREE.MathUtils.lerp(hand.userData.thumbTip.rotation.x,-.15,palmLift);
     update(); return blend;

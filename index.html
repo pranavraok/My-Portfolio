@@ -19,6 +19,28 @@
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/media/social-preview.jpg" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script>
+      if (location.pathname === '/') {
+        const avatarPreload = document.createElement('link');
+        avatarPreload.rel = 'preload'; avatarPreload.as = 'fetch';
+        avatarPreload.href = '/media/pranav-approved-head-fast.glb';
+        avatarPreload.crossOrigin = 'anonymous'; avatarPreload.fetchPriority = 'high';
+        document.head.appendChild(avatarPreload);
+      }
+    </script>
+    <style>
+      body.is-loading { overflow: hidden; }
+      #startup-screen { position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center; background: radial-gradient(ellipse at 50% 65%, #376d52, #224e3d 45%, #143a30); color: #e6eee7; font-family: system-ui, sans-serif; transition: opacity .4s ease; }
+      #startup-screen[data-ready="true"] { opacity: 0; pointer-events: none; }
+      .startup-content { display: grid; justify-items: center; gap: 20px; text-align: center; padding: 24px; }
+      .startup-mark { width: 74px; height: 74px; }
+      .startup-content p { margin: 0; font-size: 18px; font-weight: 500; letter-spacing: -.02em; }
+      .startup-track { width: 132px; height: 3px; overflow: hidden; border-radius: 9px; background: #bce6cb25; }
+      .startup-track::after { content: ''; display: block; width: 48px; height: 100%; border-radius: inherit; background: #a9d7b8; animation: startup-progress 1.6s ease-in-out infinite; }
+      .startup-caption { font-size: 11px; letter-spacing: .18em; color: #b4d3c0; text-transform: uppercase; }
+      @keyframes startup-progress { from { transform: translateX(-48px); } to { transform: translateX(132px); } }
+      @media (prefers-reduced-motion: reduce) { #startup-screen { transition: none; } .startup-track::after { animation: none; transform: translateX(42px); } }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -27,10 +49,18 @@
     />
     <title>Pranav Rao K — Developer & Product Builder</title>
   </head>
-  <body>
-    <div id="root"></div>
+  <body class="is-loading">
+    <div id="startup-screen" role="status" aria-label="Loading Pranav’s workspace" aria-live="polite">
+      <div class="startup-content">
+        <svg class="startup-mark" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="18" fill="none" stroke="#a9d7b8" stroke-width="1.4"/><path d="M16 45V19h9a8 8 0 0 1 0 16h-9M37 45V19h5a8 8 0 0 1 0 16h-5m5 0 8 10" fill="none" stroke="#e6eee7" stroke-width="3.4" stroke-linejoin="round"/><circle cx="55" cy="10" r="5" fill="#e77a80"/></svg>
+        <p>Welcome to my workspace.</p>
+        <div class="startup-track" aria-hidden="true"></div>
+        <span class="startup-caption">Just a moment</span>
+      </div>
+    </div>
+    <div id="root" inert></div>
     <noscript
-      >This portfolio needs JavaScript for its interactive scenes. Find Pranav
+      ><style>#startup-screen { display: none; } body.is-loading { overflow: auto; }</style>This portfolio needs JavaScript for its interactive scenes. Find Pranav
       at <a href="https://github.com/pranavraok">GitHub</a> or
       <a href="https://www.linkedin.com/in/pranav-rao-k/">LinkedIn</a
       >.</noscript
