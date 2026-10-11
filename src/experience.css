@@ -522,6 +522,14 @@
     bottom: 5%;
   }
 }
+@media (min-width: 601px) and (max-width: 900px) and (max-aspect-ratio: 6/5) {
+  .experience-stage .hero-copy {
+    top: 10%;
+  }
+  .experience-stage .hero-copy h1 {
+    font-size: 52px;
+  }
+}
 @media (max-height: 450px) and (min-width: 601px) {
   .experience-stage .role-sticker {
     font-size: 13px;
