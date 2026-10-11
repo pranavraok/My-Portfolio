@@ -47,7 +47,7 @@ The original assets remain in `src/img`, `src/vids`, and `src/pdf` for reference
 
 Updated resume in `src/pdf/PRANAV RAO K RESUME.pdf`, public LinkedIn profile/search extracts at https://www.linkedin.com/in/pranav-rao-k/, and GitHub at https://github.com/pranavraok. Recent projects include Mentora, NutriGo, HostelVoice, and TradeLedger. The exact TradeLedger role was not available publicly and is not asserted.
 
-The visual reference was https://david-hckh.com/. No models, code, or music from that website are used. The approved avatar head was generated in Meshy from the user's reference; its movable body and scene are built in Three.js. The current background song source is https://www.youtube.com/watch?v=g7wCkTvU_VY, selected by the owner in this session with their stated permission for use. It is not represented as CC BY or as Tum Se Hi instrumental.
+The visual reference was https://david-hckh.com/. No models, code, or music from that website are used. The approved avatar head was generated in Meshy from the user's reference; its movable body and scene are built in Three.js. The greeting motion was studied frame by frame from Ketut Subiyanto's live-action reference, https://www.pexels.com/video/a-man-greeting-and-waving-his-hand-4586958/. Its forearm carries two broad swings while a shared bend axis keeps the elbow stable; the wrist follows with a small delay, relaxed fingers stay open, and the thumb/index/pinky arrangement matches each hand. The current background song source is https://www.youtube.com/watch?v=g7wCkTvU_VY, selected by the owner in this session with their stated permission for use. It is not represented as CC BY or as Tum Se Hi instrumental.
 
 ## Accessibility and performance
 

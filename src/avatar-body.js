@@ -18,9 +18,16 @@ export function heroGreeting(seconds,weight=1){
   return {
     hands:interval(.10,1.2,seconds)*(1-interval(8.7,9.85,seconds))*weight,
     turn:interval(1.3,2.9,seconds)*(1-interval(7.05,8.6,seconds))*weight,
-    wave:interval(2.8,4.1,seconds)*(1-interval(5.65,6.85,seconds))*weight,
+    wave:interval(2.8,3.7,seconds)*(1-interval(6.05,7.05,seconds))*weight,
     active:seconds<9.9&&weight>.2,
   };
+}
+
+// A short greeting has two broad forearm swings, then settles before lowering.
+// The wrist and shoulder follow the forearm at different delays.
+export function waveMotion(seconds){
+  const swingAt=t=>Math.sin((t-3.75)*Math.PI*1.7)*interval(3.70,3.98,t)*(1-interval(5.68,6.02,t));
+  return {forearm:swingAt(seconds),wrist:swingAt(seconds-.065),shoulder:swingAt(seconds-.12)};
 }
 
 export function chairRise(standing){
@@ -193,12 +200,12 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     // separate wrist sphere made the hands look like detachable mittens.
     const palm=mesh(loft([[0,.025,0],[.036,.012,.030],[.046,-.026,.032],[.069,-.073,.040],[.079,-.121,.043],[.072,-.165,.033],[.049,-.190,.025],[0,-.197,0]],40,40),mat(C.skin,{roughness:.84}),hand);
     palm.name=arm.name+"-anatomical-palm";
-    soft([.027,.042,.017],C.skin,hand,[-side*.052,-.090,.016],{roughness:.84}).name=arm.name+'-thumb-pad';
+    soft([.027,.042,.017],C.skin,hand,[side*.052,-.090,.016],{roughness:.84}).name=arm.name+'-thumb-pad';
     const fingers=[];
     for(let i=0;i<4;i++){
       const finger=new THREE.Bone(); finger.name=`${arm.name}-finger-${i}`;
       finger.position.set(-.0525+i*.035,[-.159,-.171,-.171,-.159][i],.009); hand.add(finger);
-      const lengths=side>0?[.158,.180,.169,.135]:[.135,.169,.180,.158];
+      const lengths=side>0?[.135,.169,.180,.158]:[.158,.180,.169,.135];
       const length=lengths[i]*.83,radius=i===0||i===3?.016:.018;
       const proximal=length*.39,middle=length*.34,distal=length*.27;
       const mid=new THREE.Bone();mid.name=finger.name+"-middle";mid.position.y=-proximal;finger.add(mid);
@@ -215,7 +222,9 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
       soft([radius*.67,distal*.33,.003], "#e1b39c",tip,[0,-distal*.68,-radius*.82],{roughness:.49});
       fingers.push(finger);
     }
-    const thumb=new THREE.Bone(); thumb.name=`${arm.name}-thumb`; thumb.position.set(-side*.070,-.085,.016); hand.add(thumb);
+    // With the palm facing the visitor, the thumb belongs on the inner side
+    // of each raised hand. The old mirrored assignment put it outside.
+    const thumb=new THREE.Bone(); thumb.name=`${arm.name}-thumb`; thumb.position.set(side*.070,-.085,.016); hand.add(thumb);
     const thumbTip=new THREE.Bone();thumbTip.name=thumb.name+'-tip';thumbTip.position.y=-.050;thumb.add(thumbTip);
     const thumbGeometry=loft([[0,-.103,0],[.013,-.097,.012],[.017,-.084,.018],[.021,-.050,.022],[.025,-.021,.024],[.020,.005,.017],[0,.016,0]],32,24);
     const ti=[],tw=[];for(let i=0;i<thumbGeometry.attributes.position.count;i++){const w=THREE.MathUtils.smoothstep(-thumbGeometry.attributes.position.getY(i),.034,.069);ti.push(0,1,0,0);tw.push(1-w,w,0,0);}
@@ -280,7 +289,7 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     return {upper,elbow,hand,wrist,orientation:lower.clone().multiply(hand),pole:offset.normalize()};
   });
   let faceSleep=0;
-  const waveHand=new THREE.Quaternion(),waveEuler=new THREE.Euler();
+  const waveHand=new THREE.Quaternion();
   const clamp=(value,fallback=0)=>THREE.MathUtils.clamp(Number.isFinite(value)?value:fallback,0,1);
   function update(){for(const arm of arms)arm.userData.bendBone.quaternion.identity().slerp(arm.userData.elbow.quaternion,.5);root.updateMatrixWorld(true);for(const skeleton of skeletons)skeleton.update();}
 
@@ -304,7 +313,7 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
       finger.getObjectByName(finger.name+'-tip').rotation.set(THREE.MathUtils.lerp(-.24,-.04,open),0,0);
     });
     const side=arms.find(arm=>arm.userData.hand===hand).userData.side;
-    hand.userData.thumb.rotation.set(THREE.MathUtils.lerp(-.20,-.10,open),0,-side*THREE.MathUtils.lerp(.48,.88,open));
+    hand.userData.thumb.rotation.set(THREE.MathUtils.lerp(-.20,-.10,open),0,side*THREE.MathUtils.lerp(.48,.72,open));
     hand.userData.thumbTip.rotation.set(THREE.MathUtils.lerp(-.30,-.10,open),0,0);
   }
 
@@ -319,7 +328,7 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     });
     const side=arms.find(arm=>arm.userData.hand===hand).userData.side;
     hand.userData.thumb.rotation.x=THREE.MathUtils.lerp(hand.userData.thumb.rotation.x,-.14,blend);
-    hand.userData.thumb.rotation.z=THREE.MathUtils.lerp(hand.userData.thumb.rotation.z,-side*.62,blend);
+    hand.userData.thumb.rotation.z=THREE.MathUtils.lerp(hand.userData.thumb.rotation.z,side*.62,blend);
     hand.userData.thumbTip.rotation.x=THREE.MathUtils.lerp(hand.userData.thumbTip.rotation.x,-.16,blend);
   }
 
@@ -468,27 +477,38 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     const arm=arms[armIndex],hand=arm.userData.hand,side=arm.userData.side,seconds=Number.isFinite(time)?time:0;
     currentArm(arm);
     const startUpper=arm.quaternion.clone(),startElbow=arm.userData.elbow.quaternion.clone();
-    const activity=interval(.45,.95,blend),phase=(seconds-4.05)*Math.PI*1.6;
-    const sway=Math.sin(phase)*activity;
-    const wrist=new THREE.Vector3(side*(.49+sway*.065),SHOULDER_HEIGHT+.20+Math.cos(phase)*.018*activity,.29+Math.sin(phase+.6)*.020*activity);
-    waveEuler.set(-.12+Math.sin(phase+.55)*.08*activity,side*(.06+Math.sin(phase-.45)*.045*activity),Math.PI+side*sway*.25);waveHand.setFromEuler(waveEuler);
-    // The shoulder starts the lift. The elbow follows, and the wrist unfurls
-    // last. Stable joint rotations avoid an IK pole flip during the lift.
-    const upperLift=blend**.82,elbowLift=blend**1.14,palmLift=blend**1.32;
+    const motion=waveMotion(seconds),activity=interval(.65,1,blend);
+    // Animate the joints, rather than rocking an isolated palm around a
+    // fixed wrist. The upper arm stays close; the bent forearm carries the
+    // side-to-side arc, with a small delayed rotation through the wrist.
+    const upperDirection=new THREE.Vector3(side*(.43+.025*motion.shoulder*activity),-.54,.725).normalize();
+    const forearmDirection=new THREE.Vector3(side*(.08+.32*motion.forearm*activity),1,-.14).normalize();
+    // A shared bend axis keeps the elbow a hinge. The shortest rotation
+    // from DOWN to an almost vertical forearm flips its axial twist.
+    const hinge=new THREE.Vector3().crossVectors(forearmDirection,upperDirection).normalize();
+    const upperY=upperDirection.clone().negate(),lowerY=forearmDirection.clone().negate();
+    const endUpper=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(hinge,upperY,new THREE.Vector3().crossVectors(hinge,upperY)));
+    const forearmRotation=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(hinge,lowerY,new THREE.Vector3().crossVectors(hinge,lowerY)));
+    const endElbow=endUpper.clone().invert().multiply(forearmRotation);
+    const fingerDirection=forearmDirection.clone().applyAxisAngle(new THREE.Vector3(0,0,1),side*.075*(motion.wrist-motion.forearm)*activity);
+    const handY=fingerDirection.negate(),handZ=new THREE.Vector3(0,0,1);
+    handZ.addScaledVector(handY,-handZ.dot(handY)).normalize();
+    const handX=new THREE.Vector3().crossVectors(handY,handZ).normalize();
+    waveHand.setFromRotationMatrix(new THREE.Matrix4().makeBasis(handX,handY,handZ));
+    waveHand.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),side*(.07+.10*motion.wrist*activity)));
+    const upperLift=blend**.82,elbowLift=blend**1.08,palmLift=blend**1.18;
     const orientation=localHand.clone().slerp(waveHand,palmLift);
-    reachArm(arm,wrist,new THREE.Vector3(0,-1,.7),waveHand);
-    const endUpper=arm.quaternion.clone(),endElbow=arm.userData.elbow.quaternion.clone();
     arm.quaternion.copy(startUpper).slerp(endUpper,upperLift);
     arm.userData.elbow.quaternion.copy(startElbow).slerp(endElbow,elbowLift);
     hand.quaternion.copy(arm.quaternion).multiply(arm.userData.elbow.quaternion).invert().multiply(orientation);
     hand.userData.fingers.forEach((finger,i)=>{
-      const curl=Math.sin(phase*.75+i*.48)*.018*activity;
-      finger.rotation.x=THREE.MathUtils.lerp(finger.rotation.x,-.07+curl,palmLift);
-      finger.rotation.z=THREE.MathUtils.lerp(finger.rotation.z,[-.052,-.016,.018,.056][i],blend);
-      finger.getObjectByName(finger.name+'-middle').rotation.x=THREE.MathUtils.lerp(finger.getObjectByName(finger.name+'-middle').rotation.x,-.14+curl,palmLift);
-      finger.getObjectByName(finger.name+'-tip').rotation.x=THREE.MathUtils.lerp(finger.getObjectByName(finger.name+'-tip').rotation.x,-.095+curl*.5,palmLift);
+      const pinky=side>0?3-i:i,curl=pinky*.015;
+      finger.rotation.x=THREE.MathUtils.lerp(finger.rotation.x,-.045-curl,palmLift);
+      finger.rotation.z=THREE.MathUtils.lerp(finger.rotation.z,[-.10,-.028,.028,.10][i],palmLift);
+      finger.getObjectByName(finger.name+'-middle').rotation.x=THREE.MathUtils.lerp(finger.getObjectByName(finger.name+'-middle').rotation.x,-.07-curl,palmLift);
+      finger.getObjectByName(finger.name+'-tip').rotation.x=THREE.MathUtils.lerp(finger.getObjectByName(finger.name+'-tip').rotation.x,-.04-curl*.5,palmLift);
     });
-    hand.userData.thumb.rotation.z=THREE.MathUtils.lerp(hand.userData.thumb.rotation.z,-side*.64,palmLift);
+    hand.userData.thumb.rotation.z=THREE.MathUtils.lerp(hand.userData.thumb.rotation.z,side*.65,palmLift);
     hand.userData.thumb.rotation.x=THREE.MathUtils.lerp(hand.userData.thumb.rotation.x,-.14,palmLift);
     hand.userData.thumbTip.rotation.x=THREE.MathUtils.lerp(hand.userData.thumbTip.rotation.x,-.15,palmLift);
     update(); return blend;

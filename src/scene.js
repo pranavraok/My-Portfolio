@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { drawComputerRadio, speakerState } from "./music.js";
 import { drawDeskCode, deskCodeState } from "./desk-display.js";
 import { clone as cloneSkeleton } from "three/addons/utils/SkeletonUtils.js";
-import { createHeroCharacter, walkPath, heroGreeting, chairRise } from "./hero-character.js";
+import { createHeroCharacter, walkPath, heroGreeting, waveMotion, chairRise } from "./hero-character.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { createContactScene } from "./contact-scene.js";
 import { loadApprovedHead } from "./approved-avatar.js";
@@ -766,7 +766,7 @@ export async function createScene(host, mode, getProgress) {
       // too far forward and made the elbows whip around fixed armrest hands.
       person.body.position.z=-person.rigDimensions.hipHeight*Math.sin(riseLean);
       person.body.position.y+=person.rigDimensions.hipHeight*(1-Math.cos(riseLean));
-      person.body.rotation.y = Math.sin((intro-4.05)*Math.PI*1.6-.35)*.018*helloWave;
+      person.body.rotation.y = waveMotion(intro).shoulder*.012*helloWave;
       person.body.scale.y = 1+Math.sin(t*1.25)*.0025*idle;
       person.arms[0].rotation.x += stride * 0.34;
       person.arms[1].rotation.x -= stride * 0.34;

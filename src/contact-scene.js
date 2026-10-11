@@ -115,7 +115,7 @@ export async function createContactScene(host, getProgress) {
       arm.rotation.x-=stretch*.22;
       arm.rotation.z+=(i===0 ? -.12 : .12)*stretch;
     });
-    if(!reduced.matches) person.greetPose?.(greeting,t);
+    if(!reduced.matches) person.greetPose?.(greeting,since+2.8);
     if(!reduced.matches) {
       const gaze=1-Math.exp(-delta*3.5);
       followPointer.x=THREE.MathUtils.lerp(followPointer.x,pointer.x,gaze);
