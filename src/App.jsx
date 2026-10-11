@@ -68,12 +68,12 @@ function Home({ navigate, scrollTo, onPhase }) {
           </a>
         </div>
       </section>
-      <Contact scrollTo={scrollTo} />
+      <Contact />
     </main>
   );
 }
 
-function Contact({ scrollTo }) {
+function Contact() {
   return (
     <section
       className="contact-section"
@@ -116,15 +116,7 @@ function Contact({ scrollTo }) {
         </div>
       </div>
       <footer>
-        <a className="back-to-top" href="#home" aria-label="Back to top" onClick={event => {
-          event.preventDefault();
-          if(scrollTo) scrollTo("home");
-          else window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth"});
-        }}><Icon name="down" size={25}/></a>
-        <span>Made with curiosity & code.</span>
-        <span className="avatar-credit">Avatar created with <a href="https://www.meshy.ai/" {...external}>Meshy</a>.</span>
-        <span className="avatar-credit">Music: <a href="https://www.youtube.com/watch?v=g7wCkTvU_VY" {...external}>Tera Mera Rishta — Mustafa Zahid · Curova Lofi</a>.</span>
-        <span>© {new Date().getFullYear()} Pranav Rao K</span>
+        <span>© 2026 Pranav Rao</span>
       </footer>
     </section>
   );
