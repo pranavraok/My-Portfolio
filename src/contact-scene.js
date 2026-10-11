@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { createCharacter } from "./character.js";
 import { loadApprovedHead } from "./approved-avatar.js";
-import { footerGreeting } from "./footer-motion.js";
+import { footerGreeting,footerSleepRequest } from "./footer-motion.js";
 
 export async function createContactScene(host, getProgress) {
   await loadApprovedHead();
@@ -79,7 +79,8 @@ export async function createContactScene(host, getProgress) {
   for(const [x,z,a] of [[-1.8,1.1,.35],[-.65,.65,-.3],[-1.6,.62,.2],[-2,1.62,-.16],[-1,1.65,-.2],[-2.3,.65,.45]]) {
     const envelope = panel([.58,.35], envelopeMap, packages,[x,.018,z]); envelope.rotation.set(-Math.PI / 2,0,a);
   }
-  let width = 0, height = 0, mobile = false, visible = false, frame, last = 0;
+  let width = 0, height = 0, mobile = false, frame, last = 0;
+  const contactStage=host.closest('.contact-stage')||host;
   const pointer = {x:0,y:0}, followPointer = {x:0,y:0};
   let sleep = 1, wakeAt = -100, waveAt = -100, lastWaveRequest=-100, hasWoken = false,waveBlend=0,unfoldBlend=0;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
@@ -93,7 +94,6 @@ export async function createContactScene(host, getProgress) {
     camera.aspect = width / height; camera.updateProjectionMatrix();
   };
   const sizeObserver = new ResizeObserver(resize); sizeObserver.observe(host); resize();
-  const visibleObserver = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }); visibleObserver.observe(host);
   const move = event => { if(mobile) return; const r = host.getBoundingClientRect(); pointer.x = (event.clientX-r.left)/r.width*2-1; pointer.y = (event.clientY-r.top)/r.height*2-1; };
   window.addEventListener("pointermove",move,{passive:true});
   const resetPointer=()=>{pointer.x=0;pointer.y=0;};
@@ -102,10 +102,16 @@ export async function createContactScene(host, getProgress) {
   const ready=new Promise(resolve=>{resolveReady=resolve;});
   function tick(time) {
     frame = requestAnimationFrame(tick);
+    const bounds=host.getBoundingClientRect(),viewport=host.ownerDocument.documentElement.clientHeight;
+    const visible=bounds.bottom>0&&bounds.top<viewport&&bounds.width>0;
+    host.dataset.inView=String(visible);
     if((firstFrame&&(!visible||document.hidden)) || time-last < 14) return;
     const delta=Math.min(.05,(time-last)/1000 || 1/60); last=time;
     const t=(animationTime+=delta), data=getProgress() || {};
-    const requestedSleep=THREE.MathUtils.clamp(data.readSleep ? data.readSleep() : data.sleep ?? 1,0,1);
+    const stageTop=contactStage.getBoundingClientRect().top;
+    const manualHold=data.manualTop!=null&&Math.abs(stageTop-data.manualTop)<4;
+    if(data.manualTop!=null&&!manualHold)data.manualTop=null;
+    const requestedSleep=manualHold?0:footerSleepRequest(stageTop,contactStage.clientHeight,viewport);
     const manualWave=(data.waveAt ?? -100)>lastWaveRequest;
     if(manualWave){
       lastWaveRequest=data.waveAt;waveAt=t;
@@ -152,6 +158,7 @@ export async function createContactScene(host, getProgress) {
     camera.clearViewOffset();
     host.parentElement.style.setProperty('--sleep',sleep.toFixed(3));
     host.dataset.sleep=sleep.toFixed(2); host.dataset.greeting=greeting.toFixed(2);host.dataset.glasses='worn';
+    host.dataset.motionTime=t.toFixed(3);host.dataset.exposure=requestedSleep.toFixed(3);
     const animationActive=!reduced.matches&&(movement.active||waveBlend>.001||unfoldBlend>.001);
     host.dataset.eyelids=eyelids.toFixed(3);host.dataset.animationActive=String(animationActive);
     host.dataset.pose=sleep>.85 ? 'sleeping' : sleep>.15||stretch>.2 ? 'waking' : greeting>.1 ? 'greeting' : 'relaxed';
@@ -162,7 +169,7 @@ export async function createContactScene(host, getProgress) {
   }
   frame=requestAnimationFrame(tick);
   return {ready,dispose() {
-    cancelAnimationFrame(frame); sizeObserver.disconnect(); visibleObserver.disconnect(); window.removeEventListener("pointermove",move);document.removeEventListener('pointerleave',resetPointer);window.removeEventListener('blur',resetPointer);
+    cancelAnimationFrame(frame); sizeObserver.disconnect(); window.removeEventListener("pointermove",move);document.removeEventListener('pointerleave',resetPointer);window.removeEventListener('blur',resetPointer);
     const geometry=new Set(), material=new Set(), skeletons=new Set();
     scene.traverse(o => { if(o.geometry)geometry.add(o.geometry); if(o.isSkinnedMesh)skeletons.add(o.skeleton); if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>material.add(m)); });
     const avatarMaps=new Set();material.forEach(m=>{for(const value of Object.values(m))if(value?.isTexture)avatarMaps.add(value);});avatarMaps.forEach(map=>map.dispose());

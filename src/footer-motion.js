@@ -1,6 +1,12 @@
 const clamp=value=>Math.max(0,Math.min(1,value));
 const ease=(a,b,value)=>{const t=clamp((value-a)/(b-a));return t*t*t*(10+t*(-15+6*t));};
 
+export function footerSleepRequest(top,height,viewport){
+  const progress=clamp((viewport*.65-top)/Math.max(1,height-viewport*.35));
+  const p=clamp((progress-.5)/.32);
+  return 1-p*p*(3-2*p);
+}
+
 // Let the head lift and eyes adjust before unfolding into the approved wave.
 export function footerGreeting(seconds,sleep=0){
   const awake=1-clamp(sleep);
