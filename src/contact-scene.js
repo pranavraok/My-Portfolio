@@ -3,6 +3,7 @@ import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.j
 import { createCharacter } from "./character.js";
 import { loadApprovedHead } from "./approved-avatar.js";
 import { footerGreeting,footerSleepRequest } from "./footer-motion.js";
+import { watchSceneContext } from "./scene-context.js";
 
 export async function createContactScene(host, getProgress) {
   await loadApprovedHead();
@@ -15,6 +16,7 @@ export async function createContactScene(host, getProgress) {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.domElement.setAttribute("aria-hidden", "true");
   host.appendChild(renderer.domElement);
+  const graphics=watchSceneContext(renderer,host);
   const camera = new THREE.PerspectiveCamera(32, 1, .1, 40);
   const maps = new Set(), materials = new Map();
   const mat = (color, options = {}) => {
@@ -105,7 +107,7 @@ export async function createContactScene(host, getProgress) {
     const bounds=host.getBoundingClientRect(),viewport=host.ownerDocument.documentElement.clientHeight;
     const visible=bounds.bottom>0&&bounds.top<viewport&&bounds.width>0;
     host.dataset.inView=String(visible);
-    if((firstFrame&&(!visible||document.hidden)) || time-last < 14) return;
+    if(graphics.lost || (firstFrame&&(!visible||document.hidden)) || time-last < 14) return;
     const delta=Math.min(.05,(time-last)/1000 || 1/60); last=time;
     const t=(animationTime+=delta), data=getProgress() || {};
     const stageTop=contactStage.getBoundingClientRect().top;
@@ -165,10 +167,12 @@ export async function createContactScene(host, getProgress) {
     const greetingButton=host.parentElement.querySelector('.character-greeting');
     if(greetingButton)greetingButton.disabled=animationActive;
     renderer.render(scene,camera);
+    graphics.rendered();
     if(!firstFrame){firstFrame=true;host.dataset.frameReady='true';resolveReady();}
   }
   frame=requestAnimationFrame(tick);
   return {ready,dispose() {
+    resolveReady();graphics.dispose();
     cancelAnimationFrame(frame); sizeObserver.disconnect(); window.removeEventListener("pointermove",move);document.removeEventListener('pointerleave',resetPointer);window.removeEventListener('blur',resetPointer);
     const geometry=new Set(), material=new Set(), skeletons=new Set();
     scene.traverse(o => { if(o.geometry)geometry.add(o.geometry); if(o.isSkinnedMesh)skeletons.add(o.skeleton); if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>material.add(m)); });

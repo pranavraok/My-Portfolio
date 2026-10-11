@@ -6,6 +6,7 @@ import { createHeroCharacter, walkPath, heroGreeting, waveMotion, chairRise, cha
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { createContactScene } from "./contact-scene.js";
 import { loadApprovedHead } from "./approved-avatar.js";
+import { watchSceneContext } from "./scene-context.js";
 
 const C = {
   cream: "#e6eeea",
@@ -40,6 +41,7 @@ export async function createScene(host, mode, getProgress) {
   renderer.localClippingEnabled = true;
   renderer.domElement.setAttribute("aria-hidden", "true");
   host.appendChild(renderer.domElement);
+  const graphics = watchSceneContext(renderer, host);
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 80);
   const materials = new Map();
   const textures = [];
@@ -725,7 +727,7 @@ export async function createScene(host, mode, getProgress) {
   const ready=new Promise(resolve=>{resolveReady=resolve;});
   const tick = (time) => {
     frame = requestAnimationFrame(tick);
-    if ((firstFrame&&(!visible||document.hidden)) || time - lastTime < 14) return;
+    if (graphics.lost || (firstFrame&&(!visible||document.hidden)) || time - lastTime < 14) return;
     const delta = Math.min(.05,(time-lastTime)/1000 || 1/60);
     lastTime = time;
     if (introStart === null) introStart = time;
@@ -995,12 +997,12 @@ export async function createScene(host, mode, getProgress) {
       renderer.autoClear=true;
       objects.visible=true;scanner.visible=scannerVisible;
     } else renderer.render(scene, camera);
+    graphics.rendered();
     if(!firstFrame){firstFrame=true;host.dataset.frameReady='true';resolveReady();}
   };
   frame = requestAnimationFrame(tick);
   const lost = (event) => {
     event.preventDefault();
-    host.dataset.ready = "false";
     if(speakerButton)speakerButton.hidden=true;
   };
   renderer.domElement.addEventListener("webglcontextlost", lost);
@@ -1015,6 +1017,7 @@ export async function createScene(host, mode, getProgress) {
       document.removeEventListener('pointerleave',resetPointer);
       window.removeEventListener('blur',resetPointer);
       renderer.domElement.removeEventListener("webglcontextlost", lost);
+      graphics.dispose();
       const skeletons = new Set();
       const geometries = new Set(),
         allMaterials = new Set();
