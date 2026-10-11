@@ -22,6 +22,7 @@ function Home({ navigate, scrollTo, onPhase }) {
       <ProjectCarousel projects={projects} navigate={navigate} />
       <section
         className="journey-section content-width"
+        id="milestones"
         aria-labelledby="journey-title"
       >
         <div className="section-intro reveal">
@@ -31,7 +32,7 @@ function Home({ navigate, scrollTo, onPhase }) {
         <div className="awards-grid">
           {awards.map((award) => (
             <article key={award.title} className="award reveal">
-              <div className="award-image">
+              <div className={`award-image ${award.image === "startup-pitch" ? "award-group-photo" : ""}`}>
                 <img
                   src={`/media/awards/${award.image}.webp`}
                   alt={`${award.title} achievement`}
@@ -318,7 +319,7 @@ export default function App() {
       },
       { rootMargin: "-30% 0px -40% 0px" },
     );
-    ["projects", "contact"].forEach((id) => {
+    ["projects", "milestones", "contact"].forEach((id) => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
@@ -362,7 +363,7 @@ export default function App() {
           {home ? <Logo /> : <Icon name="back" size={25} />}
         </a>
         <nav aria-label="Main navigation">
-          {["about", "projects", "contact"].map((id) => (
+          {["about", "projects", "milestones", "contact"].map((id) => (
             <a
               key={id}
               href={`/#${id}`}

@@ -38,4 +38,10 @@ export const awards = [
     image: "hult",
     detail: "Hackathon · MAHE",
   },
+  {
+    title: "Startup Pitch Event",
+    result: "1st runner-up",
+    image: "startup-pitch",
+    detail: "Startup pitch competition",
+  },
 ];

@@ -1017,7 +1017,7 @@ h3 {
 }
 .awards-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 22px;
 }
 .award-image {
@@ -1034,6 +1034,8 @@ h3 {
   object-fit: cover;
   transition: transform 0.4s;
 }
+.award-group-photo img { object-fit: contain; }
+.award-group-photo { background: #dce6db; }
 .award:hover img {
   transform: scale(1.04);
 }
@@ -1050,6 +1052,8 @@ h3 {
   transform: rotate(-3deg);
 }
 .award-date {
+  display: block;
+  min-height: 15px;
   font-size: 10px;
   color: #a29682;
 }
