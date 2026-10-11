@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { drawComputerRadio, speakerState } from "./music.js";
 import { drawDeskCode, deskCodeState } from "./desk-display.js";
 import { clone as cloneSkeleton } from "three/addons/utils/SkeletonUtils.js";
-import { createHeroCharacter, walkPath } from "./hero-character.js";
+import { createHeroCharacter, walkPath, heroGreeting, chairRise } from "./hero-character.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { createContactScene } from "./contact-scene.js";
 import { loadApprovedHead } from "./approved-avatar.js";
@@ -742,23 +742,29 @@ export async function createScene(host, mode, getProgress) {
     const stepping = smooth(0.48, 0.90, page);
     const intro = (time-Math.max(introStart,data.greetAt || 0))/1000;
     const helloWeight = 1-smooth(data.greetAt > introStart ? .12 : 0,data.greetAt > introStart ? .2 : .07,page);
-    const helloHands = reduced ? 0 : smooth(.10,1.0,intro)*(1-smooth(7.85,8.85,intro))*helloWeight;
-    const helloTurn = reduced ? 0 : smooth(1.0,2.6,intro)*(1-smooth(6.2,7.8,intro))*helloWeight;
-    const helloWave = reduced ? 0 : smooth(2.5,3.55,intro)*(1-smooth(4.95,6.05,intro))*helloWeight;
-    host.dataset.helloActive=String(!reduced&&intro<8.9&&helloWeight>.2);
+    const greeting=heroGreeting(intro,reduced?0:helloWeight);
+    const {hands:helloHands,turn:helloTurn,wave:helloWave}=greeting;
+    host.dataset.helloActive=String(!reduced&&greeting.active);
     person.pose(standing);
     person.root.scale.setScalar(1);
     const stride =
       Math.sin(stepping * Math.PI * 4) *
       smooth(0.32, 0.43, page) *
       (1 - smooth(0.76, 0.87, page));
+    if(reduced){person.body.rotation.set(0,0,0);person.body.scale.y=1;}
     if (!reduced) {
       const follow = 1-Math.exp(-delta*3.6);
       smoothedPointer.x = mix(smoothedPointer.x, pointer.x, follow);
       smoothedPointer.y = mix(smoothedPointer.y, pointer.y, follow);
       const idle = 1-smooth(.14,.5,page);
-      person.body.rotation.z = Math.sin(t*.52)*.008*(1-smooth(.08,.3,page));
-      person.body.rotation.x = Math.sin(Math.PI*standing)*.18*(1-stepping);
+      person.body.rotation.z = Math.sin(t*.52)*.008*(1-smooth(.08,.3,page))-.024*helloWave;
+      const riseLean=chairRise(standing).lean*(1-stepping);
+      person.body.rotation.x = riseLean+.018*helloWave;
+      // Hinge at the hips: rotating around the floor dragged the shoulders
+      // too far forward and made the elbows whip around fixed armrest hands.
+      person.body.position.z=-person.rigDimensions.hipHeight*Math.sin(riseLean);
+      person.body.position.y+=person.rigDimensions.hipHeight*(1-Math.cos(riseLean));
+      person.body.rotation.y = Math.sin((intro-4.05)*Math.PI*1.6-.35)*.018*helloWave;
       person.body.scale.y = 1+Math.sin(t*1.25)*.0025*idle;
       person.arms[0].rotation.x += stride * 0.34;
       person.arms[1].rotation.x -= stride * 0.34;
@@ -808,12 +814,14 @@ export async function createScene(host, mode, getProgress) {
     }
     if(chairSeat){
       chairSeat.updateWorldMatrix(true,false);
-      person.arms.forEach((arm,index)=>chairSeat.localToWorld(armrestWrists[index].set(-arm.userData.side*.55,1.367,-.44)));
+      person.arms.forEach((arm,index)=>chairSeat.localToWorld(armrestWrists[index].set(-arm.userData.side*.55,1.367,-.34)));
       const restBlend=standing===0 ? 1-workBlend : 0;
       if(standing===0)person.seatedHands?.(workBlend,armrestWrists,[mouseWrist,keyboardWrist],reduced?0:t);
       if(standing>0&&standing<1)person.risePose?.(standing,armrestWrists);
-      if(restBlend>.98 || (standing>0&&standing<=.12)){const wrists=person.getWorldWrists();host.dataset.armrestContact=Math.max(...wrists.map((w,index)=>w.distanceTo(armrestWrists[index]))).toFixed(4);}
+      if((restBlend>.98&&helloWave<.001) || (standing>0&&standing<=.30)){const wrists=person.getWorldWrists();host.dataset.armrestContact=Math.max(...wrists.map((w,index)=>w.distanceTo(armrestWrists[index]))).toFixed(4);}
       else host.dataset.armrestContact='released';
+      host.dataset.rise=standing.toFixed(3);
+      host.dataset.handRelease=chairRise(standing).release.toFixed(3);
     }
     person.greetPose?.(helloWave,intro,1);
     if(workBlend>.98) {

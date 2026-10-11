@@ -1,6 +1,6 @@
-import { createAvatarBody, walkPath } from './avatar-body.js';
+import { createAvatarBody } from './avatar-body.js';
 import { loadApprovedHead } from './approved-avatar.js';
-export { walkPath };
+export { walkPath, heroGreeting, chairRise } from './avatar-body.js';
 export async function createHeroCharacter(helpers,seated=false){
   const headTemplate=await loadApprovedHead();
   return createAvatarBody({...helpers,headTemplate},seated);

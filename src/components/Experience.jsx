@@ -122,7 +122,15 @@ export default function Experience({ scrollTo, onPhase }) {
         if(reduced||Math.abs(requestedPage-displayPage)<.00001)return;
         // A shared clock keeps the chair, hands, camera and room card together
         // when a wheel tick or a touch swipe jumps across several poses.
-        displayPage+=(requestedPage-displayPage)*(1-Math.exp(-Math.min(deltaMs,50)*.009));
+        const delta=Math.min(deltaMs,50)/1000;
+        let step=(requestedPage-displayPage)*(1-Math.exp(-delta*9));
+        // A short touch swipe must leave time to plant the hands and stand.
+        // Skip the speed limit when scrolling beyond the workspace entirely.
+        if(requestedPage<=.65&&displayPage<=.65){
+          const limit=delta*.32;
+          step=Math.max(-limit,Math.min(limit,step));
+        }
+        displayPage+=step;
         renderPage(displayPage);
       };
       gsap.ticker.add(settleScroll);
