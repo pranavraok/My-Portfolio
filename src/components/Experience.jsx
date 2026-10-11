@@ -10,7 +10,7 @@ import { speakerState, toggleBackgroundMusic } from "../music.js";
 const clamp = (value) => Math.min(1, Math.max(0, value));
 const smooth = (a, b, value) => {
   const t = clamp((value - a) / (b - a));
-  return t * t * (3 - 2 * t);
+  return t*t*t*(10+t*(-15+6*t));
 };
 
 export default function Experience({ scrollTo, onPhase }) {
@@ -40,6 +40,8 @@ export default function Experience({ scrollTo, onPhase }) {
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let lastPercent = -1;
     let lastCard = false;
+    let requestedPage=0,displayPage=0,initialized=false;
+    let settleScroll;
     const context = gsap.context(() => {
       if (!reduced)
         gsap.from(".hero-copy > *", {
@@ -50,15 +52,11 @@ export default function Experience({ scrollTo, onPhase }) {
           delay: 0.12,
           ease: "power3.out",
         });
-      const update = (self) => {
+      const renderPage = (page) => {
         const mobile = matchMedia(
           "(max-width: 600px), (max-width: 900px) and (max-aspect-ratio: 6/5)",
         ).matches;
         const height = stage.clientHeight;
-        const page = Math.min(
-          (self.progress * target.clientHeight) / height,
-          target.clientHeight / height - 1,
-        );
         const walk = smooth(0.08, 0.94, page);
         const scan = clamp(
           (page - (mobile ? 0.6 : 0.7)) / (mobile ? 1.7 : 1.65),
@@ -116,6 +114,18 @@ export default function Experience({ scrollTo, onPhase }) {
         gsap.set(status, { opacity: smooth(0.75, 1.02, page) });
         stage.dataset.phase = page < 0.75 ? "workspace" : "hologram";
       };
+      const update=self=>{
+        requestedPage=Math.min((self.progress*target.clientHeight)/stage.clientHeight,target.clientHeight/stage.clientHeight-1);
+        if(reduced||!initialized){displayPage=requestedPage;initialized=true;renderPage(displayPage);}
+      };
+      settleScroll=(_time,deltaMs)=>{
+        if(reduced||Math.abs(requestedPage-displayPage)<.00001)return;
+        // A shared clock keeps the chair, hands, camera and room card together
+        // when a wheel tick or a touch swipe jumps across several poses.
+        displayPage+=(requestedPage-displayPage)*(1-Math.exp(-Math.min(deltaMs,50)*.009));
+        renderPage(displayPage);
+      };
+      gsap.ticker.add(settleScroll);
       const trigger = ScrollTrigger.create({
         trigger: target,
         start: "top top",
@@ -127,7 +137,7 @@ export default function Experience({ scrollTo, onPhase }) {
     }, target);
     const refreshMusicLayout=()=>ScrollTrigger.refresh();
     window.addEventListener('portfolio-music-layout',refreshMusicLayout);
-    return () => {window.removeEventListener('portfolio-music-layout',refreshMusicLayout);context.revert();};
+    return () => {window.removeEventListener('portfolio-music-layout',refreshMusicLayout);gsap.ticker.remove(settleScroll);context.revert();};
   }, [onPhase]);
   return (
     <section
@@ -151,6 +161,7 @@ export default function Experience({ scrollTo, onPhase }) {
         <Scene mode="experience" timeline={timeline} />
         <button className="speaker-toggle" hidden aria-label={speakerPlaying?'Turn desk speaker off':'Turn desk speaker on'} aria-pressed={speakerPlaying} title={speakerPlaying?'Turn speaker off':'Turn speaker on'} onClick={toggleBackgroundMusic}/>
         <button className="hero-greeting" aria-label="Wave hello to Pranav" onClick={() => {
+          if(section.current?.querySelector('.scene-experience')?.dataset.helloActive==='true')return;
           timeline.current.greetAt = performance.now();
         }} />
         <a

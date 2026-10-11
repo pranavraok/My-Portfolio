@@ -706,12 +706,15 @@ export async function createScene(host, mode, getProgress) {
   const pointer = { x: 0, y: 0 },
     smoothedPointer = { x: 0, y: 0 };
   const move = (event) => {
-    if (mobile) return;
+    if (mobile || event.pointerType==='touch') return;
     const r = host.getBoundingClientRect();
     pointer.x = clamp((event.clientX - r.left) / r.width) * 2 - 1;
     pointer.y = clamp((event.clientY - r.top) / r.height) * 2 - 1;
   };
+  const resetPointer=()=>{pointer.x=0;pointer.y=0;};
   window.addEventListener("pointermove", move, { passive: true });
+  document.addEventListener('pointerleave',resetPointer);
+  window.addEventListener('blur',resetPointer);
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   const gazePoint=new THREE.Vector3(),headPoint=new THREE.Vector3(),gazeDirection=new THREE.Vector3(),bodyInverse=new THREE.Quaternion();
   let gazeYaw=0,gazePitch=0;
@@ -739,8 +742,10 @@ export async function createScene(host, mode, getProgress) {
     const stepping = smooth(0.48, 0.90, page);
     const intro = (time-Math.max(introStart,data.greetAt || 0))/1000;
     const helloWeight = 1-smooth(data.greetAt > introStart ? .12 : 0,data.greetAt > introStart ? .2 : .07,page);
-    const helloTurn = reduced ? 0 : smooth(.2,.8,intro)*(1-smooth(3.4,4.2,intro))*helloWeight;
-    const helloWave = reduced ? 0 : smooth(.6,1,intro)*(1-smooth(2.8,3.3,intro))*helloWeight;
+    const helloHands = reduced ? 0 : smooth(.10,1.0,intro)*(1-smooth(7.85,8.85,intro))*helloWeight;
+    const helloTurn = reduced ? 0 : smooth(1.0,2.6,intro)*(1-smooth(6.2,7.8,intro))*helloWeight;
+    const helloWave = reduced ? 0 : smooth(2.5,3.55,intro)*(1-smooth(4.95,6.05,intro))*helloWeight;
+    host.dataset.helloActive=String(!reduced&&intro<8.9&&helloWeight>.2);
     person.pose(standing);
     person.root.scale.setScalar(1);
     const stride =
@@ -748,7 +753,7 @@ export async function createScene(host, mode, getProgress) {
       smooth(0.32, 0.43, page) *
       (1 - smooth(0.76, 0.87, page));
     if (!reduced) {
-      const follow = 1-Math.exp(-delta*4.2);
+      const follow = 1-Math.exp(-delta*3.6);
       smoothedPointer.x = mix(smoothedPointer.x, pointer.x, follow);
       smoothedPointer.y = mix(smoothedPointer.y, pointer.y, follow);
       const idle = 1-smooth(.14,.5,page);
@@ -793,20 +798,19 @@ export async function createScene(host, mode, getProgress) {
     objects.position.y = roomLift;
     objects.rotation.z = -roomDeparture * 0.035;
     objects.scale.setScalar(1 - roomDeparture * 0.055);
-    const workBlend=(1-smooth(.05,.07,page))*(1-smooth(0,.2,helloTurn));
+    const workBlend=(1-smooth(.03,.08,page))*(1-helloHands);
     if(mouse) {
       mouse.position.x=.79+(reduced ? 0 : Math.sin(t*.82)*.014+Math.sin(t*1.7)*.004)*workBlend;
       mouse.position.z=.22+(reduced ? 0 : Math.sin(t*.61)*.012)*workBlend;
       objects.updateMatrixWorld(true);
       objects.localToWorld(mouseWrist.set(mouse.position.x,mouse.position.y+.087,mouse.position.z+.110));
       objects.localToWorld(keyboardWrist.set(-.26,1.422,.33));
-      person.deskPose?.(workBlend,mouseWrist,keyboardWrist,reduced ? 0 : t);
     }
     if(chairSeat){
       chairSeat.updateWorldMatrix(true,false);
-      person.arms.forEach((arm,index)=>chairSeat.localToWorld(armrestWrists[index].set(-arm.userData.side*.55,1.367,-.24)));
+      person.arms.forEach((arm,index)=>chairSeat.localToWorld(armrestWrists[index].set(-arm.userData.side*.55,1.367,-.44)));
       const restBlend=standing===0 ? 1-workBlend : 0;
-      person.armrestPose?.(restBlend,armrestWrists);
+      if(standing===0)person.seatedHands?.(workBlend,armrestWrists,[mouseWrist,keyboardWrist],reduced?0:t);
       if(standing>0&&standing<1)person.risePose?.(standing,armrestWrists);
       if(restBlend>.98 || (standing>0&&standing<=.12)){const wrists=person.getWorldWrists();host.dataset.armrestContact=Math.max(...wrists.map((w,index)=>w.distanceTo(armrestWrists[index]))).toFixed(4);}
       else host.dataset.armrestContact='released';
@@ -825,17 +829,15 @@ export async function createScene(host, mode, getProgress) {
     const cameraZ = mobile
       ? mix(12.0+visitorFrame*.95, 12.7, cameraWalk)
       : mix(9.6, 11.8, cameraWalk);
-    camera.position.set(
-      cameraX + (reduced ? 0 : smoothedPointer.x * 0.1),
-      cameraY,
-      cameraZ,
-    );
+    const parallax=reduced||mobile?0:1-smooth(.05,.65,page);
+    camera.position.set(cameraX+smoothedPointer.x*.72*parallax,cameraY-smoothedPointer.y*.38*parallax,cameraZ);
     target.set(
-      0,
-      mobile ? mix(2.85, 1.21, smooth(.28,1.1,page)) : mix(1.55, 1.25, cameraWalk),
+      smoothedPointer.x*.07*parallax,
+      (mobile ? mix(2.85, 1.21, smooth(.28,1.1,page)) : mix(1.55, 1.25, cameraWalk))-smoothedPointer.y*.035*parallax,
       mix(0.2, 3.2, cameraWalk),
     );
     camera.lookAt(target);
+    host.dataset.parallax=`${(smoothedPointer.x*parallax).toFixed(2)},${(smoothedPointer.y*parallax).toFixed(2)}`;
     camera.setViewOffset(
       width,
       height,
@@ -998,6 +1000,8 @@ export async function createScene(host, mode, getProgress) {
       resizeObserver.disconnect();
       visibleObserver.disconnect();
       window.removeEventListener("pointermove", move);
+      document.removeEventListener('pointerleave',resetPointer);
+      window.removeEventListener('blur',resetPointer);
       renderer.domElement.removeEventListener("webglcontextlost", lost);
       const skeletons = new Set();
       const geometries = new Set(),

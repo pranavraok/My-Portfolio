@@ -249,11 +249,16 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     const worldHand=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(handX,handY,handZ));
     return {upper,elbow:upper.clone().invert().multiply(lower),hand:lower.clone().invert().multiply(worldHand)};
   });
-  const greetingTargets=arms.map(arm=>{
+  const relaxedTargets=arms.map(arm=>{
     const side=arm.userData.side;
-    const upper=new THREE.Quaternion().setFromUnitVectors(DOWN,new THREE.Vector3(side*.75,-.12,.65).normalize());
-    const lower=new THREE.Quaternion().setFromUnitVectors(DOWN,new THREE.Vector3(side*.08,.94,-.33).normalize());
-    return {upper,elbow:upper.clone().invert().multiply(lower),inverseLower:lower.clone().invert()};
+    const upper=new THREE.Quaternion().setFromEuler(new THREE.Euler(-.055,0,side*.11));
+    const elbow=new THREE.Quaternion().setFromEuler(new THREE.Euler(-.23,0,0));
+    const lower=upper.clone().multiply(elbow);
+    // Palms face the thighs, with a soft elbow and a natural finger curl.
+    const hand=new THREE.Quaternion().setFromEuler(new THREE.Euler(.045,-side*1.28,0));
+    const offset=new THREE.Vector3(0,-UPPER_ARM,0).applyQuaternion(upper);
+    const wrist=arm.position.clone().add(offset).add(new THREE.Vector3(0,-FOREARM,0).applyQuaternion(lower));
+    return {upper,elbow,hand,wrist,orientation:lower.clone().multiply(hand),pole:offset.normalize()};
   });
   let faceSleep=0;
   const waveHand=new THREE.Quaternion(),waveEuler=new THREE.Euler();
@@ -265,6 +270,24 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
   const bodyRotation=new THREE.Quaternion(),handRotation=new THREE.Quaternion();
   const deskHandRotation=new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI/2,0,0));
   const restHandRotation=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(-1,0,0),new THREE.Vector3(0,0,-1),new THREE.Vector3(0,-1,0)));
+  const ease=value=>{const t=clamp(value);return t*t*t*(10+t*(-15+6*t));};
+  const localHand=new THREE.Quaternion();
+  function currentArm(arm){
+    update();
+    body.getWorldQuaternion(bodyRotation).invert();
+    arm.userData.hand.getWorldQuaternion(localHand).premultiply(bodyRotation);
+  }
+  function fingersPose(hand,openness){
+    const open=clamp(openness);
+    hand.userData.fingers.forEach((finger,i)=>{
+      finger.rotation.set(THREE.MathUtils.lerp(-.18-i*.015,-.035,open),0,THREE.MathUtils.lerp(0,[-.052,-.016,.018,.056][i],open));
+      finger.getObjectByName(finger.name+'-middle').rotation.set(THREE.MathUtils.lerp(-.38,-.065,open),0,0);
+      finger.getObjectByName(finger.name+'-tip').rotation.set(THREE.MathUtils.lerp(-.24,-.04,open),0,0);
+    });
+    const side=arms.find(arm=>arm.userData.hand===hand).userData.side;
+    hand.userData.thumb.rotation.set(THREE.MathUtils.lerp(-.20,-.10,open),0,-side*THREE.MathUtils.lerp(.48,.88,open));
+    hand.userData.thumbTip.rotation.set(THREE.MathUtils.lerp(-.30,-.10,open),0,0);
+  }
 
   // Two actual joints reach the wrist target; the hand never moves separately
   // from its forearm. The pole controls where the elbow bends.
@@ -287,21 +310,19 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     arm.userData.hand.quaternion.slerp(relativeRotation,blend);
   }
 
-  const restTargets=arms.map(arm=>({wrist:new THREE.Vector3(arm.userData.side*.55,SHOULDER_HEIGHT-.38,.02),pole:new THREE.Vector3(arm.userData.side*.20,-1,-.28)}));
+  const restTargets=arms.map(arm=>({wrist:new THREE.Vector3(arm.userData.side*.55,SHOULDER_HEIGHT-.38,.22),pole:new THREE.Vector3(arm.userData.side*.12,-1,-.28)}));
 
   function pose(amount){
-    const standing=clamp(amount,1),angle=(1-standing)*Math.PI/2,armStanding=THREE.MathUtils.smoothstep(standing,.12,.58);
+    const standing=clamp(amount,1),angle=(1-standing)*Math.PI/2,armStanding=ease((standing-.12)/.72);
     body.position.x=0;
     body.position.y=-THIGH*(1-Math.cos(angle));
     for(const leg of legs){leg.rotation.set(-angle,0,0);leg.userData.knee.rotation.set(angle,0,0);leg.userData.ankle.rotation.set(0,0,0);}
-    for(const arm of arms){
+    for(const [index,arm] of arms.entries()){
       arm.position.set(arm.userData.side*SHOULDER_OFFSET,SHOULDER_HEIGHT,-.008);
-      arm.rotation.set(THREE.MathUtils.lerp(-1,-0.015,armStanding),0,arm.userData.side*THREE.MathUtils.lerp(0.16,0.085,armStanding));
-      arm.userData.elbow.position.copy(elbowPosition); arm.userData.elbow.rotation.set(THREE.MathUtils.lerp(-0.55,-0.09,armStanding),0,0);
-      arm.userData.hand.position.copy(handPosition); arm.userData.hand.rotation.set(THREE.MathUtils.lerp(0.08,0.02,armStanding),0,0);
-      arm.userData.hand.userData.fingers.forEach((finger,i)=>{finger.rotation.set(-.12-i*.012,0,0);const middle=finger.getObjectByName(finger.name+"-middle"),tip=finger.getObjectByName(finger.name+"-tip");if(middle)middle.rotation.set(-.22,0,0);if(tip)tip.rotation.set(-.14,0,0);});
-      arm.userData.hand.userData.thumb.rotation.set(-.12,0,-arm.userData.side*.52);
-      arm.userData.hand.userData.thumbTip.rotation.x=-.18;
+      arm.quaternion.copy(relaxedTargets[index].upper);
+      arm.userData.elbow.position.copy(elbowPosition);arm.userData.elbow.quaternion.copy(relaxedTargets[index].elbow);
+      arm.userData.hand.position.copy(handPosition);arm.userData.hand.quaternion.copy(relaxedTargets[index].hand);
+      fingersPose(arm.userData.hand,0);
     }
     arms.forEach((arm,index)=>reachArm(arm,restTargets[index].wrist,restTargets[index].pole,restHandRotation,1-armStanding));
     glasses.position.set(0,0,0); glasses.rotation.set(0,0,0); glasses.visible=true; head.rotation.x=0; head.rotation.z=0;
@@ -350,7 +371,7 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     handRotation.premultiply(bodyRotation);
     targets.forEach((target,index)=>{
       wristTarget.copy(target);body.worldToLocal(wristTarget);
-      reachArm(arms[index],wristTarget,new THREE.Vector3(arms[index].userData.side*.20,-1,-.28),handRotation,blend);
+      reachArm(arms[index],wristTarget,new THREE.Vector3(arms[index].userData.side*.12,-1,-.28),handRotation,blend);
       arms[index].userData.hand.userData.fingers.forEach(finger=>{
         finger.rotation.x=THREE.MathUtils.lerp(finger.rotation.x,-.025,blend);
         const middle=finger.getObjectByName(finger.name+'-middle'),tip=finger.getObjectByName(finger.name+'-tip');
@@ -361,8 +382,32 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     update();
   }
 
+  function seatedHands(workAmount,chairTargets,deskTargets,time=0){
+    const work=clamp(workAmount);
+    body.updateWorldMatrix(true,false);
+    body.getWorldQuaternion(bodyRotation).invert();
+    const restOrientation=root.getWorldQuaternion(new THREE.Quaternion()).multiply(restHandRotation).premultiply(bodyRotation);
+    const deskOrientation=bodyRotation.clone().multiply(deskHandRotation);
+    arms.forEach((arm,index)=>{
+      const start=body.worldToLocal(chairTargets[index].clone());
+      const end=body.worldToLocal(deskTargets[index].clone());
+      const wrist=start.clone().lerp(end,work);
+      // Lift clear of both surfaces before crossing between chair and desk.
+      wrist.y+=.12*Math.sin(Math.PI*work)**2;
+      // Both destinations use the same elbow bend plane. Interpolating two
+      // opposing poles caused a sudden forearm flip halfway through the move.
+      const elbowHint=new THREE.Vector3(arm.userData.side*.12,-1,-.28);
+      reachArm(arm,wrist,elbowHint,restOrientation.clone().slerp(deskOrientation,work));
+      fingersPose(arm.userData.hand,1);
+      if(work>.95)arm.userData.hand.userData.fingers.forEach((finger,i)=>{
+        finger.rotation.x=-.085-.025*Math.pow(Math.max(0,Math.sin(time*(index?3.8:2.1)+i*.8)),8)*(index===1||i===1?1:0);
+      });
+    });
+    update();
+  }
+
   function risePose(standing,targets){
-    const release=THREE.MathUtils.smoothstep(standing,.12,.58);
+    const release=ease((standing-.12)/.72);
     if(release===1){update();return release;}
     body.updateWorldMatrix(true,false);
     body.getWorldQuaternion(bodyRotation).invert();
@@ -370,20 +415,14 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     arms.forEach((arm,index)=>{
       const side=arm.userData.side;
       wristTarget.copy(targets[index]);body.worldToLocal(wristTarget);
-      const relaxedUpper=new THREE.Quaternion().setFromEuler(new THREE.Euler(-.015,0,side*.085));
-      const relaxedLower=relaxedUpper.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-.09,0,0)));
-      const upperOffset=new THREE.Vector3(0,-UPPER_ARM,0).applyQuaternion(relaxedUpper);
-      const relaxed=arm.position.clone().add(upperOffset).add(new THREE.Vector3(0,-FOREARM,0).applyQuaternion(relaxedLower));
-      wristTarget.lerp(relaxed,release);
-      const relaxedRotation=relaxedLower.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(.02,0,0)));
-      const orientation=handRotation.clone().slerp(relaxedRotation,release);
-      const elbowHint=new THREE.Vector3(side*.16,-1,-.28).lerp(upperOffset.clone().normalize(),release);
+      const relaxed=relaxedTargets[index];
+      wristTarget.lerp(relaxed.wrist,release);
+      // The wrist lifts off the cushion before dropping beside the hip.
+      wristTarget.y+=.09*Math.sin(Math.PI*release)**2;
+      const orientation=handRotation.clone().slerp(relaxed.orientation,ease((release-.12)/.70));
+      const elbowHint=new THREE.Vector3(side*.12,-1,-.28).lerp(relaxed.pole,release);
       reachArm(arm,wristTarget,elbowHint,orientation);
-      arm.userData.hand.userData.fingers.forEach((finger,i)=>{
-        finger.rotation.set(THREE.MathUtils.lerp(-.025,-.12-i*.012,release),0,0);
-        finger.getObjectByName(finger.name+'-middle').rotation.x=THREE.MathUtils.lerp(-.06,-.22,release);
-        finger.getObjectByName(finger.name+'-tip').rotation.x=THREE.MathUtils.lerp(-.06,-.14,release);
-      });
+      fingersPose(arm.userData.hand,1-ease(release/.62));
     });
     update();return release;
   }
@@ -391,18 +430,29 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
   function greetPose(amount,time=0,armIndex=0){
     const blend=clamp(amount); if(!blend)return blend;
     const arm=arms[armIndex],hand=arm.userData.hand,side=arm.userData.side,seconds=Number.isFinite(time)?time:0;
-    const flutter=Math.sin((seconds-1.05)*Math.PI*1.25),wrist=new THREE.Vector3(side*(.59+flutter*.045),SHOULDER_HEIGHT+.29,.28);
-    waveEuler.set(-.035,side*.08,Math.PI+flutter*.12);waveHand.setFromEuler(waveEuler);
-    reachArm(arm,wrist,new THREE.Vector3(side*.35,-.9,.10),waveHand,blend);
+    currentArm(arm);
+    const startUpper=arm.quaternion.clone(),startElbow=arm.userData.elbow.quaternion.clone();
+    const sway=Math.sin((seconds-3.0)*Math.PI*1.45)*blend**3;
+    const wrist=new THREE.Vector3(side*(.55+sway*.022),SHOULDER_HEIGHT+.24,.29);
+    waveEuler.set(-.06,side*.10,Math.PI+sway*.13);waveHand.setFromEuler(waveEuler);
+    const orientation=localHand.clone().slerp(waveHand,blend);
+    // Author the lift through the shoulder and elbow, then orient the palm.
+    // Solving IK at every point of a vertical wrist path crossed a pole
+    // singularity and snapped the forearm. This bend plane remains stable.
+    reachArm(arm,wrist,new THREE.Vector3(0,-1,.7),waveHand);
+    const endUpper=arm.quaternion.clone(),endElbow=arm.userData.elbow.quaternion.clone();
+    arm.quaternion.copy(startUpper).slerp(endUpper,blend);
+    arm.userData.elbow.quaternion.copy(startElbow).slerp(endElbow,blend);
+    hand.quaternion.copy(arm.quaternion).multiply(arm.userData.elbow.quaternion).invert().multiply(orientation);
     hand.userData.fingers.forEach((finger,i)=>{
-      finger.rotation.x=THREE.MathUtils.lerp(finger.rotation.x,-.025,blend);
-      finger.rotation.z=THREE.MathUtils.lerp(finger.rotation.z,[-.065,-.020,.023,.070][i],blend);
-      finger.getObjectByName(finger.name+'-middle').rotation.x=THREE.MathUtils.lerp(finger.getObjectByName(finger.name+'-middle').rotation.x,-.035,blend);
-      finger.getObjectByName(finger.name+'-tip').rotation.x=THREE.MathUtils.lerp(finger.getObjectByName(finger.name+'-tip').rotation.x,-.015,blend);
+      finger.rotation.x=THREE.MathUtils.lerp(finger.rotation.x,-.035,blend);
+      finger.rotation.z=THREE.MathUtils.lerp(finger.rotation.z,[-.052,-.016,.018,.056][i],blend);
+      finger.getObjectByName(finger.name+'-middle').rotation.x=THREE.MathUtils.lerp(finger.getObjectByName(finger.name+'-middle').rotation.x,-.065,blend);
+      finger.getObjectByName(finger.name+'-tip').rotation.x=THREE.MathUtils.lerp(finger.getObjectByName(finger.name+'-tip').rotation.x,-.04,blend);
     });
-    hand.userData.thumb.rotation.z=THREE.MathUtils.lerp(hand.userData.thumb.rotation.z,-side*.95,blend);
+    hand.userData.thumb.rotation.z=THREE.MathUtils.lerp(hand.userData.thumb.rotation.z,-side*.88,blend);
     hand.userData.thumb.rotation.x=THREE.MathUtils.lerp(hand.userData.thumb.rotation.x,-.10,blend);
-    hand.userData.thumbTip.rotation.x=THREE.MathUtils.lerp(hand.userData.thumbTip.rotation.x,-.06,blend);
+    hand.userData.thumbTip.rotation.x=THREE.MathUtils.lerp(hand.userData.thumbTip.rotation.x,-.10,blend);
     update(); return blend;
   }
 
@@ -448,10 +498,11 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     // Small counter-swings keep the adult gait relaxed without moving a wrist
     // independently from the shoulder/elbow hierarchy.
     const swing=Math.sin(gait)*envelope;
-    for(const arm of arms){
-      arm.rotation.set(-.015+arm.userData.side*.16*swing,0,arm.userData.side*.085);
-      arm.userData.elbow.rotation.set(-.09-.07*Math.abs(swing),0,0);
-      arm.userData.hand.rotation.set(.02,0,0);
+    for(const [index,arm] of arms.entries()){
+      arm.quaternion.copy(relaxedTargets[index].upper);
+      arm.rotation.x+=arm.userData.side*.15*swing;
+      arm.userData.elbow.quaternion.copy(relaxedTargets[index].elbow);arm.userData.elbow.rotation.x-=.05*Math.abs(swing);
+      arm.userData.hand.quaternion.copy(relaxedTargets[index].hand);
     }
     update(); return t;
   }
@@ -463,5 +514,5 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
   function blinkPose(amount){return headBlink(amount);}
   function updateFace(seconds=0){const close=headUpdateFace(seconds,faceSleep);update();return close;}
   function setFaceMap(){return false;}
-  return {root,body,head,arms,legs,pose,portraitPose,greetPose,restPose,walkPose,deskPose,armrestPose,risePose,glasses,eyes,rigDimensions,getWorldWrists,faceMesh,faceBounds,faceUV:mapping,setFaceMap,headphones,blinkPose,updateFace};
+  return {root,body,head,arms,legs,pose,portraitPose,greetPose,restPose,walkPose,deskPose,armrestPose,seatedHands,risePose,glasses,eyes,rigDimensions,getWorldWrists,faceMesh,faceBounds,faceUV:mapping,setFaceMap,headphones,blinkPose,updateFace};
 }

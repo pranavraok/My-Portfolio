@@ -25,8 +25,8 @@ The production build is written to `dist`. Vercel uses the configuration in `ver
 - `src/data.js`: profile, project descriptions, verified links, and achievement dates.
 - `src/scene.js`: one continuous 3D world, scroll-driven camera movement, workspace, lighting, and holographic scan.
 - `src/approved-avatar.js` and `public/media/pranav-approved-head.glb`: the approved Meshy face, swept hair, clear glasses, and headphones, shared by the hero and contact scene.
-- `src/avatar-body.js`: compact black-hoodie/floral-shorts avatar with sleeves skinned to the torso at each shoulder, articulated wrists and five digits, world-space chair-armrest contact, a staged hand release during the rise, and planted footsteps with weight transfer and foot clearance. The rise and gait share the same relaxed arm pose. `src/hero-character.js` and `src/character.js` load this rig.
-- `src/components/Experience.jsx`: the synchronized desk-to-scanner narrative, progressive labels, and mobile cards.
+- `src/avatar-body.js`: compact black-hoodie/floral-shorts avatar with sleeves skinned to the torso at each shoulder, articulated wrists and five digits, continuous chair-to-desk hand transfers, a greeting authored through shoulder/elbow rotation with stable palm orientation, and a staged hand release during the rise. Relaxed palms face the thighs. The rise and planted gait share the same arm pose. `src/hero-character.js` and `src/character.js` load this rig.
+- `src/components/Experience.jsx`: the synchronized desk-to-scanner narrative, progressive labels, and mobile cards, with one damped scroll clock for the room, camera, chair and character. The desktop camera follows the cursor on both axes with a gentle return to center.
 - `src/experience.css`: desktop, phone, and landscape framing for the 3D narrative.
 - `src/contact-scene.js` and `src/components/ContactCharacter.jsx`: parcel-and-letter scene with a sleeping character, scroll-driven wake-up, and a tappable hello wave.
 - `src/contact.css`: responsive contact scene with the heading at upper left, parcels at lower left, a centered character, and a back-to-top footer.
