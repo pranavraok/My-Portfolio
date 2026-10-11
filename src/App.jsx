@@ -7,6 +7,7 @@ import MusicPlayer from "./components/MusicPlayer.jsx";
 import ContactCharacter from "./components/ContactCharacter.jsx";
 import ProjectCarousel from "./components/ProjectCarousel.jsx";
 import ProjectGallery from "./components/ProjectGallery.jsx";
+import WorkExperience from "./components/WorkExperience.jsx";
 import { Icon, Logo } from "./components/Icons.jsx";
 import { profile, projects, awards } from "./data.js";
 import { finishStartup } from "./startup.js";
@@ -46,18 +47,6 @@ function Home({ navigate, scrollTo, onPhase }) {
             </article>
           ))}
         </div>
-        <div className="experience-row reveal">
-          <span className="experience-year">2025</span>
-          <div>
-            <span className="eyebrow">EXPERIENCE</span>
-            <h3>Machine Learning Intern</h3>
-            <p>Fox Trading Solutions · March–April 2025</p>
-          </div>
-          <p className="experience-detail">
-            From data preparation to model training and evaluation — applying
-            machine learning to practical problems.
-          </p>
-        </div>
         <div className="journey-education reveal">
           <span className="education-period">2024–2028</span>
           <div>
@@ -69,6 +58,7 @@ function Home({ navigate, scrollTo, onPhase }) {
           </a>
         </div>
       </section>
+      <WorkExperience />
       <Contact />
     </main>
   );
@@ -319,7 +309,7 @@ export default function App() {
       },
       { rootMargin: "-30% 0px -40% 0px" },
     );
-    ["projects", "milestones", "contact"].forEach((id) => {
+    ["projects", "milestones", "experience", "contact"].forEach((id) => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
@@ -363,7 +353,7 @@ export default function App() {
           {home ? <Logo /> : <Icon name="back" size={25} />}
         </a>
         <nav aria-label="Main navigation">
-          {["about", "projects", "milestones", "contact"].map((id) => (
+          {["about", "projects", "milestones", "experience", "contact"].map((id) => (
             <a
               key={id}
               href={`/#${id}`}
