@@ -19,3 +19,18 @@ export function footerGreeting(seconds,sleep=0){
     active:seconds>=0&&seconds<9.00,
   };
 }
+
+// The desktop composition leaves time to read the closed eyes and resting
+// head before the character wakes, unfolds his arms and greets the visitor.
+export function desktopFooterGreeting(seconds,sleep=0){
+  const awake=1-clamp(sleep);
+  return {
+    unfold:ease(1.35,2.85,seconds)*(1-ease(9.50,11.10,seconds))*awake,
+    wave:ease(2.75,4.35,seconds)*(1-ease(7.60,9.10,seconds))*awake,
+    waveTime:seconds-.45,
+    blink:ease(2.40,2.53,seconds)*(1-ease(2.60,2.83,seconds)),
+    stretch:ease(1.45,2.25,seconds)*(1-ease(2.50,3.15,seconds))*awake,
+    eyeHold:1-ease(.75,1.85,seconds),
+    active:seconds>=0&&seconds<11.20,
+  };
+}

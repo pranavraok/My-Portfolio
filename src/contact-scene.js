@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { createCharacter } from "./character.js";
 import { loadApprovedHead } from "./approved-avatar.js";
-import { footerGreeting,footerSleepRequest } from "./footer-motion.js";
+import { footerGreeting,desktopFooterGreeting,footerSleepRequest } from "./footer-motion.js";
 import { watchSceneContext } from "./scene-context.js";
 
 export async function createContactScene(host, getProgress) {
@@ -81,6 +81,7 @@ export async function createContactScene(host, getProgress) {
   for(const [x,z,a] of [[-1.8,1.1,.35],[-.65,.65,-.3],[-1.6,.62,.2],[-2,1.62,-.16],[-1,1.65,-.2],[-2.3,.65,.45]]) {
     const envelope = panel([.58,.35], envelopeMap, packages,[x,.018,z]); envelope.rotation.set(-Math.PI / 2,0,a);
   }
+  const parcelCenter=new THREE.Box3().setFromObject(packages).getCenter(new THREE.Vector3());
   let width = 0, height = 0, mobile = false, frame, last = 0;
   const contactStage=host.closest('.contact-stage')||host;
   const pointer = {x:0,y:0}, followPointer = {x:0,y:0};
@@ -90,8 +91,10 @@ export async function createContactScene(host, getProgress) {
     const rect = host.getBoundingClientRect(); width = rect.width; height = rect.height;
     if(!width || !height) return;
     mobile = width <= 600 || width / height < 1;
-    packages.scale.setScalar(mobile ? .48 : 1);
-    packages.position.x = mobile ? -.03 : 0;
+    const parcelScale=mobile ? .48 : Math.min(.85,(width/height)*.45);
+    packages.scale.setScalar(parcelScale);
+    const halfWidth=Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*(8.5-.35)*width/height;
+    packages.position.x = mobile ? -.03 : halfWidth*.63-parcelCenter.x*parcelScale;
     renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.35 : 1.7)); renderer.setSize(width,height);
     camera.aspect = width / height; camera.updateProjectionMatrix();
   };
@@ -120,13 +123,16 @@ export async function createContactScene(host, getProgress) {
       if(!hasWoken||sleep>.35)wakeAt=t;
       hasWoken=true;
     } else if(hasWoken&&requestedSleep>.9){hasWoken=false;waveAt=-100;}
-    else if(!hasWoken&&requestedSleep<.30){wakeAt=t;waveAt=t;hasWoken=true;}
+    else if(!hasWoken&&requestedSleep<.30){
+      wakeAt=t+(mobile||reduced.matches?0:1.75);
+      waveAt=wakeAt;hasWoken=true;
+    }
     // Once the footer is revealed, finish waking even if scrolling stops.
     // A separate return threshold prevents tiny swipes from restarting it.
-    const sleepTarget=hasWoken?0:1;
+    const sleepTarget=hasWoken&&t>=wakeAt?0:1;
     const sleepStep=(sleepTarget-sleep)*(1-Math.exp(-delta*3.2));
-    sleep=reduced.matches?sleepTarget:sleep+THREE.MathUtils.clamp(sleepStep,-delta*.65,delta*.45);
-    const since=t-waveAt,movement=footerGreeting(since,sleep);
+    sleep=reduced.matches?sleepTarget:sleep+THREE.MathUtils.clamp(sleepStep,-delta*(mobile?.65:.48),delta*.45);
+    const since=t-waveAt,movement=(mobile?footerGreeting:desktopFooterGreeting)(since,sleep);
     const settle=1-Math.exp(-delta*12);
     waveBlend=reduced.matches?0:THREE.MathUtils.lerp(waveBlend,movement.wave,settle);
     unfoldBlend=reduced.matches?0:THREE.MathUtils.lerp(unfoldBlend,movement.unfold,settle);
@@ -146,23 +152,26 @@ export async function createContactScene(host, getProgress) {
       const gaze=1-Math.exp(-delta*3.5);
       followPointer.x=THREE.MathUtils.lerp(followPointer.x,pointer.x,gaze);
       followPointer.y=THREE.MathUtils.lerp(followPointer.y,pointer.y,gaze);
-      person.head.rotation.y=(1-sleep)*(Math.sin(t*.45)*.045+followPointer.x*.11);
-      person.head.rotation.x+=sleep*.06+(1-sleep)*(Math.sin(t*.9)*.012+followPointer.y*.025);
-      person.head.rotation.z+=sleep*.08+(1-sleep)*Math.sin(t*.63)*.009;
+      person.head.rotation.y=(mobile?0:-.10*sleep)+(1-sleep)*(Math.sin(t*.45)*.045+followPointer.x*.11);
+      person.head.rotation.x+=sleep*(mobile?.06:.12)+(1-sleep)*(Math.sin(t*.9)*.012+followPointer.y*.025);
+      person.head.rotation.z+=sleep*(mobile?.08:-.10)+(1-sleep)*Math.sin(t*.63)*.009;
       person.body.scale.y=1+Math.sin(t*1.05)*(.0025+sleep*.0015);
     } else {
       person.body.scale.y=1;person.head.rotation.y=0;
     }
     person.root.rotation.y = -.035 + (reduced.matches ? 0 : followPointer.x*.06);
-    const eyelids=person.updateFace?.(reduced.matches?0:t,reduced.matches?0:movement.blink*(t-wakeAt<2?1:0));
+    const eyeHold=!mobile&&!reduced.matches&&t-wakeAt<3 ? desktopFooterGreeting(t-wakeAt,sleep).eyeHold : 0;
+    const settlingBlink=movement.blink*(t-wakeAt<(mobile?2:3)?1:0);
+    const eyelids=person.updateFace?.(reduced.matches?0:t,reduced.matches?0:Math.max(eyeHold,settlingBlink));
     if(mobile) { camera.position.set(.2,2.25,9.2); camera.lookAt(0,1.50,.35); }
-    else { camera.position.set(.4,2.55,8.5); camera.lookAt(0,1.73,.25); }
+    else { camera.position.set(0,2.55,8.5); camera.lookAt(0,1.73,.35); }
     camera.clearViewOffset();
     host.parentElement.style.setProperty('--sleep',sleep.toFixed(3));
     host.dataset.sleep=sleep.toFixed(2); host.dataset.greeting=greeting.toFixed(2);host.dataset.glasses='worn';
     host.dataset.motionTime=t.toFixed(3);host.dataset.exposure=requestedSleep.toFixed(3);
     const animationActive=!reduced.matches&&(movement.active||waveBlend>.001||unfoldBlend>.001);
     host.dataset.eyelids=eyelids.toFixed(3);host.dataset.animationActive=String(animationActive);
+    host.dataset.layout=mobile?'mobile':'text-left-character-center-parcels-right';
     host.dataset.pose=sleep>.85 ? 'sleeping' : sleep>.15||stretch>.2 ? 'waking' : greeting>.1 ? 'greeting' : 'relaxed';
     const greetingButton=host.parentElement.querySelector('.character-greeting');
     if(greetingButton)greetingButton.disabled=animationActive;
