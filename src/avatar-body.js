@@ -150,6 +150,8 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
   }
 
   for(const side of [-1,1]) {
+    // A fixed shoulder yoke overlaps the moving sleeve at every arm angle.
+    soft([.105,.100,.133],C.shirt,body,[side*.321,SHOULDER_HEIGHT-.042,-.012],{roughness:.92,sheen:.35,sheenColor:new THREE.Color('#41464b'),sheenRoughness:.9}).name='hoodie-shoulder-yoke';
     const arm=new THREE.Group(); arm.name=side<0?"left-arm":"right-arm";
     arm.position.set(side*SHOULDER_OFFSET,SHOULDER_HEIGHT,-.008); body.add(arm); arms.push(arm);
     const shoulder=new THREE.Bone();shoulder.name=`${arm.name}-shoulder`;arm.add(shoulder);
@@ -191,7 +193,7 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
       soft([radius*.67,distal*.33,.003], "#e1b39c",tip,[0,-distal*.68,-radius*.82],{roughness:.49});
       fingers.push(finger);
     }
-    const thumb=new THREE.Bone(); thumb.name=`${arm.name}-thumb`; thumb.position.set(-side*.070,-.081,.024); hand.add(thumb);
+    const thumb=new THREE.Bone(); thumb.name=`${arm.name}-thumb`; thumb.position.set(-side*.083,-.079,.024); hand.add(thumb);
     const thumbTip=new THREE.Bone();thumbTip.name=thumb.name+'-tip';thumbTip.position.y=-.058;thumb.add(thumbTip);
     const thumbGeometry=loft([[0,-.116,0],[.014,-.109,.013],[.019,-.095,.019],[.023,-.058,.023],[.027,-.024,.025],[.020,.006,.017],[0,.019,0]],32,24);
     const ti=[],tw=[];for(let i=0;i<thumbGeometry.attributes.position.count;i++){const w=THREE.MathUtils.smoothstep(-thumbGeometry.attributes.position.getY(i),.04,.08);ti.push(0,1,0,0);tw.push(1-w,w,0,0);}
@@ -282,10 +284,11 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     arm.userData.hand.quaternion.slerp(relativeRotation,blend);
   }
 
-  const restTargets=arms.map(arm=>({wrist:new THREE.Vector3(arm.userData.side*.44,SHOULDER_HEIGHT-.47,.20),pole:new THREE.Vector3(arm.userData.side*.15,-1,-.7)}));
+  const restTargets=arms.map(arm=>({wrist:new THREE.Vector3(arm.userData.side*.55,SHOULDER_HEIGHT-.38,.02),pole:new THREE.Vector3(arm.userData.side*.20,-1,-.28)}));
 
   function pose(amount){
     const standing=clamp(amount,1),angle=(1-standing)*Math.PI/2;
+    body.position.x=0;
     body.position.y=-THIGH*(1-Math.cos(angle));
     for(const leg of legs){leg.rotation.set(-angle,0,0);leg.userData.knee.rotation.set(angle,0,0);leg.userData.ankle.rotation.set(0,0,0);}
     for(const arm of arms){
@@ -336,19 +339,34 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     update();
   }
 
+  function armrestPose(amount,targets){
+    const blend=clamp(amount);if(!blend)return;
+    body.updateWorldMatrix(true,false);
+    body.getWorldQuaternion(bodyRotation).invert();
+    root.getWorldQuaternion(handRotation).multiply(restHandRotation);
+    handRotation.premultiply(bodyRotation);
+    targets.forEach((target,index)=>{
+      wristTarget.copy(target);body.worldToLocal(wristTarget);
+      reachArm(arms[index],wristTarget,new THREE.Vector3(arms[index].userData.side*.20,-1,-.28),handRotation,blend);
+    });
+    update();
+  }
+
   function greetPose(amount,time=0,armIndex=0){
     const blend=clamp(amount); if(!blend)return blend;
     const arm=arms[armIndex],hand=arm.userData.hand,side=arm.userData.side,seconds=Number.isFinite(time)?time:0;
-    const flutter=Math.sin((seconds-1.45)*Math.PI*1.5),wrist=new THREE.Vector3(side*(1.00+flutter*.025),SHOULDER_HEIGHT+.37+Math.cos(seconds*2.2)*.012,.36);
-    waveEuler.set(0,side*.03,Math.PI+flutter*.18);waveHand.setFromEuler(waveEuler);
-    reachArm(arm,wrist,new THREE.Vector3(side*.70,-.40,.25),waveHand,blend);
+    const flutter=Math.sin((seconds-1.05)*Math.PI*1.25),wrist=new THREE.Vector3(side*(.59+flutter*.045),SHOULDER_HEIGHT+.29,.28);
+    waveEuler.set(-.035,side*.08,Math.PI+flutter*.12);waveHand.setFromEuler(waveEuler);
+    reachArm(arm,wrist,new THREE.Vector3(side*.35,-.9,.10),waveHand,blend);
     hand.userData.fingers.forEach((finger,i)=>{
       finger.rotation.x=THREE.MathUtils.lerp(finger.rotation.x,-.025,blend);
-      finger.rotation.z=THREE.MathUtils.lerp(finger.rotation.z,[-.16,-.05,.04,.15][i],blend);
+      finger.rotation.z=THREE.MathUtils.lerp(finger.rotation.z,[-.065,-.020,.023,.070][i],blend);
       finger.getObjectByName(finger.name+'-middle').rotation.x=THREE.MathUtils.lerp(finger.getObjectByName(finger.name+'-middle').rotation.x,-.035,blend);
       finger.getObjectByName(finger.name+'-tip').rotation.x=THREE.MathUtils.lerp(finger.getObjectByName(finger.name+'-tip').rotation.x,-.015,blend);
     });
-    hand.userData.thumb.rotation.z=THREE.MathUtils.lerp(hand.userData.thumb.rotation.z,side*.86,blend);
+    hand.userData.thumb.rotation.z=THREE.MathUtils.lerp(hand.userData.thumb.rotation.z,-side*.95,blend);
+    hand.userData.thumb.rotation.x=THREE.MathUtils.lerp(hand.userData.thumb.rotation.x,-.10,blend);
+    hand.userData.thumbTip.rotation.x=THREE.MathUtils.lerp(hand.userData.thumbTip.rotation.x,-.06,blend);
     update(); return blend;
   }
 
@@ -370,19 +388,30 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
       const starts=left ? [0,1/3,1/3,1] : [0,0,2/3,2/3];
       const ends=left ? [1/3,1/3,1,1] : [0,2/3,2/3,1];
       const plant=THREE.MathUtils.lerp(starts[step],ends[step],fraction);
-      return {leg,z:(plant-advance)*travel,lift:active?Math.sin(Math.PI*fraction)*.075:0};
+      const roll=active?Math.sin(Math.PI*fraction*2)*.16:0;
+      return {leg,z:(plant-advance)*travel,lift:active?Math.sin(Math.PI*fraction)**2*.105+Math.abs(roll)*.17:0,roll};
     });
     const reach=Math.max(...feet.map(foot=>Math.abs(foot.z)));
     body.position.y=Math.min(-.025*envelope,Math.sqrt(Math.max(.01,(THIGH+SHIN)**2-reach*reach))-(THIGH+SHIN)-.005*envelope);
-    for(const {leg,z,lift} of feet){
-      const vertical=THIGH+SHIN+body.position.y-lift,distance=Math.min(THIGH+SHIN,Math.hypot(vertical,z));
-      const knee=Math.acos(THREE.MathUtils.clamp((distance*distance-THIGH*THIGH-SHIN*SHIN)/(2*THIGH*SHIN),-1,1));
-      const hip=Math.atan2(-z,vertical)-Math.atan2(SHIN*Math.sin(knee),THIGH+SHIN*Math.cos(knee));
-      leg.rotation.x=hip; leg.userData.knee.rotation.x=knee; leg.userData.ankle.rotation.x=-hip-knee;
+    const gait=(step+fraction)*Math.PI;
+    body.position.x=Math.sin(gait)*.024*envelope;
+    body.rotation.set(0,0,Math.sin(gait)*.014*envelope);body.scale.y=1;
+    body.updateWorldMatrix(true,false);
+    const inverseBody=body.getWorldQuaternion(new THREE.Quaternion()).invert(),rootOrientation=root.getWorldQuaternion(new THREE.Quaternion());
+    for(const {leg,z,lift,roll} of feet){
+      const ankleTarget=root.localToWorld(new THREE.Vector3(leg.position.x,.16+lift,z));body.worldToLocal(ankleTarget);ankleTarget.sub(leg.position);
+      const distance=THREE.MathUtils.clamp(ankleTarget.length(),.071,THIGH+SHIN-.00001),axis=ankleTarget.normalize();
+      const along=(THIGH*THIGH-SHIN*SHIN+distance*distance)/(2*distance),height=Math.sqrt(Math.max(0,THIGH*THIGH-along*along));
+      const kneePole=new THREE.Vector3(0,0,1).addScaledVector(axis,-axis.z).normalize();
+      const upper=axis.clone().multiplyScalar(along).addScaledVector(kneePole,height),lower=axis.clone().multiplyScalar(distance).sub(upper);
+      const hipRotation=new THREE.Quaternion().setFromUnitVectors(DOWN,upper.normalize()),shinRotation=new THREE.Quaternion().setFromUnitVectors(DOWN,lower.normalize());
+      leg.quaternion.copy(hipRotation);leg.userData.knee.quaternion.copy(hipRotation).invert().multiply(shinRotation);
+      const footOrientation=inverseBody.clone().multiply(rootOrientation).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(roll,leg.userData.side*.035,0)));
+      leg.userData.ankle.quaternion.copy(shinRotation).invert().multiply(footOrientation);
     }
     // Small counter-swings keep the adult gait relaxed without moving a wrist
     // independently from the shoulder/elbow hierarchy.
-    const swing=Math.sin((step+fraction)*Math.PI)*envelope;
+    const swing=Math.sin(gait)*envelope;
     for(const arm of arms){
       arm.rotation.set(-.025+arm.userData.side*.16*swing,0,arm.userData.side*.07);
       arm.userData.elbow.rotation.set(-.18-.045*Math.abs(swing),0,0);
@@ -398,5 +427,5 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
   function blinkPose(amount){return headBlink(amount);}
   function updateFace(seconds=0){const close=headUpdateFace(seconds,faceSleep);update();return close;}
   function setFaceMap(){return false;}
-  return {root,body,head,arms,legs,pose,portraitPose,greetPose,restPose,walkPose,deskPose,glasses,eyes,rigDimensions,getWorldWrists,faceMesh,faceBounds,faceUV:mapping,setFaceMap,headphones,blinkPose,updateFace};
+  return {root,body,head,arms,legs,pose,portraitPose,greetPose,restPose,walkPose,deskPose,armrestPose,glasses,eyes,rigDimensions,getWorldWrists,faceMesh,faceBounds,faceUV:mapping,setFaceMap,headphones,blinkPose,updateFace};
 }

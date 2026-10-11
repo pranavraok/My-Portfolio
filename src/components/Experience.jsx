@@ -5,6 +5,7 @@ import Scene from "./Scene.jsx";
 import { Icon } from "./Icons.jsx";
 import { profile } from "../data.js";
 import DecodedText from "./DecodedText.jsx";
+import { speakerState, toggleBackgroundMusic } from "../music.js";
 
 const clamp = (value) => Math.min(1, Math.max(0, value));
 const smooth = (a, b, value) => {
@@ -17,6 +18,13 @@ export default function Experience({ scrollTo, onPhase }) {
   const timeline = useRef({ page: 0, scan: 0, walk: 0 });
   const [percent, setPercent] = useState(0);
   const [skillCard, setSkillCard] = useState(false);
+  const [speakerPlaying,setSpeakerPlaying]=useState(speakerState.playing);
+  useEffect(()=>{
+    const update=event=>setSpeakerPlaying(event.detail.playing);
+    window.addEventListener('portfolio-audio-state',update);
+    setSpeakerPlaying(speakerState.playing);
+    return()=>window.removeEventListener('portfolio-audio-state',update);
+  },[]);
   useEffect(() => {
     const target = section.current;
     const stage = target.querySelector(".experience-stage");
@@ -140,6 +148,7 @@ export default function Experience({ scrollTo, onPhase }) {
           </div>
         </div>
         <Scene mode="experience" timeline={timeline} />
+        <button className="speaker-toggle" hidden aria-label={speakerPlaying?'Turn desk speaker off':'Turn desk speaker on'} aria-pressed={speakerPlaying} title={speakerPlaying?'Turn speaker off':'Turn speaker on'} onClick={toggleBackgroundMusic}/>
         <button className="hero-greeting" aria-label="Wave hello to Pranav" onClick={() => {
           timeline.current.greetAt = performance.now();
         }} />

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { drawComputerRadio, speakerState } from "./music.js";
-import { drawDeskCode } from "./desk-display.js";
+import { drawDeskCode, deskCodeState } from "./desk-display.js";
 import { clone as cloneSkeleton } from "three/addons/utils/SkeletonUtils.js";
 import { createHeroCharacter, walkPath } from "./hero-character.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
@@ -150,11 +150,17 @@ export async function createScene(host, mode, getProgress) {
   person.root.traverse((o) => {
     if (o.isMesh) o.receiveShadow = false;
   });
+  const contactShadow=new THREE.Mesh(new THREE.PlaneGeometry(12,12),new THREE.ShadowMaterial({opacity:0,depthWrite:false}));
+  contactShadow.rotation.x=-Math.PI/2;contactShadow.position.set(0,-.137,2.5);contactShadow.receiveShadow=true;scene.add(contactShadow);
   let scan, solidPlane, wirePlane, ring, holo, scanMaterial;
   let speakerMap = null,
     speakerLed = null,
     lastSpeakerDraw = -1;
-  let chair = null, chairSeat = null, websiteMap = null, lastWebsiteDraw = -1, websiteFrame = 0;
+  let chair = null, chairSeat = null, websiteMap = null, codeScreen = null, lastWebsiteDraw = -1, websiteFrame = 0, codeTime = 0;
+  let speakerCabinet = null, speakerFace = null, speakerRig = null;
+  const speakerButton=host.parentElement.querySelector('.speaker-toggle');
+  const screenFrustum=new THREE.Frustum(),screenProjection=new THREE.Matrix4(),screenBounds=new THREE.Box3(),speakerBounds=new THREE.Box3();
+  const armrestWrists=[new THREE.Vector3(),new THREE.Vector3()];
   let speakerCone = null;
   let mouse = null;
   const mouseWrist = new THREE.Vector3(), keyboardWrist = new THREE.Vector3(), actualWrist = new THREE.Vector3();
@@ -183,7 +189,8 @@ export async function createScene(host, mode, getProgress) {
       monitor.rotation.y = i === 0 ? 0.1 : -0.15;
       objects.add(monitor);
       box([1.92, 1.3, 0.15], "#353747", monitor, [0, 0, 0], 0.075);
-      panel([1.73, 1.1], screenMaps[i], monitor, [0, 0, 0.081]);
+      const display=panel([1.73, 1.1], screenMaps[i], monitor, [0, 0, 0.081]);
+      if(i===1){codeScreen=display;display.name='code-monitor';}
       rod([0, -0.65, 0], [0, -0.86, -0.01], 0.065, "#424452", monitor);
       box([0.66, 0.07, 0.35], "#454451", monitor, [0, -0.79, 0.12], 0.025);
     }
@@ -350,8 +357,8 @@ export async function createScene(host, mode, getProgress) {
       );
       leaf.rotation.set(Math.cos(angle) * 0.55, angle, -Math.sin(angle) * 0.65);
     }
-    box([0.41, 0.58, 0.32], "#e38584", objects, [2.05, 1.94, -0.75], 0.05);
-    const speaker = mesh(
+    speakerCabinet=box([0.41, 0.58, 0.32], "#e38584", objects, [2.05, 1.94, -0.75], 0.05);
+    speakerFace = mesh(
       new THREE.CircleGeometry(0.14, 32),
       mat("#455167"),
       objects,
@@ -452,9 +459,17 @@ export async function createScene(host, mode, getProgress) {
       if(object.name==='desk-support'){object.position.y=.475;object.scale.y=1.23/1.55;}
     });
     puzzle.position.y=1.425;penguin.position.y=1.415;
+    speakerRig=new THREE.Group();objects.add(speakerRig);
+    for(const part of [speakerCabinet,speakerFace,speakerCone,speakerLed,...soundRipples]){
+      part.position.sub(new THREE.Vector3(2.05,1.52,-.75));speakerRig.add(part);
+      part.userData.speakerRestZ=part.position.z;
+    }
+    speakerRig.position.set(2.05,1.565,-.75);
   }
   if (hologram || experience) {
     scanner.position.z = 3.2;
+    // The rug, walking floor and platform top share one contact height.
+    scanner.position.y=-.412;
     cylinder(0.92, 0.97, 0.14, "#184d38", scanner, [0, 0.02, 0]);
     cylinder(0.94, 0.94, 0.08, "#1b5740", scanner, [0, 0.12, 0]);
     cylinder(0.89, 0.92, 0.12, "#245f46", scanner, [0, 0.22, 0]);
@@ -486,7 +501,7 @@ export async function createScene(host, mode, getProgress) {
     );
     beam.name = "scan-beam";
     const grid = new THREE.GridHelper(25, 50, "#4e9873", "#32644b");
-    grid.position.y = -0.13;
+    grid.position.y = .28;
     grid.material.transparent = true;
     grid.material.opacity = 0.27;
     scanner.add(grid);
@@ -667,6 +682,7 @@ export async function createScene(host, mode, getProgress) {
     height = rect.height;
     // Match the page layout, even when the music dock shortens the 3D stage.
     mobile = window.matchMedia('(max-width: 600px), (max-width: 900px) and (max-aspect-ratio: 6/5)').matches;
+    if(speakerRig)speakerRig.position.set(mobile?.88:2.05,1.565,mobile?-.30:-.75);
     if (!width || !height) return;
     renderer.setPixelRatio(
       Math.min(window.devicePixelRatio, mobile ? 1.35 : 1.75),
@@ -682,6 +698,7 @@ export async function createScene(host, mode, getProgress) {
   const visibleObserver = new IntersectionObserver(
     ([entry]) => {
       visible = entry.isIntersecting;
+      if(!visible)host.dataset.codeMotion='paused';
     },
     { threshold: 0 },
   );
@@ -720,6 +737,7 @@ export async function createScene(host, mode, getProgress) {
     const chairTurn = smooth(0.015, 0.19, page);
     const standing = smooth(0.20, 0.44, page);
     const stepping = smooth(0.43, 0.90, page);
+    contactShadow.material.opacity=.19*smooth(.35,.48,page);
     const intro = (time-Math.max(introStart,data.greetAt || 0))/1000;
     const helloWeight = 1-smooth(data.greetAt > introStart ? .12 : 0,data.greetAt > introStart ? .2 : .07,page);
     const helloTurn = reduced ? 0 : smooth(.2,.8,intro)*(1-smooth(3.4,4.2,intro))*helloWeight;
@@ -743,7 +761,7 @@ export async function createScene(host, mode, getProgress) {
       if (standing > .98 && page < .94) person.walkPose?.(stepping,1.24);
     }
     const roomLift = Math.max(0,page-.08)*4.4;
-    const carry = roomLift*(1-smooth(.14,.4,page));
+    const carry = roomLift*(1-standing);
     const facing = mix(Math.PI, .04, chairTurn) + helloTurn*(.5-Math.PI);
     const seatTurn = facing-Math.PI;
     const kneeBend=(1-standing)*Math.PI/2;
@@ -751,7 +769,7 @@ export async function createScene(host, mode, getProgress) {
     const risenRootZ=seatRootZ+person.rigDimensions.thigh*(1-Math.sin(kneeBend));
     person.root.position.set(
       -.22*Math.sin(seatTurn)*(1-stepping),
-      mix(-.132,.30,walkPath(stepping).advance)+carry,
+      -.132+carry,
       mix(risenRootZ,3.2,walkPath(stepping).advance),
     );
     person.root.rotation.y = facing + smooth(.94,1.12,page)*scanProgress*Math.PI*2;
@@ -782,6 +800,14 @@ export async function createScene(host, mode, getProgress) {
       objects.localToWorld(keyboardWrist.set(-.26,1.422,.33));
       person.deskPose?.(workBlend,mouseWrist,keyboardWrist,reduced ? 0 : t);
     }
+    if(chairSeat){
+      chairSeat.updateWorldMatrix(true,false);
+      person.arms.forEach((arm,index)=>chairSeat.localToWorld(armrestWrists[index].set(-arm.userData.side*.55,1.358,-.24)));
+      const restBlend=(1-standing)*(1-workBlend);
+      person.armrestPose?.(restBlend,armrestWrists);
+      if(restBlend>.98){const wrists=person.getWorldWrists();host.dataset.armrestContact=Math.max(...wrists.map((w,index)=>w.distanceTo(armrestWrists[index]))).toFixed(4);}
+      else host.dataset.armrestContact='released';
+    }
     person.greetPose?.(helloWave,intro,1);
     if(workBlend>.98) {
       person.root.updateMatrixWorld(true);
@@ -790,8 +816,8 @@ export async function createScene(host, mode, getProgress) {
     } else host.dataset.mouseContact='released';
     const cameraX = mobile ? mix(2.2, 0, cameraWalk) : mix(4.7, 0, cameraWalk);
     const cameraY = mobile
-      ? mix(3.4, 2.8, cameraWalk)
-      : mix(3.8, 3.05, cameraWalk);
+      ? mix(3.4, 2.37, cameraWalk)
+      : mix(3.8, 2.62, cameraWalk);
     const cameraZ = mobile
       ? mix(12.0, 12.7, cameraWalk)
       : mix(9.6, 11.8, cameraWalk);
@@ -802,7 +828,7 @@ export async function createScene(host, mode, getProgress) {
     );
     target.set(
       0,
-      mobile ? mix(2.85, 1.64, smooth(.28,1.1,page)) : mix(1.55, 1.68, cameraWalk),
+      mobile ? mix(2.85, 1.21, smooth(.28,1.1,page)) : mix(1.55, 1.25, cameraWalk),
       mix(0.2, 3.2, cameraWalk),
     );
     camera.lookAt(target);
@@ -814,6 +840,22 @@ export async function createScene(host, mode, getProgress) {
       width,
       height,
     );
+    camera.updateMatrixWorld();
+    if(speakerButton&&speakerCabinet){
+      const canToggle=page<(mobile?1.10:1.16)&&objects.visible;
+      speakerButton.hidden=!canToggle;
+      if(canToggle){
+        speakerBounds.setFromObject(speakerCabinet);
+        let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+        for(const x of [speakerBounds.min.x,speakerBounds.max.x])for(const y of [speakerBounds.min.y,speakerBounds.max.y])for(const z of [speakerBounds.min.z,speakerBounds.max.z]){
+          const point=new THREE.Vector3(x,y,z).project(camera),px=(point.x+1)*width/2,py=(1-point.y)*height/2;
+          minX=Math.min(minX,px);maxX=Math.max(maxX,px);minY=Math.min(minY,py);maxY=Math.max(maxY,py);
+        }
+        const hitWidth=Math.max(44,maxX-minX+8),hitHeight=Math.max(44,maxY-minY+8),left=(minX+maxX-hitWidth)/2,top=(minY+maxY-hitHeight)/2;
+        speakerButton.hidden=left>=width||left+hitWidth<=0||top>=height||top+hitHeight<=70;
+        Object.assign(speakerButton.style,{left:`${left}px`,top:`${top}px`,width:`${hitWidth}px`,height:`${hitHeight}px`});
+      }
+    }
     if(!reduced) {
       // World-space targets make the gaze land on each monitor, not drift.
       const cycle=((time-introStart)/1000)%18;
@@ -857,13 +899,14 @@ export async function createScene(host, mode, getProgress) {
         material.userData.scanUniforms.uTime.value = t;
         material.userData.scanUniforms.uOpacity.value = reveal;
       }
-      const scanHeight = mix(0.28, person.rigDimensions.standingHeight+.32, scanProgress);
+      const scanHeight = mix(0.28, person.rigDimensions.standingHeight+.30, scanProgress);
+      const worldScanHeight=scanHeight+scanner.position.y;
       const beam = scanner.getObjectByName("scan-beam");
       const beamHeight = Math.max(0.02, scanHeight - 0.28);
       beam.scale.y = beamHeight / 3.35;
       beam.position.y = 0.28 + beamHeight / 2;
-      solidPlane.constant = reveal > 0.95 ? -scanHeight : 100;
-      wirePlane.constant = scanHeight;
+      solidPlane.constant = reveal > 0.95 ? -worldScanHeight : 100;
+      wirePlane.constant = worldScanHeight;
       scan.position.y = scanHeight;
       ring.position.y = scanHeight;
     }
@@ -876,9 +919,17 @@ export async function createScene(host, mode, getProgress) {
       .toArray()
       .map((v) => v.toFixed(2))
       .join(",");
-    if(websiteMap && objects.visible && (lastWebsiteDraw < 0 || (!reduced && time-lastWebsiteDraw>100))) {
+    let codeVisible=false;
+    if(codeScreen&&objects.visible&&page<.14&&workBlend>.9){
+      screenProjection.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);screenFrustum.setFromProjectionMatrix(screenProjection);
+      screenBounds.setFromObject(codeScreen);codeVisible=screenFrustum.intersectsBox(screenBounds);
+    }
+    if(codeVisible&&!reduced)codeTime+=delta;
+    host.dataset.codeMotion=codeVisible&&!reduced?'slow-scroll':'paused';host.dataset.codeTime=codeTime.toFixed(3);
+    if(websiteMap && codeVisible && (lastWebsiteDraw < 0 || (!reduced && time-lastWebsiteDraw>125))) {
       const canvas=websiteMap.image;
-      drawDeskCode(canvas.getContext('2d'),canvas.width,canvas.height,reduced ? 0 : (time-introStart)/1000);
+      drawDeskCode(canvas.getContext('2d'),canvas.width,canvas.height,reduced ? 0 : codeTime);
+      host.dataset.codeScroll=deskCodeState(codeTime,canvas.height).scroll.toFixed(2);
       websiteMap.needsUpdate=true;lastWebsiteDraw=time;host.dataset.websiteFrame=String(++websiteFrame);
     }
     if(speakerCone) {
@@ -887,7 +938,7 @@ export async function createScene(host, mode, getProgress) {
       soundRipples.forEach((ripple,i)=>{
         const phase=(t*.75+i/3)%1;
         ripple.visible=activity>.005;
-        ripple.scale.setScalar(1+phase*1.7);ripple.position.z=-.56+phase*.32;
+        ripple.scale.setScalar(1+phase*1.7);ripple.position.z=ripple.userData.speakerRestZ+phase*.32;
         ripple.material.opacity=(1-phase)*activity*.55;
       });
       host.dataset.speaker=activity>.005 ? 'playing' : 'quiet';
@@ -934,6 +985,7 @@ export async function createScene(host, mode, getProgress) {
   const lost = (event) => {
     event.preventDefault();
     host.dataset.ready = "false";
+    if(speakerButton)speakerButton.hidden=true;
   };
   renderer.domElement.addEventListener("webglcontextlost", lost);
   return {

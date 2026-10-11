@@ -15,7 +15,9 @@ export default function MusicPlayer(){
   const [playing,setPlaying]=useState(false),[status,setStatus]=useState('ready');
   const save=()=>{try{localStorage.setItem(storageKey,JSON.stringify({paused:!wanted.current,volume:initial.current.volume}));}catch{/* Storage can be disabled by the visitor. */}};
   function playback(value){
+    const changed=playingRef.current!==value;
     playingRef.current=value;setPlaying(value);speakerState.playing=value;cancelAnimationFrame(frame.current);
+    if(changed)window.dispatchEvent(new CustomEvent('portfolio-audio-state',{detail:{playing:value}}));
     if(!value){speakerState.level=0;speakerState.bands.fill(0);return;}
     const meter=()=>{if(!playingRef.current)return;const analyser=analysis.current?.analyser;if(analyser){analyser.getByteTimeDomainData(analysis.current.wave);let sum=0;for(const v of analysis.current.wave)sum+=((v-128)/128)**2;speakerState.level=Math.min(.45,Math.sqrt(sum/analysis.current.wave.length)*5);}for(let i=0;i<8;i++)speakerState.bands[i]=Math.max(.03,speakerState.level*(1.5+Math.sin(performance.now()*.001+i*.8)));frame.current=requestAnimationFrame(meter);};
     frame.current=requestAnimationFrame(meter);
@@ -35,12 +37,14 @@ export default function MusicPlayer(){
   useEffect(()=>{
     speakerState.title=ambientTrack.title;speakerState.artist=ambientTrack.artist;speakerState.volume=initial.current.volume;audio.current.volume=initial.current.volume;
     if(wanted.current)start(false);
-    const unlock=event=>{if(button.current?.contains(event.target))return;if(wanted.current&&!playingRef.current)start(true);};
+    const unlock=event=>{if(button.current?.contains(event.target)||event.target?.closest?.('.speaker-toggle'))return;if(wanted.current&&!playingRef.current)start(true);};
+    const toggle=()=>playingRef.current?pause():start(true);
     document.addEventListener('pointerdown',unlock);document.addEventListener('keydown',unlock);
-    return()=>{++generation.current;document.removeEventListener('pointerdown',unlock);document.removeEventListener('keydown',unlock);cancelAnimationFrame(frame.current);audio.current?.pause();analysis.current?.ctx.close();speakerState.playing=false;speakerState.level=0;};
+    window.addEventListener('portfolio-toggle-audio',toggle);
+    return()=>{++generation.current;document.removeEventListener('pointerdown',unlock);document.removeEventListener('keydown',unlock);window.removeEventListener('portfolio-toggle-audio',toggle);cancelAnimationFrame(frame.current);audio.current?.pause();analysis.current?.ctx.close();analysis.current=null;speakerState.playing=false;speakerState.level=0;};
   },[]);
-  return <div className="music-shell" data-provider="original-lofi" data-playing={playing} data-status={status}>
+  return <div className="music-shell" data-provider="local-instrumental" data-playing={playing} data-status={status}>
     <button ref={button} className={`sound-button music-toggle ${playing?'is-playing':''}`} aria-label={playing?'Pause background music':'Play background music'} aria-pressed={playing} title={playing?'Pause background music':'Play background music'} onClick={()=>playingRef.current?pause():start(true)}><Icon name={playing?'pause':'play'} size={18}/><span className="music-power" aria-hidden="true"/></button>
-    <audio ref={audio} preload="auto" loop onPlaying={()=>{if(analysis.current?.ctx.state!=='suspended'){playback(true);setStatus('playing');}}} onPause={()=>{playback(false);if(!wanted.current)setStatus('paused');}} onError={()=>{playback(false);setStatus('unavailable');}}><source src={ambientTrack.src} type="audio/ogg"/><source src="/music/soft-lofi.mp3" type="audio/mpeg"/></audio>
+    <audio ref={audio} src={ambientTrack.src} preload="auto" loop onPlaying={()=>{if(!wanted.current){audio.current?.pause();return;}if(analysis.current?.ctx.state!=='suspended'){playback(true);setStatus('playing');}}} onPause={()=>{playback(false);if(!wanted.current)setStatus('paused');}} onError={()=>{playback(false);setStatus('unavailable');}}/>
   </div>;
 }

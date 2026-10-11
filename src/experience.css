@@ -73,6 +73,10 @@
   background: transparent; border: 0; border-radius: 50%; cursor: pointer;
 }
 .hero-greeting:focus-visible { outline: 2px dashed var(--navy); outline-offset: -8px; }
+.speaker-toggle { position: absolute; z-index: 5; border: 0; border-radius: 9px; background: transparent; cursor: pointer; touch-action: manipulation; }
+.speaker-toggle[hidden] { display: none; }
+.speaker-toggle:focus-visible { outline: 2px solid var(--navy); outline-offset: 3px; }
+.speaker-toggle:hover { box-shadow: 0 0 0 2px #e3858455; }
 .experience-stage .scroll-cue {
   color: var(--ink);
   left: 50%;

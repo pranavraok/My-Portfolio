@@ -53,10 +53,10 @@ const code=[
   '// Design. Build. Refine. Repeat.',
 ];
 export function deskCodeState(time,height=320) {
-  const seconds=((time%36)+36)%36,progress=(1-Math.cos(seconds/36*Math.PI*2))/2;
+  const seconds=((time%300)+300)%300,progress=(1-Math.cos(seconds/300*Math.PI*2))/2;
   const scroll=progress*Math.max(0,code.length*13-(height-96));
-  const row=Math.min(code.length-1,Math.floor(scroll/13)+7+Math.floor(seconds/1.5)%3);
-  return {scroll,row,characters:Math.floor((seconds/1.5%1)*code[row].length),lineCount:code.length};
+  const row=Math.min(code.length-1,Math.floor(scroll/13)+7);
+  return {scroll,row,characters:code[row].length,lineCount:code.length};
 }
 export function drawDeskCode(ctx,w,h,time=0) {
   const state=deskCodeState(time,h);
