@@ -5,6 +5,8 @@ import Lenis from "lenis";
 import Experience from "./components/Experience.jsx";
 import MusicPlayer from "./components/MusicPlayer.jsx";
 import ContactCharacter from "./components/ContactCharacter.jsx";
+import ProjectCarousel from "./components/ProjectCarousel.jsx";
+import ProjectGallery from "./components/ProjectGallery.jsx";
 import { Icon, Logo } from "./components/Icons.jsx";
 import { profile, projects, awards } from "./data.js";
 import { finishStartup } from "./startup.js";
@@ -13,161 +15,11 @@ gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.config({ ignoreMobileResize: true });
 const external = { target: "_blank", rel: "noopener noreferrer" };
 
-function ProjectCover({ project, large = false }) {
-  if (project.cover === "tradeledger")
-    return (
-      <div
-        className="project-art trade-art"
-        aria-label="Illustration of trading performance analytics"
-      >
-        <div className="art-brand">
-          T<span>↗</span>
-        </div>
-        <div className="mock-dashboard">
-          <div className="mock-sidebar">
-            <b>TL</b>
-            <i />
-            <i />
-            <i />
-            <i />
-          </div>
-          <div className="mock-chart">
-            <span>YOUR TRADING. IN PERSPECTIVE.</span>
-            <strong>TradeLedger</strong>
-            <svg viewBox="0 0 320 80" aria-hidden="true">
-              <path
-                d="M0 68 30 60 55 66 83 42 110 51 144 25 171 39 201 16 230 24 266 8 295 15 320 2"
-                fill="none"
-                stroke="#7be2b1"
-                strokeWidth="3"
-              />
-              <path
-                d="M0 68 30 60 55 66 83 42 110 51 144 25 171 39 201 16 230 24 266 8 295 15 320 2V80H0Z"
-                fill="#7be2b1"
-                opacity=".12"
-              />
-            </svg>
-            <div className="mock-stats">
-              <i />
-              <i />
-              <i />
-            </div>
-          </div>
-        </div>
-        <span className="art-small">LOG. LEARN. IMPROVE.</span>
-      </div>
-    );
-  if (project.cover === "hostelvoice")
-    return (
-      <div
-        className="project-art hostel-art"
-        aria-label="Illustration of the HostelVoice campus platform"
-      >
-        <div className="campus-building">
-          <span>HV</span>
-          <div>
-            {Array.from({ length: 12 }, (_, i) => (
-              <i key={i} />
-            ))}
-          </div>
-          <b />
-        </div>
-        <div className="campus-bubble">
-          Hello, campus.<span>✦</span>
-        </div>
-        <div className="campus-cloud" />
-        <span className="art-small">HOSTELVOICE</span>
-      </div>
-    );
-  return (
-    <div
-      className={`project-art screenshot-art ${["MR", "ET"].includes(project.code) ? "mobile-art" : ""}`}
-      style={{ "--art-color": project.color }}
-    >
-      <div className="art-orbit" />
-      <div className="art-orbit second" />
-      <div className="screen-frame">
-        <div className="screen-dots">
-          <i />
-          <i />
-          <i />
-        </div>
-        <img
-          src={`/media/project-${project.code}.jpg`}
-          alt={`${project.title} application preview`}
-          loading={large ? "eager" : "lazy"}
-          decoding="async"
-        />
-      </div>
-      <span className="art-small">{project.title}</span>
-      <span className="art-decoration" aria-hidden="true">
-        {project.slug === "nutrigo"
-          ? "✳"
-          : project.slug === "saanvi"
-            ? "✦"
-            : "+"}
-      </span>
-    </div>
-  );
-}
-
-function ProjectCard({ project, navigate }) {
-  return (
-    <a
-      href={`/project/${project.slug}`}
-      className="project-card"
-      onClick={(event) => navigate(event, `/project/${project.slug}`)}
-    >
-      <div className="project-visual">
-        <ProjectCover project={project} />
-        <span className="project-open">
-          <Icon name="arrow" size={28} />
-        </span>
-        <span className="project-year">{project.year}</span>
-      </div>
-      <h3>{project.title}</h3>
-      <p>{project.category}</p>
-    </a>
-  );
-}
-
 function Home({ navigate, scrollTo, onPhase }) {
   return (
     <main id="main-content">
       <Experience scrollTo={scrollTo} onPhase={onPhase} />
-      <section
-        className="projects-section content-width"
-        id="projects"
-        aria-labelledby="projects-title"
-      >
-        <div className="section-intro reveal">
-          <span className="sticker">SELECTED</span>
-          <h2 id="projects-title">
-            Projects<span className="orange-dot">.</span>
-          </h2>
-          <p>Ideas, experiments, and things I’ve shipped.</p>
-        </div>
-        <div className="project-grid">
-          {projects.map((project) => (
-            <ProjectCard
-              key={project.slug}
-              project={project}
-              navigate={navigate}
-            />
-          ))}
-          <a
-            className="project-card new-project"
-            href={`mailto:${profile.email}`}
-          >
-            <div className="project-visual">
-              <span className="big-plus">+</span>
-              <span className="new-project-note">YOUR IDEA GOES HERE</span>
-            </div>
-            <h3>Start a new project</h3>
-            <p>Let’s make something good.</p>
-          </a>
-        </div>
-      </section>
+      <ProjectCarousel projects={projects} navigate={navigate} />
       <section
         className="journey-section content-width"
         aria-labelledby="journey-title"
@@ -305,8 +157,7 @@ function ProjectPage({ project, navigate }) {
           {project.year} / {project.stack[0].toUpperCase()}
         </span>
         <h1 tabIndex="-1">
-          {project.title}
-          <span className="orange-dot">.</span>
+          {project.fullTitle || project.title}
         </h1>
         <p>{project.description}</p>
         <div className="project-tags">
@@ -314,9 +165,16 @@ function ProjectPage({ project, navigate }) {
             <span key={tech}>{tech}</span>
           ))}
         </div>
+        <div className="project-actions project-hero-actions">
+          {project.links.map((link, index) => (
+            <a key={link.url} className={index === 0 ? "primary-button" : "secondary-button"} href={link.url} {...external}>
+              {link.label} <Icon name="external" size={17} />
+            </a>
+          ))}
+        </div>
       </section>
       <div className="project-page-visual content-width">
-        <ProjectCover project={project} large />
+        <ProjectGallery project={project} />
       </div>
       <section className="project-story content-width">
         <div>
@@ -326,9 +184,15 @@ function ProjectPage({ project, navigate }) {
             <br />
             to experience.
           </h2>
+          <dl className="project-facts">
+            <div><dt>Period</dt><dd>{project.period}</dd></div>
+            {project.contributors ? <div><dt>Contributors</dt><dd>{project.contributors.join(", ")}</dd></div> : null}
+            {project.association ? <div><dt>Associated with</dt><dd>{project.association}</dd></div> : null}
+          </dl>
+          <a className="project-source-link" href={project.sourceUrl} {...external}>View on LinkedIn <Icon name="external" size={13} /></a>
         </div>
         <div>
-          <p>{project.story}</p>
+          {project.story.split(/\n\s*\n/).map((paragraph, index) => <p key={index} className="project-description-paragraph">{paragraph}</p>)}
           <ul>
             {project.highlights.map((h) => (
               <li key={h}>
@@ -337,45 +201,9 @@ function ProjectPage({ project, navigate }) {
               </li>
             ))}
           </ul>
-          <div className="project-actions">
-            {project.url ? (
-              <a className="primary-button" href={project.url} {...external}>
-                Visit project <Icon name="external" size={17} />
-              </a>
-            ) : null}
-            {project.repo ? (
-              <a className="secondary-button" href={project.repo} {...external}>
-                <Icon name="github" size={18} /> View source
-              </a>
-            ) : null}
-          </div>
+          <div className="project-skills-list" aria-label="Project skills">{project.skills.map(skill => <span key={skill}>{skill}</span>)}</div>
         </div>
       </section>
-      {project.code ? (
-        <section className="project-demo content-width">
-          <div className="section-intro">
-            <span className="sticker">IN ACTION</span>
-            <h2>Take a closer look.</h2>
-            <p>The original project walkthrough.</p>
-          </div>
-          <video
-            key={project.slug}
-            controls
-            playsInline
-            preload="none"
-            poster={`/media/project-${project.code}.jpg`}
-            aria-label={`${project.title} demo video`}
-          >
-            <source
-              src={`/media/project-${project.code}.mp4`}
-              type="video/mp4"
-            />
-            Your browser doesn’t support video.{" "}
-            <a href={`/media/project-${project.code}.mp4`}>Download the demo</a>
-            .
-          </video>
-        </section>
-      ) : null}
       <a
         href={`/project/${next.slug}`}
         className="next-project content-width"
@@ -458,7 +286,7 @@ export default function App() {
     };
     window.addEventListener("popstate", pop);
     const jump = event => {
-      if(!lenis.current || !["Home","End"].includes(event.key) || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
+      if(document.querySelector("dialog[open]") || !lenis.current || !["Home","End"].includes(event.key) || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
       event.preventDefault();
       lenis.current.scrollTo(event.key === "Home" ? 0 : document.documentElement.scrollHeight, {immediate:true});
     };
@@ -478,7 +306,7 @@ export default function App() {
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const context = gsap.context(() => {
       if (!reduced) {
-        gsap.utils.toArray(".reveal, .project-card").forEach((el) =>
+        gsap.utils.toArray(".reveal, .project-card:not(.carousel-card)").forEach((el) =>
           gsap.from(el, {
             y: 35,
             opacity: 0,

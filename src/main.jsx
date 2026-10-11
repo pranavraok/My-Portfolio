@@ -5,6 +5,7 @@ import "./styles.css";
 import "./experience.css";
 import "./theme.css";
 import "./contact.css";
+import "./projects.css";
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <App />
