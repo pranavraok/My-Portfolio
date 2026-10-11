@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { createCharacter } from "./character.js";
 import { loadApprovedHead } from "./approved-avatar.js";
-import { footerGreeting,desktopFooterGreeting,footerSleepRequest } from "./footer-motion.js";
+import { footerGreeting,desktopFooterGreeting,desktopFooterAwake,footerSleepRequest } from "./footer-motion.js";
 import { watchSceneContext } from "./scene-context.js";
 
 export async function createContactScene(host, getProgress) {
@@ -91,10 +91,10 @@ export async function createContactScene(host, getProgress) {
     const rect = host.getBoundingClientRect(); width = rect.width; height = rect.height;
     if(!width || !height) return;
     mobile = width <= 600 || width / height < 1;
-    const parcelScale=mobile ? .48 : Math.min(.85,(width/height)*.45);
+    const parcelScale=mobile ? .48 : Math.min(.98,(width/height)*.52);
     packages.scale.setScalar(parcelScale);
     const halfWidth=Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*(8.5-.35)*width/height;
-    packages.position.x = mobile ? -.03 : halfWidth*.63-parcelCenter.x*parcelScale;
+    packages.position.x = mobile ? -.03 : halfWidth*.59-parcelCenter.x*parcelScale;
     renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.35 : 1.7)); renderer.setSize(width,height);
     camera.aspect = width / height; camera.updateProjectionMatrix();
   };
@@ -117,21 +117,22 @@ export async function createContactScene(host, getProgress) {
     const manualHold=data.manualTop!=null&&Math.abs(stageTop-data.manualTop)<4;
     if(data.manualTop!=null&&!manualHold)data.manualTop=null;
     const requestedSleep=manualHold?0:footerSleepRequest(stageTop,contactStage.clientHeight,viewport);
+    const wakeOnEntry=mobile ? (hasWoken?requestedSleep<=.9:requestedSleep<.30) : manualHold||desktopFooterAwake(stageTop,viewport,hasWoken);
     const manualWave=(data.waveAt ?? -100)>lastWaveRequest;
     if(manualWave){
       lastWaveRequest=data.waveAt;waveAt=t;
       if(!hasWoken||sleep>.35)wakeAt=t;
       hasWoken=true;
-    } else if(hasWoken&&requestedSleep>.9){hasWoken=false;waveAt=-100;}
-    else if(!hasWoken&&requestedSleep<.30){
-      wakeAt=t+(mobile||reduced.matches?0:1.75);
+    } else if(hasWoken&&!wakeOnEntry){hasWoken=false;waveAt=-100;}
+    else if(!hasWoken&&wakeOnEntry){
+      wakeAt=t;
       waveAt=wakeAt;hasWoken=true;
     }
     // Once the footer is revealed, finish waking even if scrolling stops.
     // A separate return threshold prevents tiny swipes from restarting it.
     const sleepTarget=hasWoken&&t>=wakeAt?0:1;
     const sleepStep=(sleepTarget-sleep)*(1-Math.exp(-delta*3.2));
-    sleep=reduced.matches?sleepTarget:sleep+THREE.MathUtils.clamp(sleepStep,-delta*(mobile?.65:.48),delta*.45);
+    sleep=reduced.matches?sleepTarget:sleep+THREE.MathUtils.clamp(sleepStep,-delta*(mobile?.65:.72),delta*.45);
     const since=t-waveAt,movement=(mobile?footerGreeting:desktopFooterGreeting)(since,sleep);
     const settle=1-Math.exp(-delta*12);
     waveBlend=reduced.matches?0:THREE.MathUtils.lerp(waveBlend,movement.wave,settle);

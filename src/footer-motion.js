@@ -7,6 +7,12 @@ export function footerSleepRequest(top,height,viewport){
   return 1-p*p*(3-2*p);
 }
 
+export function desktopFooterAwake(top,viewport,alreadyAwake=false){
+  // Wake on the first visible part of the character. A separate return
+  // threshold avoids restarting the gesture during tiny scroll movements.
+  return top<viewport*(alreadyAwake?.97:.82);
+}
+
 // Let the head lift and eyes adjust before unfolding into the approved wave.
 export function footerGreeting(seconds,sleep=0){
   const awake=1-clamp(sleep);
@@ -20,8 +26,7 @@ export function footerGreeting(seconds,sleep=0){
   };
 }
 
-// The desktop composition leaves time to read the closed eyes and resting
-// head before the character wakes, unfolds his arms and greets the visitor.
+// The head and eyes respond immediately to entry; the arms follow afterward.
 export function desktopFooterGreeting(seconds,sleep=0){
   const awake=1-clamp(sleep);
   return {
@@ -30,7 +35,7 @@ export function desktopFooterGreeting(seconds,sleep=0){
     waveTime:seconds-.45,
     blink:ease(2.40,2.53,seconds)*(1-ease(2.60,2.83,seconds)),
     stretch:ease(1.45,2.25,seconds)*(1-ease(2.50,3.15,seconds))*awake,
-    eyeHold:1-ease(.75,1.85,seconds),
+    eyeHold:1-ease(.10,1.20,seconds),
     active:seconds>=0&&seconds<11.20,
   };
 }
