@@ -101,7 +101,7 @@ export default function Experience({ scrollTo, onPhase }) {
           x: reduced ? 0 : (1 - stackReveal) * 18,
         });
         gsap.set(mobileCard, {
-          opacity: identityReveal,
+          autoAlpha: identityReveal,
           y: reduced ? 0 : (1 - identityReveal) * 16,
         });
         gsap.set(status, { opacity: smooth(0.75, 1.02, page) });
@@ -116,7 +116,9 @@ export default function Experience({ scrollTo, onPhase }) {
       });
       update(trigger);
     }, target);
-    return () => context.revert();
+    const refreshMusicLayout=()=>ScrollTrigger.refresh();
+    window.addEventListener('portfolio-music-layout',refreshMusicLayout);
+    return () => {window.removeEventListener('portfolio-music-layout',refreshMusicLayout);context.revert();};
   }, [onPhase]);
   return (
     <section
@@ -134,7 +136,7 @@ export default function Experience({ scrollTo, onPhase }) {
               <span>Pranav</span>
               <span>Rao K</span>
             </h1>
-            <div className="role-sticker"><DecodedText text="DEVELOPER & ML ENGINEER" delay={300} /></div>
+            <div className="role-sticker"><DecodedText text="DEVELOPER & PRODUCT BUILDER" delay={300} /></div>
           </div>
         </div>
         <Scene mode="experience" timeline={timeline} />

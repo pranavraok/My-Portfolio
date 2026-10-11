@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { drawComputerRadio, speakerState } from "./music.js";
 import { drawDeskCode } from "./desk-display.js";
 import { clone as cloneSkeleton } from "three/addons/utils/SkeletonUtils.js";
-import { createCharacter, walkPath } from "./character.js";
+import { createHeroCharacter, walkPath } from "./hero-character.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { createContactScene } from "./contact-scene.js";
 
@@ -140,7 +140,7 @@ export function createScene(host, mode, getProgress) {
   scene.add(keyLight);
   scene.add(new THREE.DirectionalLight("#c1ddd0", 1.1));
 
-  const person = createCharacter(
+  const person = createHeroCharacter(
     { mesh, mat, box, ball, cylinder, rod, texture, panel },
     !hologram,
   );
@@ -196,7 +196,7 @@ export function createScene(host, mode, getProgress) {
           0.005,
         );
     mouse = ball([0.12, 0.045, 0.19], "#dae0df", objects, [.79, 1.745, .22]);
-    person.root.position.set(0, .22, .86);
+    person.root.position.set(0, person.rigDimensions.seatedRootY, .86);
     person.root.rotation.y = Math.PI;
     person.root.scale.setScalar(1);
 
@@ -686,6 +686,8 @@ export function createScene(host, mode, getProgress) {
   };
   window.addEventListener("pointermove", move, { passive: true });
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const gazePoint=new THREE.Vector3(),headPoint=new THREE.Vector3(),gazeDirection=new THREE.Vector3(),bodyInverse=new THREE.Quaternion();
+  let gazeYaw=0,gazePitch=0;
   let frame,
     lastTime = 0,
     introStart = null;
@@ -723,9 +725,6 @@ export function createScene(host, mode, getProgress) {
       smoothedPointer.x = mix(smoothedPointer.x, pointer.x, follow);
       smoothedPointer.y = mix(smoothedPointer.y, pointer.y, follow);
       const idle = 1-smooth(.14,.5,page);
-      person.head.rotation.y = Math.sin(t*.52)*.042 + Math.sin(t*.19)*.025 + smoothedPointer.x*.11;
-      person.head.rotation.x = (1-standing)*(.055+Math.sin(t*1.25)*.024)+smoothedPointer.y*.045;
-      person.head.rotation.z = Math.sin(t*.72)*.018*idle;
       person.body.rotation.z = Math.sin(t*.52)*.008*(1-smooth(.08,.3,page));
       person.body.scale.y = 1+Math.sin(t*1.25)*.0025*idle;
       person.arms[0].rotation.x += stride * 0.34;
@@ -738,7 +737,7 @@ export function createScene(host, mode, getProgress) {
     const seatTurn = facing-Math.PI;
     person.root.position.set(
       -.22*Math.sin(seatTurn)*(1-stepping),
-      mix(.22,.12,standing)+carry+stepping*.17,
+      mix(person.rigDimensions.seatedRootY,.12,standing)+carry+stepping*.17,
       mix(1.08-.22*Math.cos(seatTurn),3.2,walkPath(stepping).advance),
     );
     person.root.rotation.y = facing + smooth(.94,1.12,page)*scanProgress*Math.PI*2;
@@ -769,8 +768,8 @@ export function createScene(host, mode, getProgress) {
       ? mix(3.7, 3.4, cameraWalk)
       : mix(3.8, 3.05, cameraWalk);
     const cameraZ = mobile
-      ? mix(16.2, 15.2, cameraWalk)
-      : mix(9.6, 12.2, cameraWalk);
+      ? mix(15.0, 15.8, cameraWalk)
+      : mix(9.6, 12.8, cameraWalk);
     camera.position.set(
       cameraX + (reduced ? 0 : smoothedPointer.x * 0.1),
       cameraY,
@@ -790,6 +789,23 @@ export function createScene(host, mode, getProgress) {
       width,
       height,
     );
+    if(!reduced) {
+      // World-space targets make the gaze land on each monitor, not drift.
+      const cycle=((time-introStart)/1000)%18;
+      const right=cycle<5?0:cycle<8?smooth(5,8,cycle):cycle<13?1:1-smooth(13,17,cycle);
+      objects.localToWorld(gazePoint.set(mix(-1.05,1.01,right),2.38,-.79));
+      gazePoint.lerp(camera.position,1-workBlend);
+      person.root.updateMatrixWorld(true);
+      person.head.getWorldPosition(headPoint);
+      person.body.getWorldQuaternion(bodyInverse).invert();
+      gazeDirection.copy(gazePoint).sub(headPoint).applyQuaternion(bodyInverse);
+      const yaw=THREE.MathUtils.clamp(Math.atan2(gazeDirection.x,gazeDirection.z),-.62,.62);
+      const pitch=THREE.MathUtils.clamp(Math.atan2(-gazeDirection.y,Math.hypot(gazeDirection.x,gazeDirection.z)),-.12,.23);
+      const settle=1-Math.exp(-delta*3.2);
+      gazeYaw=mix(gazeYaw,yaw,settle);gazePitch=mix(gazePitch,pitch,settle);
+      person.head.rotation.set(gazePitch+Math.sin(t*.7)*.008,gazeYaw,Math.sin(t*.63)*.009);
+      host.dataset.gaze=workBlend>.9?(right<.2?'left-monitor':right>.8?'right-monitor':'between-monitors'):'visitor';
+    } else {person.head.rotation.set(0,0,0);host.dataset.gaze='still';}
     objects.position.y = roomLift;
     objects.rotation.z = -walk * 0.035;
     objects.scale.setScalar(1 - walk * 0.055);
@@ -817,7 +833,7 @@ export function createScene(host, mode, getProgress) {
         material.userData.scanUniforms.uTime.value = t;
         material.userData.scanUniforms.uOpacity.value = reveal;
       }
-      const scanHeight = mix(0.28, 3.85, scanProgress);
+      const scanHeight = mix(0.28, person.rigDimensions.standingHeight+.32, scanProgress);
       const beam = scanner.getObjectByName("scan-beam");
       const beamHeight = Math.max(0.02, scanHeight - 0.28);
       beam.scale.y = beamHeight / 3.35;

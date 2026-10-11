@@ -1,6 +1,8 @@
-// Add the selected favorites here once Pranav supplies the tracks.
-// Each local track uses { id, title, artist, src: '/music/filename.mp3' }.
-export const favoriteTracks = [];
+// Stream through the artist's visible player; no recording is copied or rehosted.
+export const favoriteTracks = [{
+  id: 'baarishein', title: 'Baarishein', artist: 'Anuv Jain', provider: 'soundcloud',
+  href: 'https://soundcloud.com/anuv-jain/baarishein-anuv-jain', loop: true,
+}];
 export const ambientTrack = {
   id: "window-light",
   title: "Window Light",
@@ -13,8 +15,8 @@ export const ambientTrack = {
 // Shared with the desk monitor. Audio analysis stays out of React's render loop.
 export const speakerState = {
   playing: false,
-  title: ambientTrack.title,
-  artist: ambientTrack.artist,
+  title: favoriteTracks[0].title,
+  artist: favoriteTracks[0].artist,
   level: 0,
   bands: Array(8).fill(0),
   volume: 0.22,

@@ -470,7 +470,7 @@ export default function App() {
   useEffect(() => {
     document.title = project
       ? `${project.title} — Pranav Rao K`
-      : "Pranav Rao K — Developer & ML Engineer";
+      : "Pranav Rao K — Developer & Product Builder";
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const context = gsap.context(() => {
       if (!reduced) {
