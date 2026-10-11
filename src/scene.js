@@ -746,6 +746,7 @@ export async function createScene(host, mode, getProgress) {
     const helloWeight = 1-smooth(data.greetAt > introStart ? .12 : 0,data.greetAt > introStart ? .2 : .07,page);
     const greeting=heroGreeting(intro,reduced?0:helloWeight);
     const {hands:helloHands,turn:helloTurn,wave:helloWave}=greeting;
+    const rising=chairRise(standing);
     host.dataset.helloActive=String(!reduced&&greeting.active);
     person.pose(standing);
     person.root.scale.setScalar(1);
@@ -760,7 +761,7 @@ export async function createScene(host, mode, getProgress) {
       smoothedPointer.y = mix(smoothedPointer.y, pointer.y, follow);
       const idle = 1-smooth(.14,.5,page);
       person.body.rotation.z = Math.sin(t*.52)*.008*(1-smooth(.08,.3,page))-.024*helloWave;
-      const riseLean=chairRise(standing).lean*(1-stepping);
+      const riseLean=rising.lean*(1-stepping);
       person.body.rotation.x = riseLean+.018*helloWave;
       // Hinge at the hips: rotating around the floor dragged the shoulders
       // too far forward and made the elbows whip around fixed armrest hands.
@@ -779,9 +780,9 @@ export async function createScene(host, mode, getProgress) {
     contactShadow.material.opacity=.19*smooth(.02,.16,roomDeparture);
     const facing = mix(Math.PI, .04, chairTurn) + helloTurn*(.5-Math.PI);
     const seatTurn = facing-Math.PI;
-    const kneeBend=(1-standing)*Math.PI/2;
+    const kneeBend=(1-rising.extension)*Math.PI/2;
     const seatRootZ=1.08-.22*Math.cos(seatTurn);
-    const risenRootZ=seatRootZ+person.rigDimensions.thigh*(1-Math.sin(kneeBend));
+    const risenRootZ=seatRootZ+rising.forward+person.rigDimensions.thigh*(1-Math.sin(kneeBend));
     person.root.position.set(
       -.22*Math.sin(seatTurn)*(1-stepping),
       -.132,
@@ -791,7 +792,7 @@ export async function createScene(host, mode, getProgress) {
     if(standing>0&&standing<1&&stepping<.01){
       person.root.updateMatrixWorld(true);
       for(const leg of person.legs){
-        const planted=new THREE.Vector3(leg.position.x,.16,person.rigDimensions.thigh*Math.sin(kneeBend));
+        const planted=new THREE.Vector3(leg.position.x,.16,person.rigDimensions.thigh*Math.sin(kneeBend)-rising.forward);
         person.root.localToWorld(planted);person.body.worldToLocal(planted);planted.sub(leg.position);
         const vertical=-planted.y,z=planted.z,{thigh,shin}=person.rigDimensions,distance=Math.min(thigh+shin,Math.hypot(vertical,z));
         const knee=Math.acos(THREE.MathUtils.clamp((distance*distance-thigh*thigh-shin*shin)/(2*thigh*shin),-1,1));
@@ -816,11 +817,11 @@ export async function createScene(host, mode, getProgress) {
     }
     if(chairSeat){
       chairSeat.updateWorldMatrix(true,false);
-      person.arms.forEach((arm,index)=>chairSeat.localToWorld(armrestWrists[index].set(-arm.userData.side*.55,1.367,-.375)));
+      person.arms.forEach((arm,index)=>chairSeat.localToWorld(armrestWrists[index].set(-arm.userData.side*.55,1.385,-.405)));
       const restBlend=standing===0 ? 1-workBlend : 0;
       if(standing===0)person.seatedHands?.(workBlend,armrestWrists,[mouseWrist,keyboardWrist],reduced?0:t);
       if(standing>0&&standing<1)person.risePose?.(standing,armrestWrists);
-      if((restBlend>.98&&helloWave<.001) || (standing>0&&standing<=.30)){const wrists=person.getWorldWrists();host.dataset.armrestContact=Math.max(...wrists.map((w,index)=>w.distanceTo(armrestWrists[index]))).toFixed(4);}
+      if((restBlend>.98&&helloWave<.001) || (standing>0&&standing<=.42)){const wrists=person.getWorldWrists();host.dataset.armrestContact=Math.max(...wrists.map((w,index)=>w.distanceTo(armrestWrists[index]))).toFixed(4);}
       else host.dataset.armrestContact='released';
       host.dataset.rise=standing.toFixed(3);
       host.dataset.handRelease=chairRise(standing).release.toFixed(3);

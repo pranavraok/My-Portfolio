@@ -126,8 +126,9 @@ export default function Experience({ scrollTo, onPhase }) {
         let step=(requestedPage-displayPage)*(1-Math.exp(-delta*9));
         // A short touch swipe must leave time to plant the hands and stand.
         // Skip the speed limit when scrolling beyond the workspace entirely.
-        if(requestedPage<=.65&&displayPage<=.65){
-          const limit=delta*.32;
+        if(requestedPage<=.95&&displayPage<=.65){
+          const riseOrSit=displayPage>.18&&displayPage<.46;
+          const limit=delta*(riseOrSit ? .14 : .26);
           step=Math.max(-limit,Math.min(limit,step));
         }
         displayPage+=step;
