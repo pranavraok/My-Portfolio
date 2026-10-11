@@ -32,8 +32,8 @@ The production build is written to `dist`. Vercel uses the configuration in `ver
 - `src/contact.css`: responsive contact scene with the heading at upper left, parcels at lower left, a centered character, and a back-to-top footer.
 - `src/components/DecodedText.jsx`: motion-aware text decoding for the opening role and hologram labels.
 - `src/theme.css`: the personalized mint, forest-green, and coral palette.
-- `src/components/MusicPlayer.jsx` and `src/music.js`: one locally hosted, lyric-free Indian instrumental with a soft lo-fi mix, native looped playback, remembered pause preference, a small header button, and a clickable 3D desk speaker. No external music widget is loaded. The speaker pulses follow local audio analysis.
-- `public/music/indian-lofi.mp3` and `public/music/CREDITS.txt`: HappySoulMusic's CC BY 4.0 instrumental with tempo, EQ, and room-echo adaptation. Creator and license credits appear in the footer.
+- `src/components/MusicPlayer.jsx` and `src/music.js`: the owner's selected Tera Mera Rishta Purana (Slowed + Reverb) recording, hosted locally with native looped playback, remembered pause preference, a small header button, and a clickable 3D desk speaker. No external music widget is loaded. The speaker pulses follow local audio analysis.
+- `public/music/tera-mera-rishta-lofi.mp3` and `public/music/CREDITS.txt`: the specific Curova Lofi upload selected by the owner after they stated permission had been granted, converted to stereo MP3 with gentle endpoint fades. This version contains vocals and replaces the previously active Indian instrumental. The footer links to the selected source; the archived CC BY 4.0 instrumental remains credited in CREDITS.txt.
 - `src/desk-display.js`: a complete 52-line code editor with a blinking cursor and a gentle 300-second up/down scroll. Its clock advances only while the workspace and monitor are visible and the character is working; lines are not erased and retyped.
 - `public/music/studio-lofi.wav` and `scripts/compose-lofi.mjs`: seamless stereo piano, bass, and brushed drums loop with its reproducible composition source.
 - `src/App.jsx`: page layouts, navigation, route transitions, and persistent music controls.
@@ -46,7 +46,7 @@ The original assets remain in `src/img`, `src/vids`, and `src/pdf` for reference
 
 Updated resume in `src/pdf/PRANAV RAO K RESUME.pdf`, public LinkedIn profile/search extracts at https://www.linkedin.com/in/pranav-rao-k/, and GitHub at https://github.com/pranavraok. Recent projects include Mentora, NutriGo, HostelVoice, and TradeLedger. The exact TradeLedger role was not available publicly and is not asserted.
 
-The visual reference was https://david-hckh.com/. No models, code, or music from that website are used. The approved avatar head was generated in Meshy from the user's reference; its movable body and scene are built in Three.js. The downloaded background instrumental is credited under CC BY 4.0.
+The visual reference was https://david-hckh.com/. No models, code, or music from that website are used. The approved avatar head was generated in Meshy from the user's reference; its movable body and scene are built in Three.js. The current background song source is https://www.youtube.com/watch?v=g7wCkTvU_VY, selected by the owner in this session with their stated permission for use. It is not represented as CC BY or as Tum Se Hi instrumental.
 
 ## Accessibility and performance
 

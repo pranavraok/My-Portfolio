@@ -1,9 +1,9 @@
 export const ambientTrack = {
-  id: "indian-instrumental",
-  title: "Indian Lo-fi",
-  artist: "HappySoulMusic · Soft mix",
+  id: "tera-mera-rishta-lofi",
+  title: "Tera Mera Rishta",
+  artist: "Mustafa Zahid · Curova Lofi",
   kind: "lofi",
-  src: "/music/indian-lofi.mp3",
+  src: "/music/tera-mera-rishta-lofi.mp3",
   loop: true,
 };
 

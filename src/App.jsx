@@ -270,7 +270,7 @@ function Contact({ scrollTo }) {
         }}><Icon name="down" size={25}/></a>
         <span>Made with curiosity & code.</span>
         <span className="avatar-credit">Avatar created with <a href="https://www.meshy.ai/" {...external}>Meshy</a>.</span>
-        <span className="avatar-credit">Music: <a href="https://happysoulmusic.com/audio/warm_kitchen_classic_indian_instruments_no_vocals_-mp3/" {...external}>Warm Kitchen — HappySoulMusic</a> · <a href="https://creativecommons.org/licenses/by/4.0/" {...external}>CC BY 4.0</a> · Lo-fi mix.</span>
+        <span className="avatar-credit">Music: <a href="https://www.youtube.com/watch?v=g7wCkTvU_VY" {...external}>Tera Mera Rishta — Mustafa Zahid · Curova Lofi</a>.</span>
         <span>© {new Date().getFullYear()} Pranav Rao K</span>
       </footer>
     </section>

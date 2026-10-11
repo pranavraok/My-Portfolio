@@ -1,9 +1,23 @@
-Background music: Warm kitchen, classic Indian instruments (no vocals)
+Current background music: Tera Mera Rishta Purana (Slowed + Reverb)
+Performer: Mustafa Zahid
+Selected upload: Curova Lofi
+Source: https://www.youtube.com/watch?v=g7wCkTvU_VY
+Local file: tera-mera-rishta-lofi.mp3
+
+The portfolio owner supplied this specific source, stated that permission
+had been granted, and selected it in place of Tum Se Hi instrumental.
+This recording contains vocals. It is not represented as Creative Commons
+or as an instrumental. All recording and composition rights remain with
+their respective owners.
+
+The source audio was converted to a 160 kbps stereo MP3 with gentle
+endpoint fades for background looping. Playback uses the existing small
+play/pause control and the physical desk speaker toggle.
+
+Archived, inactive track: Warm kitchen, classic Indian instruments (no vocals)
 Creator: HappySoulMusic / happysoulmusic.com
 Source: https://happysoulmusic.com/audio/warm_kitchen_classic_indian_instruments_no_vocals_-mp3/
 License: Creative Commons Attribution 4.0 International
 https://creativecommons.org/licenses/by/4.0/
-
-The locally hosted indian-lofi.mp3 is a softer background adaptation:
-94% tempo, gentle low-pass/high-pass EQ, light room echo, and endpoint fades.
-The original work is a calm Indian instrumental without vocals.
+The retained indian-lofi.mp3 is a 94% tempo adaptation with gentle EQ,
+light room echo, and endpoint fades. It is not loaded by the website.

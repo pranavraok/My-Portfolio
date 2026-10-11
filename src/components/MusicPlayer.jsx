@@ -43,7 +43,7 @@ export default function MusicPlayer(){
     window.addEventListener('portfolio-toggle-audio',toggle);
     return()=>{++generation.current;document.removeEventListener('pointerdown',unlock);document.removeEventListener('keydown',unlock);window.removeEventListener('portfolio-toggle-audio',toggle);cancelAnimationFrame(frame.current);audio.current?.pause();analysis.current?.ctx.close();analysis.current=null;speakerState.playing=false;speakerState.level=0;};
   },[]);
-  return <div className="music-shell" data-provider="local-instrumental" data-playing={playing} data-status={status}>
+  return <div className="music-shell" data-provider="local-audio" data-playing={playing} data-status={status}>
     <button ref={button} className={`sound-button music-toggle ${playing?'is-playing':''}`} aria-label={playing?'Pause background music':'Play background music'} aria-pressed={playing} title={playing?'Pause background music':'Play background music'} onClick={()=>playingRef.current?pause():start(true)}><Icon name={playing?'pause':'play'} size={18}/><span className="music-power" aria-hidden="true"/></button>
     <audio ref={audio} src={ambientTrack.src} preload="auto" loop onPlaying={()=>{if(!wanted.current){audio.current?.pause();return;}if(analysis.current?.ctx.state!=='suspended'){playback(true);setStatus('playing');}}} onPause={()=>{playback(false);if(!wanted.current)setStatus('paused');}} onError={()=>{playback(false);setStatus('unavailable');}}/>
   </div>;
