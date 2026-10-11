@@ -7,6 +7,14 @@ import { profile } from "../data.js";
 import DecodedText from "./DecodedText.jsx";
 import { speakerState, toggleBackgroundMusic } from "../music.js";
 
+const skills = [
+  "Product Development",
+  "Machine Learning Enthusiast",
+  "AI Agents & Hardware Automation",
+  "UI/UX Design",
+  "Blockchain",
+];
+
 const clamp = (value) => Math.min(1, Math.max(0, value));
 const smooth = (a, b, value) => {
   const t = clamp((value - a) / (b - a));
@@ -204,11 +212,7 @@ export default function Experience({ scrollTo, onPhase }) {
           <div className="holo-label holo-stack">
             <strong><DecodedText text="Skills" active={percent > 55} /></strong>
             <ul>
-              <li>React & Next.js</li>
-              <li>Flutter & Supabase</li>
-              <li>Python & Machine Learning</li>
-              <li>Computer Vision & TensorFlow</li>
-              <li>AI Agents & n8n</li>
+              {skills.map((skill) => <li key={skill}>{skill}</li>)}
             </ul>
             <a href={profile.resume} download>
               Get my resume <Icon name="arrow" size={15} />
@@ -238,11 +242,7 @@ export default function Experience({ scrollTo, onPhase }) {
           >
             <strong>Skills</strong>
             <ul>
-              <li>React & Next.js</li>
-              <li>Flutter & Supabase</li>
-              <li>Python & Machine Learning</li>
-              <li>Computer Vision & TensorFlow</li>
-              <li>AI Agents & n8n</li>
+              {skills.map((skill) => <li key={skill}>{skill}</li>)}
             </ul>
           </div>
         </div>
