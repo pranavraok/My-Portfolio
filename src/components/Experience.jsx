@@ -124,11 +124,11 @@ export default function Experience({ scrollTo, onPhase }) {
         // when a wheel tick or a touch swipe jumps across several poses.
         const delta=Math.min(deltaMs,50)/1000;
         let step=(requestedPage-displayPage)*(1-Math.exp(-delta*9));
-        // A short touch swipe must leave time to plant the hands and stand.
+        // A short touch swipe must leave time to swivel, stand and step.
         // Skip the speed limit when scrolling beyond the workspace entirely.
-        if(requestedPage<=.95&&displayPage<=.65){
+        if(requestedPage<=1.15&&displayPage<=.94){
           const riseOrSit=displayPage>.18&&displayPage<.46;
-          const limit=delta*(riseOrSit ? .14 : .26);
+          const limit=delta*(riseOrSit ? .14 : .18);
           step=Math.max(-limit,Math.min(limit,step));
         }
         displayPage+=step;

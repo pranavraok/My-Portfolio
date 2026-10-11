@@ -37,16 +37,26 @@ export function chairRise(standing){
     forward:.085*interval(.025,.20,standing)*(1-extension),
     release:interval(.42,.86,standing),
     lean:.36*interval(.015,.27,standing)*(1-interval(.43,.96,standing)),
+    cushion:.008*Math.sin(Math.PI*interval(0,.18,standing))**2,
   };
 }
 
-// The body glides through the steps; each foot eases into and out of its plant.
+export function chairSwivel(turn){
+  const envelope=Math.sin(Math.PI*turn);
+  return {
+    angle:(.04-Math.PI)*turn-.028*Math.sin(2*Math.PI*turn)*envelope,
+    torsoLag:.055*envelope,
+    footLag:.14*envelope,
+  };
+}
+
+// Both feet share the load briefly before the next foot leaves the floor.
 export function walkPath(amount) {
   const phase = THREE.MathUtils.clamp(amount, 0, 1) * 4;
   const step = Math.min(3, Math.floor(phase));
-  const raw=THREE.MathUtils.clamp(phase-step,0,1),fraction=raw*raw*raw*(10+raw*(-15+6*raw));
+  const raw=THREE.MathUtils.clamp(phase-step,0,1),fraction=interval(.16,.88,raw);
   const t=phase/4,advance=t*t*(3-2*t);
-  return { step, fraction, advance };
+  return { step, raw, fraction, advance };
 }
 
 /** Original stylized human hero, with a separate adult rig and wearable accessories. */
@@ -365,7 +375,7 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
   function pose(amount){
     const standing=clamp(amount,1),rising=chairRise(standing),angle=(1-rising.extension)*Math.PI/2,armStanding=rising.release;
     body.position.x=0;
-    body.position.y=-THIGH*(1-Math.cos(angle));
+    body.position.y=-THIGH*(1-Math.cos(angle))-rising.cushion;
     body.position.z=0;
     for(const leg of legs){leg.rotation.set(-angle,0,0);leg.userData.knee.rotation.set(angle,0,0);leg.userData.ankle.rotation.set(0,0,0);}
     for(const [index,arm] of arms.entries()){
@@ -533,44 +543,74 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
     update(); return sleep;
   }
 
+  // Solve against a world-space contact so a moving pelvis cannot skate
+  // the supporting foot along the floor.
+  function reachLeg(leg,target,orientation){
+    const ankleTarget=root.localToWorld(target.clone());body.worldToLocal(ankleTarget);ankleTarget.sub(leg.position);
+    const distance=THREE.MathUtils.clamp(ankleTarget.length(),.071,THIGH+SHIN-.00001),axis=ankleTarget.normalize();
+    const along=(THIGH*THIGH-SHIN*SHIN+distance*distance)/(2*distance),height=Math.sqrt(Math.max(0,THIGH*THIGH-along*along));
+    const kneePole=new THREE.Vector3(0,0,1).addScaledVector(axis,-axis.z).normalize();
+    const upper=axis.clone().multiplyScalar(along).addScaledVector(kneePole,height),lower=axis.clone().multiplyScalar(distance).sub(upper);
+    const hipRotation=new THREE.Quaternion().setFromUnitVectors(DOWN,upper.normalize()),shinRotation=new THREE.Quaternion().setFromUnitVectors(DOWN,lower.normalize());
+    leg.quaternion.copy(hipRotation);leg.userData.knee.quaternion.copy(hipRotation).invert().multiply(shinRotation);
+    const inverseBody=body.getWorldQuaternion(new THREE.Quaternion()).invert();
+    const footOrientation=inverseBody.multiply(root.getWorldQuaternion(new THREE.Quaternion())).multiply(orientation);
+    leg.userData.ankle.quaternion.copy(shinRotation).invert().multiply(footOrientation);
+  }
+
+  function swivelPose(turn){
+    const {footLag}=chairSwivel(turn),envelope=Math.sin(Math.PI*turn);
+    body.updateWorldMatrix(true,false);
+    legs.forEach((leg,index)=>{
+      const angle=footLag+leg.userData.side*.035*Math.sin(2*Math.PI*turn)*envelope;
+      const foot=new THREE.Vector3(leg.position.x,0,THIGH+.22).applyAxisAngle(new THREE.Vector3(0,1,0),angle);
+      foot.y=.16+.025*Math.sin(2*Math.PI*turn+index*Math.PI/2)**2*envelope;
+      foot.z-=.22;
+      reachLeg(leg,foot,new THREE.Quaternion().setFromEuler(new THREE.Euler(0,angle,0)));
+    });
+    update();
+  }
+
   function walkPose(amount, travel=1.7){
     const t=clamp(amount),envelope=Math.sin(Math.PI*t);
-    const {step,fraction,advance}=walkPath(t);
+    const {step,raw,fraction,advance}=walkPath(t);
     const feet=legs.map(leg=>{
       const left=leg.userData.side<0;
       const active=left ? step===0 || step===2 : step===1 || step===3;
       const starts=left ? [0,1/3,1/3,1] : [0,0,2/3,2/3];
       const ends=left ? [1/3,1/3,1,1] : [0,2/3,2/3,1];
       const plant=THREE.MathUtils.lerp(starts[step],ends[step],fraction);
-      const roll=active?Math.sin(Math.PI*fraction*2)*.16:0;
-      return {leg,z:(plant-advance)*travel,lift:active?Math.sin(Math.PI*fraction)**2*.105+Math.abs(roll)*.17:0,roll};
+      const toeOff=.22*interval(.04,.16,raw)*(1-interval(.24,.48,raw));
+      const heelLanding=-.12*interval(.60,.84,raw)*(1-interval(.88,1,raw));
+      const roll=active ? toeOff+heelLanding : 0;
+      // Rotate around the toe at push-off and around the heel at landing.
+      // The ankle alone is not a ground pivot: it drove the clog sole
+      // through the floor in the previous sine-wave foot rotation.
+      const pivot=roll>0?.402:-.200;
+      const pivotY=.16*(Math.cos(roll)-1)+pivot*Math.sin(roll);
+      const pivotZ=pivot*(1-Math.cos(roll))+.16*Math.sin(roll);
+      const clearance=active?.085*Math.sin(Math.PI*raw)**1.2*interval(.10,.24,raw)*(1-interval(.78,.94,raw)):0;
+      return {leg,z:(plant-advance)*travel+pivotZ,lift:clearance+pivotY,roll};
     });
     const reach=Math.max(...feet.map(foot=>Math.abs(foot.z)));
-    body.position.y=Math.min(-.025*envelope,Math.sqrt(Math.max(.01,(THIGH+SHIN)**2-reach*reach))-(THIGH+SHIN)-.005*envelope);
-    const gait=(step+fraction)*Math.PI;
-    body.position.x=Math.sin(gait)*.024*envelope;
-    body.rotation.set(0,0,Math.sin(gait)*.014*envelope);body.scale.y=1;
+    const lead=(feet[0].z-feet[1].z)/(travel/3);
+    const load=Math.sin(Math.PI*raw)**2*envelope;
+    body.position.y=Math.min(-.012*envelope-.018*load,Math.sqrt(Math.max(.01,(THIGH+SHIN)**2-reach*reach))-(THIGH+SHIN)-.006*envelope);
+    body.position.x=(step%2===0?.021:-.021)*load;
+    body.rotation.set(.018*envelope,-.025*lead*envelope,(step%2===0?-.010:.010)*load);body.scale.y=1;
     body.updateWorldMatrix(true,false);
-    const inverseBody=body.getWorldQuaternion(new THREE.Quaternion()).invert(),rootOrientation=root.getWorldQuaternion(new THREE.Quaternion());
     for(const {leg,z,lift,roll} of feet){
-      const ankleTarget=root.localToWorld(new THREE.Vector3(leg.position.x,.16+lift,z));body.worldToLocal(ankleTarget);ankleTarget.sub(leg.position);
-      const distance=THREE.MathUtils.clamp(ankleTarget.length(),.071,THIGH+SHIN-.00001),axis=ankleTarget.normalize();
-      const along=(THIGH*THIGH-SHIN*SHIN+distance*distance)/(2*distance),height=Math.sqrt(Math.max(0,THIGH*THIGH-along*along));
-      const kneePole=new THREE.Vector3(0,0,1).addScaledVector(axis,-axis.z).normalize();
-      const upper=axis.clone().multiplyScalar(along).addScaledVector(kneePole,height),lower=axis.clone().multiplyScalar(distance).sub(upper);
-      const hipRotation=new THREE.Quaternion().setFromUnitVectors(DOWN,upper.normalize()),shinRotation=new THREE.Quaternion().setFromUnitVectors(DOWN,lower.normalize());
-      leg.quaternion.copy(hipRotation);leg.userData.knee.quaternion.copy(hipRotation).invert().multiply(shinRotation);
-      const footOrientation=inverseBody.clone().multiply(rootOrientation).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(roll,leg.userData.side*.035,0)));
-      leg.userData.ankle.quaternion.copy(shinRotation).invert().multiply(footOrientation);
+      reachLeg(leg,new THREE.Vector3(leg.position.x,.16+lift,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(roll,0,0)));
     }
-    // Small counter-swings keep the adult gait relaxed without moving a wrist
-    // independently from the shoulder/elbow hierarchy.
-    const swing=Math.sin(gait)*envelope;
+    // The arm opposite the leading foot comes forward. A soft elbow and
+    // small wrist counter-rotation keep the hands relaxed.
+    const swing=THREE.MathUtils.clamp(lead,-1,1)*envelope;
     for(const [index,arm] of arms.entries()){
       arm.quaternion.copy(relaxedTargets[index].upper);
-      arm.rotation.x+=arm.userData.side*.15*swing;
-      arm.userData.elbow.quaternion.copy(relaxedTargets[index].elbow);arm.userData.elbow.rotation.x-=.05*Math.abs(swing);
+      arm.rotation.x-=arm.userData.side*.22*swing;
+      arm.userData.elbow.quaternion.copy(relaxedTargets[index].elbow);arm.userData.elbow.rotation.x-=.055*Math.abs(swing);
       arm.userData.hand.quaternion.copy(relaxedTargets[index].hand);
+      arm.userData.hand.rotation.x+=arm.userData.side*.025*swing;
     }
     update(); return t;
   }
@@ -582,5 +622,5 @@ export function createAvatarBody({ mesh, mat, box, rod, texture, headTemplate, f
   function blinkPose(amount){return headBlink(amount);}
   function updateFace(seconds=0){const close=headUpdateFace(seconds,faceSleep);update();return close;}
   function setFaceMap(){return false;}
-  return {root,body,head,arms,legs,pose,portraitPose,greetPose,restPose,walkPose,deskPose,armrestPose,seatedHands,risePose,glasses,eyes,rigDimensions,getWorldWrists,faceMesh,faceBounds,faceUV:mapping,setFaceMap,headphones,blinkPose,updateFace};
+  return {root,body,head,arms,legs,pose,portraitPose,greetPose,restPose,walkPose,swivelPose,deskPose,armrestPose,seatedHands,risePose,glasses,eyes,rigDimensions,getWorldWrists,faceMesh,faceBounds,faceUV:mapping,setFaceMap,headphones,blinkPose,updateFace};
 }

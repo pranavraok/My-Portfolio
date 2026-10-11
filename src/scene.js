@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { drawComputerRadio, speakerState } from "./music.js";
 import { drawDeskCode, deskCodeState } from "./desk-display.js";
 import { clone as cloneSkeleton } from "three/addons/utils/SkeletonUtils.js";
-import { createHeroCharacter, walkPath, heroGreeting, waveMotion, chairRise } from "./hero-character.js";
+import { createHeroCharacter, walkPath, heroGreeting, waveMotion, chairRise, chairSwivel } from "./hero-character.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { createContactScene } from "./contact-scene.js";
 import { loadApprovedHead } from "./approved-avatar.js";
@@ -741,19 +741,16 @@ export async function createScene(host, mode, getProgress) {
     const cameraWalk = smooth(0.08, 0.96, page);
     const chairTurn = smooth(0.015, 0.19, page);
     const standing = smooth(0.20, 0.44, page);
-    const stepping = smooth(0.48, 0.90, page);
+    const stepping = clamp((page-.48)/.42);
     const intro = (time-Math.max(introStart,data.greetAt || 0))/1000;
     const helloWeight = 1-smooth(data.greetAt > introStart ? .12 : 0,data.greetAt > introStart ? .2 : .07,page);
     const greeting=heroGreeting(intro,reduced?0:helloWeight);
     const {hands:helloHands,turn:helloTurn,wave:helloWave}=greeting;
     const rising=chairRise(standing);
+    const swivel=chairSwivel(chairTurn);
     host.dataset.helloActive=String(!reduced&&greeting.active);
     person.pose(standing);
     person.root.scale.setScalar(1);
-    const stride =
-      Math.sin(stepping * Math.PI * 4) *
-      smooth(0.32, 0.43, page) *
-      (1 - smooth(0.76, 0.87, page));
     if(reduced){person.body.rotation.set(0,0,0);person.body.scale.y=1;}
     if (!reduced) {
       const follow = 1-Math.exp(-delta*3.6);
@@ -762,33 +759,33 @@ export async function createScene(host, mode, getProgress) {
       const idle = 1-smooth(.14,.5,page);
       person.body.rotation.z = Math.sin(t*.52)*.008*(1-smooth(.08,.3,page))-.024*helloWave;
       const riseLean=rising.lean*(1-stepping);
-      person.body.rotation.x = riseLean+.018*helloWave;
+      person.body.rotation.x = riseLean+.018*helloWave+.020*Math.sin(Math.PI*chairTurn)*(1-standing);
       // Hinge at the hips: rotating around the floor dragged the shoulders
       // too far forward and made the elbows whip around fixed armrest hands.
       person.body.position.z=-person.rigDimensions.hipHeight*Math.sin(riseLean);
       person.body.position.y+=person.rigDimensions.hipHeight*(1-Math.cos(riseLean));
-      person.body.rotation.y = waveMotion(intro).shoulder*.012*helloWave;
+      person.body.rotation.y = waveMotion(intro).shoulder*.012*helloWave+swivel.torsoLag*(1-standing);
       person.body.scale.y = 1+Math.sin(t*1.25)*.0025*idle;
-      person.arms[0].rotation.x += stride * 0.34;
-      person.arms[1].rotation.x -= stride * 0.34;
-      if (standing > .98 && page < .94) person.walkPose?.(stepping,1.24);
     }
     // Finish the chair turn and stand on the rug before the room departs.
     // Moving the floor during the rise made planted feet appear suspended.
     const roomDeparture=smooth(.44,1.10,page);
     const roomLift=roomDeparture*4.4;
     contactShadow.material.opacity=.19*smooth(.02,.16,roomDeparture);
-    const facing = mix(Math.PI, .04, chairTurn) + helloTurn*(.5-Math.PI);
+    const facing = Math.PI+swivel.angle + helloTurn*(.5-Math.PI);
     const seatTurn = facing-Math.PI;
     const kneeBend=(1-rising.extension)*Math.PI/2;
     const seatRootZ=1.08-.22*Math.cos(seatTurn);
     const risenRootZ=seatRootZ+rising.forward+person.rigDimensions.thigh*(1-Math.sin(kneeBend));
+    const walkedDistance=walkPath(stepping).advance*1.24;
     person.root.position.set(
-      -.22*Math.sin(seatTurn)*(1-stepping),
+      -.22*Math.sin(seatTurn)+Math.sin(facing)*walkedDistance,
       -.132,
-      mix(risenRootZ,3.2,walkPath(stepping).advance),
+      risenRootZ+Math.cos(facing)*walkedDistance,
     );
     person.root.rotation.y = facing + smooth(.94,1.12,page)*scanProgress*Math.PI*2;
+    if(!reduced&&standing===1&&page<.94)person.walkPose(stepping,1.24);
+    if(!reduced&&standing===0&&chairTurn>0&&chairTurn<1)person.swivelPose(chairTurn);
     if(standing>0&&standing<1&&stepping<.01){
       person.root.updateMatrixWorld(true);
       for(const leg of person.legs){
@@ -802,6 +799,7 @@ export async function createScene(host, mode, getProgress) {
     }
     if (chair) {
       chairSeat.rotation.y = seatTurn;
+      chairSeat.position.y = -.18-rising.cushion;
       chair.scale.setScalar(1);
     }
     objects.position.y = roomLift;
