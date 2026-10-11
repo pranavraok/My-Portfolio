@@ -19,6 +19,15 @@
 @media (max-width:600px),(max-width:900px) and (max-aspect-ratio:6/5) {
   .hindi-dock {left:10px;right:10px;bottom:10px;width:auto;}
   .has-hindi-player .experience-stage {height:calc(100svh - 238px);}
+  @media (max-height:740px) {
+    .has-hindi-player .experience-stage .hero-copy {top:10%;}
+    .has-hindi-player .experience-stage .hero-copy h1 {font-size:clamp(36px,7.4vw,46px);}
+  }
+}
+@media (min-width:601px) and (max-width:900px) and (max-height:500px) and (min-aspect-ratio:6/5) {
+  .has-hindi-player .experience-stage .hero-copy {top:8%;}
+  .has-hindi-player .experience-stage .hero-copy h1 {font-size:42px;}
+  .has-hindi-player .experience-stage .role-sticker {font-size:11px;margin-top:4px;padding:5px 8px;}
 }
 .music-toggle {
   position: relative;

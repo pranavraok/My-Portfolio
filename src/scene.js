@@ -656,7 +656,8 @@ export function createScene(host, mode, getProgress) {
     const rect = host.getBoundingClientRect();
     width = rect.width;
     height = rect.height;
-    mobile = width <= 600 || (width <= 900 && width / height <= 1.2);
+    // Match the page layout, even when the music dock shortens the 3D stage.
+    mobile = window.matchMedia('(max-width: 600px), (max-width: 900px) and (max-aspect-ratio: 6/5)').matches;
     if (!width || !height) return;
     renderer.setPixelRatio(
       Math.min(window.devicePixelRatio, mobile ? 1.35 : 1.75),
