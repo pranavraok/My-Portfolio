@@ -1,4 +1,4 @@
-// Verified against the owner’s LinkedIn projects on 2026-10-11.
+// Project details verified against the owner’s LinkedIn; previews use original HD media and live project captures.
 export const projects = [
   {
     "slug": "aromazen-ai",
@@ -29,10 +29,11 @@ export const projects = [
     ],
     "images": [
       {
-        "src": "/media/projects/aromazen-ai-linkedin.webp",
+        "src": "/media/projects/aromazen-ai-1920.webp",
         "alt": "AromaZen AI Portal - Enterprise Business Automation — project preview",
-        "width": 480,
-        "height": 269
+        "width": 1920,
+        "height": 1061,
+        "srcSet": "/media/projects/aromazen-ai-480.webp 480w, /media/projects/aromazen-ai-960.webp 960w, /media/projects/aromazen-ai-1280.webp 1280w, /media/projects/aromazen-ai-1920.webp 1920w"
       }
     ],
     "links": [
@@ -71,10 +72,11 @@ export const projects = [
     ],
     "images": [
       {
-        "src": "/media/projects/electro-operations-linkedin.webp",
+        "src": "/media/projects/electro-operations-1920.webp",
         "alt": "Electro Group of Industries - Operations & Automation Portal — project preview",
-        "width": 480,
-        "height": 258
+        "width": 1920,
+        "height": 1061,
+        "srcSet": "/media/projects/electro-operations-480.webp 480w, /media/projects/electro-operations-960.webp 960w, /media/projects/electro-operations-1280.webp 1280w, /media/projects/electro-operations-1920.webp 1920w"
       }
     ],
     "links": [
@@ -113,10 +115,11 @@ export const projects = [
     ],
     "images": [
       {
-        "src": "/media/projects/my-portfolio-linkedin.webp",
+        "src": "/media/projects/my-portfolio-1905.webp",
         "alt": "My-Portfolio — project preview",
-        "width": 480,
-        "height": 272
+        "width": 1905,
+        "height": 1053,
+        "srcSet": "/media/projects/my-portfolio-480.webp 480w, /media/projects/my-portfolio-960.webp 960w, /media/projects/my-portfolio-1280.webp 1280w, /media/projects/my-portfolio-1905.webp 1905w"
       }
     ],
     "links": [
@@ -159,10 +162,11 @@ export const projects = [
     ],
     "images": [
       {
-        "src": "/media/projects/activbite-linkedin.webp",
+        "src": "/media/projects/activbite-1905.webp",
         "alt": "ActivBite - E-Commerce & Digital Ordering Platform — project preview",
-        "width": 480,
-        "height": 272
+        "width": 1905,
+        "height": 1053,
+        "srcSet": "/media/projects/activbite-480.webp 480w, /media/projects/activbite-960.webp 960w, /media/projects/activbite-1280.webp 1280w, /media/projects/activbite-1905.webp 1905w"
       }
     ],
     "links": [
@@ -205,10 +209,11 @@ export const projects = [
     ],
     "images": [
       {
-        "src": "/media/projects/tradeledger-linkedin.webp",
+        "src": "/media/projects/tradeledger-1905.webp",
         "alt": "TradeLedger - AI-Powered Trading Journal — project preview",
-        "width": 480,
-        "height": 272
+        "width": 1905,
+        "height": 1053,
+        "srcSet": "/media/projects/tradeledger-480.webp 480w, /media/projects/tradeledger-960.webp 960w, /media/projects/tradeledger-1280.webp 1280w, /media/projects/tradeledger-1905.webp 1905w"
       }
     ],
     "links": [
@@ -251,10 +256,11 @@ export const projects = [
     ],
     "images": [
       {
-        "src": "/media/projects/hostelvoice-linkedin.webp",
+        "src": "/media/projects/hostelvoice-1905.webp",
         "alt": "HostelVoice - Smart Hostel Management — project preview",
-        "width": 480,
-        "height": 269
+        "width": 1905,
+        "height": 1053,
+        "srcSet": "/media/projects/hostelvoice-480.webp 480w, /media/projects/hostelvoice-960.webp 960w, /media/projects/hostelvoice-1280.webp 1280w, /media/projects/hostelvoice-1905.webp 1905w"
       }
     ],
     "links": [
@@ -301,10 +307,11 @@ export const projects = [
     ],
     "images": [
       {
-        "src": "/media/projects/mentora-linkedin.webp",
+        "src": "/media/projects/mentora-1905.webp",
         "alt": "Mentora - AI-Powered Career Mentorship & Gamified Learning App — project preview",
-        "width": 480,
-        "height": 272
+        "width": 1905,
+        "height": 1053,
+        "srcSet": "/media/projects/mentora-480.webp 480w, /media/projects/mentora-960.webp 960w, /media/projects/mentora-1280.webp 1280w, /media/projects/mentora-1905.webp 1905w"
       }
     ],
     "links": [
@@ -346,10 +353,11 @@ export const projects = [
     ],
     "images": [
       {
-        "src": "/media/projects/nutrigo-linkedin.webp",
+        "src": "/media/projects/nutrigo-1280.webp",
         "alt": "NutriGo - AI-Powered Nutrition Analysis Platform — project preview",
-        "width": 480,
-        "height": 271
+        "width": 1280,
+        "height": 720,
+        "srcSet": "/media/projects/nutrigo-480.webp 480w, /media/projects/nutrigo-960.webp 960w, /media/projects/nutrigo-1280.webp 1280w"
       }
     ],
     "links": [
@@ -394,10 +402,11 @@ export const projects = [
     ],
     "images": [
       {
-        "src": "/media/projects/stock-analysis-pro-linkedin.webp",
+        "src": "/media/projects/stock-analysis-pro-1280.webp",
         "alt": "Stock Analysis Pro - AI Powered Equity Research Platform — project preview",
-        "width": 480,
-        "height": 269
+        "width": 1280,
+        "height": 720,
+        "srcSet": "/media/projects/stock-analysis-pro-480.webp 480w, /media/projects/stock-analysis-pro-960.webp 960w, /media/projects/stock-analysis-pro-1280.webp 1280w"
       }
     ],
     "links": [
@@ -440,10 +449,11 @@ export const projects = [
     ],
     "images": [
       {
-        "src": "/media/projects/email-classifier-linkedin.webp",
+        "src": "/media/projects/email-classifier-1280.webp",
         "alt": "AI-Powered Email Classification & Management Automation — project preview",
-        "width": 480,
-        "height": 255
+        "width": 1280,
+        "height": 690,
+        "srcSet": "/media/projects/email-classifier-480.webp 480w, /media/projects/email-classifier-960.webp 960w, /media/projects/email-classifier-1280.webp 1280w"
       }
     ],
     "links": [
@@ -484,10 +494,11 @@ export const projects = [
     ],
     "images": [
       {
-        "src": "/media/projects/saanvi-linkedin.webp",
+        "src": "/media/projects/saanvi-1280.webp",
         "alt": "SAANVI - Voice Agent For Dental Clinic — project preview",
-        "width": 480,
-        "height": 254
+        "width": 1280,
+        "height": 720,
+        "srcSet": "/media/projects/saanvi-480.webp 480w, /media/projects/saanvi-960.webp 960w, /media/projects/saanvi-1280.webp 1280w"
       }
     ],
     "links": [
@@ -527,10 +538,11 @@ export const projects = [
     ],
     "images": [
       {
-        "src": "/media/projects/cgi-car-animation-linkedin.webp",
+        "src": "/media/projects/cgi-car-animation-1080.webp",
         "alt": "Hyper-Realistic CGI Car Animation – Speed Meets Art! — project preview",
-        "width": 270,
-        "height": 480
+        "width": 1080,
+        "height": 1920,
+        "srcSet": "/media/projects/cgi-car-animation-480.webp 480w, /media/projects/cgi-car-animation-960.webp 960w, /media/projects/cgi-car-animation-1080.webp 1080w"
       }
     ],
     "links": [

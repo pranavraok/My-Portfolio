@@ -49,7 +49,10 @@ function Home({ navigate, scrollTo, onPhase }) {
           ))}
         </div>
         <div className="journey-education reveal">
-          <span className="education-period">2024–2028</span>
+          <div className="education-period">
+            <Icon name="graduation" size={24} />
+            <div><span>ACADEMIC JOURNEY</span><strong>2024 <i aria-hidden="true">→</i> 2028</strong></div>
+          </div>
           <div>
             <h3>Computer Science</h3>
             <p>M. S. Ramaiah University of Applied Sciences · CGPA 9.02</p>

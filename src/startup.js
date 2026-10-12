@@ -3,8 +3,10 @@ export function updateStartup(progress, caption = "Loading my workspace") {
   const splash = document.getElementById('startup-screen');
   if (!splash || splash.dataset.ready === 'true') return;
   const value = Math.max(0, Math.min(100, Math.round(progress)));
+  if (splash.dataset.progress === String(value) && splash.dataset.caption === caption) return;
   splash.style.setProperty('--load-progress', `${value}%`);
   splash.dataset.progress = String(value);
+  splash.dataset.caption = caption;
   const label = splash.querySelector('.startup-caption');
   if (label) label.textContent = `${caption} · ${value}%`;
 }

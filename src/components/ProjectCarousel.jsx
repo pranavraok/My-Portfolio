@@ -14,7 +14,7 @@ function ProjectCard({ project, navigate, duplicate, preload }) {
         style={{ "--card-accent": project.color }}
       >
         <div className="carousel-project-image">
-          <AssetImage src={image.src} alt={duplicate ? "" : image.alt} width={image.width} height={image.height} loading={preload ? "eager" : "lazy"} />
+          <AssetImage src={image.src} srcSet={image.srcSet} sizes="(max-width: 600px) 88vw, 360px" alt={duplicate ? "" : image.alt} width={image.width} height={image.height} loading={preload ? "eager" : "lazy"} fetchPriority="low" />
           <span className="carousel-project-open" aria-hidden="true"><Icon name="arrow" size={22} /></span>
         </div>
         <div className="carousel-project-copy">

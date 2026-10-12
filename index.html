@@ -21,6 +21,13 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <script>
       if (location.pathname === '/') {
+        history.scrollRestoration = 'manual';
+        if (performance.getEntriesByType('navigation')[0]?.type === 'reload') {
+          history.replaceState(history.state, '', location.pathname + location.search);
+        }
+        window.scrollTo(0, 0);
+      }
+      if (location.pathname === '/') {
         const avatarPreload = document.createElement('link');
         avatarPreload.rel = 'preload'; avatarPreload.as = 'fetch';
         avatarPreload.href = '/media/pranav-approved-head-fast.glb';

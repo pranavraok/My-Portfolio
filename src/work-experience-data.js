@@ -24,7 +24,7 @@ export const workExperience = [
     company: "Fox Trading Solutions",
     type: "Internship",
     period: "Mar 2025 – Apr 2025",
-    initials: "FS",
+    logo: "/media/companies/fox-trading-solutions.png",
     paragraphs: [
       "From data preparation to model training and evaluation — applying machine learning to practical problems.",
     ],

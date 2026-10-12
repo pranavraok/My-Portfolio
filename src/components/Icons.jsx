@@ -1,5 +1,6 @@
 export function Icon({ name, size = 22, ...props }) {
   const paths = {
+    graduation: <><path d="m2 9 10-5 10 5-10 5Z"/><path d="M6 11v6c3 3 9 3 12 0v-6M22 9v7"/></>,
     menu: <path d="M4 6h16M4 12h16M4 18h16" />,
     music: (
       <>

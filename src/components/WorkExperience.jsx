@@ -1,6 +1,7 @@
 import { workExperience } from "../work-experience-data.js";
 import { profile } from "../data.js";
 import { Icon } from "./Icons.jsx";
+import AssetImage from "./AssetImage.jsx";
 
 export default function WorkExperience() {
   return (
@@ -19,8 +20,8 @@ export default function WorkExperience() {
             <div className="work-entry-year"><span>{job.year}</span><i aria-hidden="true" /></div>
             <article className="work-experience-card" aria-labelledby={`role-${job.id}`}>
               <div className="work-card-heading">
-                <div className="work-company-logo">
-                  {job.logo ? <img src={job.logo} alt={`${job.company} logo`} width="60" height="60" loading="lazy" /> : <span aria-hidden="true">{job.initials}</span>}
+                <div className="work-company-logo" data-company={job.id}>
+                  {job.logo ? <AssetImage src={job.logo} alt={`${job.company} logo`} width="60" height="60" loading="lazy" /> : <span aria-hidden="true">{job.initials}</span>}
                 </div>
                 <div className="work-role-heading">
                   <h3 id={`role-${job.id}`}>{job.role}</h3>
