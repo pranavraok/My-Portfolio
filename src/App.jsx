@@ -4,6 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import Experience from "./components/Experience.jsx";
 import MusicPlayer from "./components/MusicPlayer.jsx";
+import ModeToggle from "./components/ModeToggle.jsx";
 import ContactCharacter from "./components/ContactCharacter.jsx";
 import ProjectCarousel from "./components/ProjectCarousel.jsx";
 import ProjectGallery from "./components/ProjectGallery.jsx";
@@ -442,6 +443,7 @@ export default function App() {
           <a className="get-in-touch" href={`mailto:${profile.email}`}>
             Get in touch <Icon name="arrow" size={16} />
           </a>
+          <ModeToggle />
           <MusicPlayer />
         </div>
       </header>

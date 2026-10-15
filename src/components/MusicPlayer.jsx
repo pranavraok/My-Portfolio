@@ -24,37 +24,37 @@ export default function MusicPlayer() {
   const wanted = useRef(false);
 
   useEffect(() => {
-    let frame, controller, disposed = false;
-    function activate(mood, autoStart = true) {
-      const track = musicTracks[mood];
-      if (!track) return;
-      controller?.dispose();
+    let frame, disposed = false;
+    function describe(track) {
       speakerState.title = track.title;
       speakerState.artist = track.artist;
       speakerState.volume = backgroundMusicVolume;
-      wanted.current = autoStart;
-      controller = createBackgroundAudio({
-        audio: audio.current, track, volume: backgroundMusicVolume,
-        onState(next) {
-          if (disposed) return;
-          const changed = speakerState.playing !== next.playing;
-          speakerState.playing = next.playing;
-          if (!next.playing) { speakerState.level = 0; speakerState.bands.fill(0); }
-          setState({ playing: next.playing, status: next.status, mode: next.mode, mood, track: track.id });
-          if (changed) window.dispatchEvent(new CustomEvent('portfolio-audio-state', { detail: { playing: next.playing } }));
-        },
-      });
-      player.current = controller;
-      if (autoStart) controller.start();
-      else controller.pause();
     }
+    const track = musicTracks[getSiteMode()];
+    describe(track);
+    wanted.current = !initial.paused;
+    const controller = createBackgroundAudio({
+      audio: audio.current, track, volume: backgroundMusicVolume,
+      onState(next) {
+        if (disposed) return;
+        const changed = speakerState.playing !== next.playing;
+        speakerState.playing = next.playing;
+        if (!next.playing) { speakerState.level = 0; speakerState.bands.fill(0); }
+        setState({ playing: next.playing, status: next.status, mode: next.mode, mood: getSiteMode(), track: next.track });
+        if (changed) window.dispatchEvent(new CustomEvent('portfolio-audio-state', { detail: { playing: next.playing } }));
+      },
+    });
+    player.current = controller;
+    if (wanted.current) controller.start();
+    else controller.pause();
     function meter() {
-      const current = controller?.snapshot();
-      if (!current) { frame = requestAnimationFrame(meter); return; }
+      const current = controller.snapshot();
       if (host.current) {
         host.current.dataset.position = current.position.toFixed(3);
         host.current.dataset.loopDuration = String(current.duration);
         host.current.dataset.volume = String(current.volume);
+        host.current.dataset.activeTrack = current.activeTrack;
+        host.current.dataset.transitioning = String(current.transitioning);
       }
       speakerState.progress = current.duration ? current.position / current.duration : 0;
       if (current.playing) {
@@ -64,8 +64,12 @@ export default function MusicPlayer() {
       frame = requestAnimationFrame(meter);
     }
     frame = requestAnimationFrame(meter);
-    if (getSiteMode()) activate(getSiteMode(), !initial.paused);
-    const chooseMode = event => { save(false); activate(event.detail.mode); };
+    const chooseMode = event => {
+      const next = musicTracks[event.detail.mode];
+      if (!next) return;
+      describe(next);
+      controller.setTrack(next);
+    };
     const unlock = event => {
       if (button.current?.contains(event.target) || event.target?.closest?.('.speaker-toggle')) return;
       if (wanted.current && controller && !controller.snapshot().playing) controller.start();

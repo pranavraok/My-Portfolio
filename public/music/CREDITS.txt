@@ -19,7 +19,8 @@ The owner supplied this second recording and selected the excerpt from
 1:38 to 2:45. Only that range is used. Its loudness is matched to the
 morning track, with a 1.5-second blend for a smooth 65.5-second loop.
 The evening track is not presented as the owner's original composition.
-Each mood plays its own soundtrack; the two recordings are not mixed.
+Each mood plays its own soundtrack. A brief 1.4-second crossfade blends the
+transition when switching moods; no other songs or arrangements are added.
 
 The Morning Calm accompaniment was rendered with FluidSynth and the GeneralUser GS 2.0.3
 SoundFont, by S. Christian Collins. The SoundFont license permits music
