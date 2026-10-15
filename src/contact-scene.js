@@ -1,4 +1,7 @@
 import * as THREE from "three";
+import { measureScene } from "./scene-performance.js";
+import { startSceneLoop } from "./scene-loop.js";
+import { batchStaticMeshes } from "./static-meshes.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { createCharacter } from "./character.js";
 import { loadApprovedHead } from "./approved-avatar.js";
@@ -8,7 +11,7 @@ import { watchSceneContext, scenePixelRatio } from "./scene-context.js";
 export async function createContactScene(host, getProgress) {
   await loadApprovedHead();
   const scene = new THREE.Scene();
-  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "low-power" });
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = .98;
@@ -82,13 +85,19 @@ export async function createContactScene(host, getProgress) {
     const envelope = panel([.58,.35], envelopeMap, packages,[x,.018,z]); envelope.rotation.set(-Math.PI / 2,0,a);
   }
   const parcelCenter=new THREE.Box3().setFromObject(packages).getCenter(new THREE.Vector3());
-  let width = 0, height = 0, mobile = false, frame, last = 0;
+  batchStaticMeshes(packages);
+  let width=0,height=0,mobile=false,last=0,visible=false,layoutDirty=true;
+  let hostBounds,stageTop=0,stageHeight=0,viewport=0;
   const contactStage=host.closest('.contact-stage')||host;
+  const greetingButton=host.parentElement.querySelector('.character-greeting');
   const pointer = {x:0,y:0}, followPointer = {x:0,y:0};
   let sleep = 1, wakeAt = -100, waveAt = -100, lastWaveRequest=-100, hasWoken = false,waveBlend=0,unfoldBlend=0;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const resize = () => {
-    const rect = host.getBoundingClientRect(); width = rect.width; height = rect.height;
+    layoutDirty=true;
+    const rect = host.getBoundingClientRect();
+    if(width===rect.width&&height===rect.height)return;
+    width = rect.width; height = rect.height;
     if(!width || !height) return;
     mobile = matchMedia('(max-width: 600px), (max-width: 900px) and (max-aspect-ratio: 6/5), (max-width: 900px) and (max-height: 520px)').matches;
     const parcelScale=mobile ? .48 : Math.min(.98,(width/height)*.52);
@@ -99,26 +108,33 @@ export async function createContactScene(host, getProgress) {
     renderer.setPixelRatio(renderScale); renderer.setSize(width,height);
     host.dataset.renderScale = renderScale.toFixed(2);
     camera.aspect = width / height; camera.updateProjectionMatrix();
+    if(mobile) { camera.position.set(.2,2.25,9.2); camera.lookAt(0,1.50,.35); }
+    else { camera.position.set(0,2.55,8.5); camera.lookAt(0,1.73,.35); }
   };
   const sizeObserver = new ResizeObserver(resize); sizeObserver.observe(host); resize();
-  const move = event => { if(mobile) return; const r = host.getBoundingClientRect(); pointer.x = (event.clientX-r.left)/r.width*2-1; pointer.y = (event.clientY-r.top)/r.height*2-1; };
+  const move = event => { if(!visible||mobile||!hostBounds)return; pointer.x = (event.clientX-hostBounds.left)/hostBounds.width*2-1; pointer.y = (event.clientY-hostBounds.top)/hostBounds.height*2-1; };
   window.addEventListener("pointermove",move,{passive:true});
+  const invalidateLayout=()=>{layoutDirty=true;};
+  window.addEventListener('scroll',invalidateLayout,{passive:true});
   const resetPointer=()=>{pointer.x=0;pointer.y=0;};
   document.addEventListener('pointerleave',resetPointer);window.addEventListener('blur',resetPointer);
   let firstFrame=false,resolveReady,animationTime=0;
   const ready=new Promise(resolve=>{resolveReady=resolve;});
+  const performanceMeter=measureScene(host,renderer);
   function tick(time) {
-    frame = requestAnimationFrame(tick);
-    const bounds=host.getBoundingClientRect(),viewport=host.ownerDocument.documentElement.clientHeight;
-    const visible=bounds.bottom>0&&bounds.top<viewport&&bounds.width>0;
-    host.dataset.inView=String(visible);
-    if(graphics.lost || (firstFrame&&(!visible||document.hidden)) || time-last < 14) return;
+    if(graphics.lost)return;
+    const began=performanceMeter.begin(time);
+    if(layoutDirty){
+      hostBounds=host.getBoundingClientRect();
+      stageTop=contactStage.getBoundingClientRect().top;
+      stageHeight=contactStage.clientHeight;viewport=document.documentElement.clientHeight;
+      layoutDirty=false;
+    }
     const delta=Math.min(.05,(time-last)/1000 || 1/60); last=time;
     const t=(animationTime+=delta), data=getProgress() || {};
-    const stageTop=contactStage.getBoundingClientRect().top;
     const manualHold=data.manualTop!=null&&Math.abs(stageTop-data.manualTop)<4;
     if(data.manualTop!=null&&!manualHold)data.manualTop=null;
-    const requestedSleep=manualHold?0:footerSleepRequest(stageTop,contactStage.clientHeight,viewport);
+    const requestedSleep=manualHold?0:footerSleepRequest(stageTop,stageHeight,viewport);
     const wakeOnEntry=mobile ? (hasWoken?requestedSleep<=.9:requestedSleep<.30) : manualHold||desktopFooterAwake(stageTop,viewport,hasWoken);
     const manualWave=(data.waveAt ?? -100)>lastWaveRequest;
     if(manualWave){
@@ -166,26 +182,27 @@ export async function createContactScene(host, getProgress) {
     const eyeHold=!mobile&&!reduced.matches&&t-wakeAt<3 ? desktopFooterGreeting(t-wakeAt,sleep).eyeHold : 0;
     const settlingBlink=movement.blink*(t-wakeAt<(mobile?2:3)?1:0);
     const eyelids=person.updateFace?.(reduced.matches?0:t,reduced.matches?0:Math.max(eyeHold,settlingBlink));
-    if(mobile) { camera.position.set(.2,2.25,9.2); camera.lookAt(0,1.50,.35); }
-    else { camera.position.set(0,2.55,8.5); camera.lookAt(0,1.73,.35); }
-    camera.clearViewOffset();
-    host.parentElement.style.setProperty('--sleep',sleep.toFixed(3));
+    const sleepStyle=sleep.toFixed(3);
+    if(host.parentElement.style.getPropertyValue('--sleep')!==sleepStyle)host.parentElement.style.setProperty('--sleep',sleepStyle);
     host.dataset.sleep=sleep.toFixed(2); host.dataset.greeting=greeting.toFixed(2);host.dataset.glasses='worn';
     host.dataset.motionTime=t.toFixed(3);host.dataset.exposure=requestedSleep.toFixed(3);
     const animationActive=!reduced.matches&&(movement.active||waveBlend>.001||unfoldBlend>.001);
     host.dataset.eyelids=eyelids.toFixed(3);host.dataset.animationActive=String(animationActive);
     host.dataset.layout=mobile?'mobile':'text-left-character-center-parcels-right';
     host.dataset.pose=sleep>.85 ? 'sleeping' : sleep>.15||stretch>.2 ? 'waking' : greeting>.1 ? 'greeting' : 'relaxed';
-    const greetingButton=host.parentElement.querySelector('.character-greeting');
-    if(greetingButton)greetingButton.disabled=animationActive;
+    if(greetingButton&&greetingButton.disabled!==animationActive)greetingButton.disabled=animationActive;
     renderer.render(scene,camera);
     graphics.rendered();
+    performanceMeter.end(time,began);
     if(!firstFrame){firstFrame=true;host.dataset.frameReady='true';resolveReady();}
   }
-  frame=requestAnimationFrame(tick);
+  await renderer.compileAsync(scene,camera);
+  const stopLoop=startSceneLoop(host,tick,inView=>{
+    visible=inView;layoutDirty=true;host.dataset.inView=String(inView);
+  });
   return {ready,dispose() {
     resolveReady();graphics.dispose();
-    cancelAnimationFrame(frame); sizeObserver.disconnect(); window.removeEventListener("pointermove",move);document.removeEventListener('pointerleave',resetPointer);window.removeEventListener('blur',resetPointer);
+    stopLoop();sizeObserver.disconnect();window.removeEventListener('scroll',invalidateLayout); window.removeEventListener("pointermove",move);document.removeEventListener('pointerleave',resetPointer);window.removeEventListener('blur',resetPointer);
     const geometry=new Set(), material=new Set(), skeletons=new Set();
     scene.traverse(o => { if(o.geometry)geometry.add(o.geometry); if(o.isSkinnedMesh)skeletons.add(o.skeleton); if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>material.add(m)); });
     const avatarMaps=new Set();material.forEach(m=>{for(const value of Object.values(m))if(value?.isTexture)avatarMaps.add(value);});avatarMaps.forEach(map=>map.dispose());

@@ -34,7 +34,11 @@ export default function MusicPlayer() {
     });
     player.current = controller;
     controller.start();
-    function meter() {
+    let lastMeter=0;
+    function meter(time) {
+      frame=requestAnimationFrame(meter);
+      if(document.hidden||time-lastMeter<80)return;
+      lastMeter=time;
       const current = controller.snapshot();
       if (host.current) {
         host.current.dataset.position = current.position.toFixed(3);
@@ -48,7 +52,6 @@ export default function MusicPlayer() {
         speakerState.level = controller.meter();
         for (let i = 0; i < 8; i++) speakerState.bands[i] = Math.max(.03, speakerState.level * (1.5 + Math.sin(performance.now() * .001 + i * .8)));
       }
-      frame = requestAnimationFrame(meter);
     }
     frame = requestAnimationFrame(meter);
     const chooseMode = event => {

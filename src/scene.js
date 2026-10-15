@@ -1,4 +1,7 @@
 import * as THREE from "three";
+import { measureScene } from "./scene-performance.js";
+import { startSceneLoop } from "./scene-loop.js";
+import { batchStaticMeshes } from "./static-meshes.js";
 import { drawComputerRadio, speakerState } from "./music.js";
 import { drawDeskCode, deskCodeState } from "./desk-display.js";
 import { clone as cloneSkeleton } from "three/addons/utils/SkeletonUtils.js";
@@ -29,7 +32,7 @@ export async function createScene(host, mode, getProgress) {
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
     alpha: true,
-    powerPreference: "low-power",
+    powerPreference: "high-performance",
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.6));
   renderer.setClearColor(0x000000, 0);
@@ -678,8 +681,16 @@ export async function createScene(host, mode, getProgress) {
     }
     holo?.updateMatrixWorld(true);
   };
+  // Submit repeated keys, wheels, books and desk props in material batches.
+  // The chair seat, mouse, speaker and all avatar parts remain independent.
+  if(chairSeat)batchStaticMeshes(chairSeat);
+  if(chair)batchStaticMeshes(chair,[chairSeat]);
+  batchStaticMeshes(objects,[chair,mouse,speakerRig]);
+  let lastReveal=-1,lastViewOffset=null,lastSpeakerHit=-Infinity;
+  const speakerPoint=new THREE.Vector3();
   function resize() {
     const rect = host.getBoundingClientRect();
+    if(width===rect.width&&height===rect.height)return;
     width = rect.width;
     height = rect.height;
     // Match the page layout, even when the music dock shortens the 3D stage.
@@ -697,18 +708,10 @@ export async function createScene(host, mode, getProgress) {
   resizeObserver.observe(host);
   resize();
   let visible = false;
-  const visibleObserver = new IntersectionObserver(
-    ([entry]) => {
-      visible = entry.isIntersecting;
-      if(!visible)host.dataset.codeMotion='paused';
-    },
-    { threshold: 0 },
-  );
-  visibleObserver.observe(host);
   const pointer = { x: 0, y: 0 },
     smoothedPointer = { x: 0, y: 0 };
   const move = (event) => {
-    if (mobile || event.pointerType==='touch') return;
+    if (!visible || mobile || event.pointerType==='touch') return;
     const r = host.getBoundingClientRect();
     pointer.x = clamp((event.clientX - r.left) / r.width) * 2 - 1;
     pointer.y = clamp((event.clientY - r.top) / r.height) * 2 - 1;
@@ -720,14 +723,14 @@ export async function createScene(host, mode, getProgress) {
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   const gazePoint=new THREE.Vector3(),headPoint=new THREE.Vector3(),gazeDirection=new THREE.Vector3(),bodyInverse=new THREE.Quaternion();
   let gazeYaw=0,gazePitch=0;
-  let frame,
-    lastTime = 0,
+  let lastTime = 0,
     introStart = null;
   let firstFrame=false,resolveReady;
   const ready=new Promise(resolve=>{resolveReady=resolve;});
+  const performanceMeter=measureScene(host,renderer);
   const tick = (time) => {
-    frame = requestAnimationFrame(tick);
-    if (graphics.lost || (firstFrame&&(!visible||document.hidden)) || time - lastTime < 14) return;
+    if (graphics.lost) return;
+    const began=performanceMeter.begin(time);
     const delta = Math.min(.05,(time-lastTime)/1000 || 1/60);
     lastTime = time;
     if (introStart === null) introStart = time;
@@ -850,23 +853,20 @@ export async function createScene(host, mode, getProgress) {
     );
     camera.lookAt(target);
     host.dataset.parallax=`${(smoothedPointer.x*parallax).toFixed(2)},${(smoothedPointer.y*parallax).toFixed(2)}`;
-    camera.setViewOffset(
-      width,
-      height,
-      -width * (mobile ? compactPhone?0:0.11 : 0.175) * (1 - cameraWalk),
-      0,
-      width,
-      height,
-    );
+    const viewOffset=-width*(mobile?compactPhone?0:.11:.175)*(1-cameraWalk);
+    if(viewOffset!==lastViewOffset||camera.view?.fullWidth!==width||camera.view?.fullHeight!==height){
+      camera.setViewOffset(width,height,viewOffset,0,width,height);lastViewOffset=viewOffset;
+    }
     camera.updateMatrixWorld();
     if(speakerButton&&speakerCabinet){
       const canToggle=page<(mobile?1.10:1.16)&&objects.visible;
       speakerButton.hidden=!canToggle;
-      if(canToggle){
+      if(canToggle&&time-lastSpeakerHit>50){
+        lastSpeakerHit=time;
         speakerBounds.setFromObject(speakerCabinet);
         let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
         for(const x of [speakerBounds.min.x,speakerBounds.max.x])for(const y of [speakerBounds.min.y,speakerBounds.max.y])for(const z of [speakerBounds.min.z,speakerBounds.max.z]){
-          const point=new THREE.Vector3(x,y,z).project(camera),px=(point.x+1)*width/2,py=(1-point.y)*height/2;
+          const point=speakerPoint.set(x,y,z).project(camera),px=(point.x+1)*width/2,py=(1-point.y)*height/2;
           minX=Math.min(minX,px);maxX=Math.max(maxX,px);minY=Math.min(minY,py);maxY=Math.max(maxY,py);
         }
         const hitWidth=Math.max(44,maxX-minX+8),hitHeight=Math.max(44,maxY-minY+8),left=(minX+maxX-hitWidth)/2,top=(minY+maxY-hitHeight)/2;
@@ -898,7 +898,7 @@ export async function createScene(host, mode, getProgress) {
     objects.visible = page < (mobile ? 1.10 : 1.16);
     const reveal = smooth(0.2, 0.78, page);
     scanner.visible = reveal > 0.001;
-    scanner.traverse((o) => {
+    if(reveal!==lastReveal)scanner.traverse((o) => {
       if (o.isLight) o.intensity = 2.5 * reveal;
       else if (o.material) {
         const list = Array.isArray(o.material) ? o.material : [o.material];
@@ -909,9 +909,10 @@ export async function createScene(host, mode, getProgress) {
         }
       }
     });
+    lastReveal=reveal;
     if (holo) {
-      copyPose();
       holo.visible = reveal > 0.001;
+      if(holo.visible)copyPose();
       const material = scanMaterial;
       if (material?.userData.scanUniforms) {
         material.userData.scanUniforms.uTime.value = t;
@@ -994,14 +995,27 @@ export async function createScene(host, mode, getProgress) {
       renderer.clearDepth();
       objects.visible=false;scanner.visible=false;person.root.visible=true;
       if(holo) holo.visible=holoVisible;
+      // Reuse the room's shadow map during the overlay pass. Regenerating it
+      // here discarded the room shadows and submitted a second shadow pass.
+      renderer.shadowMap.autoUpdate=false;
       renderer.render(scene,camera);
+      renderer.shadowMap.autoUpdate=true;
       renderer.autoClear=true;
       objects.visible=true;scanner.visible=scannerVisible;
     } else renderer.render(scene, camera);
     graphics.rendered();
+    performanceMeter.end(time,began);
     if(!firstFrame){firstFrame=true;host.dataset.frameReady='true';resolveReady();}
   };
-  frame = requestAnimationFrame(tick);
+  // Warm both lighting variants before scrolling reveals the scanner. The
+  // parallel compiler avoids a synchronous shader stall at that transition.
+  await renderer.compileAsync(scene,camera);
+  scanner.visible=false;if(holo)holo.visible=false;
+  await renderer.compileAsync(scene,camera);
+  const stopLoop=startSceneLoop(host,tick,inView=>{
+    visible=inView;
+    if(!visible)host.dataset.codeMotion='paused';
+  });
   const lost = (event) => {
     event.preventDefault();
     if(speakerButton)speakerButton.hidden=true;
@@ -1011,9 +1025,8 @@ export async function createScene(host, mode, getProgress) {
     ready,
     dispose() {
       resolveReady();
-      cancelAnimationFrame(frame);
+      stopLoop();
       resizeObserver.disconnect();
-      visibleObserver.disconnect();
       window.removeEventListener("pointermove", move);
       document.removeEventListener('pointerleave',resetPointer);
       window.removeEventListener('blur',resetPointer);

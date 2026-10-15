@@ -125,7 +125,7 @@ export const projects = [
     "links": [
       {
         "label": "Open project",
-        "url": "https://pranav-rao-portfolio.vercel.app/"
+        "url": "https://pranavraok.is-a.dev/"
       },
       {
         "label": "View source",

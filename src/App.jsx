@@ -263,14 +263,18 @@ export default function App() {
     }, 220);
   }
   useEffect(() => {
+    let advanceScroll;
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
       const engine = new Lenis({
-        autoRaf: true,
-        lerp: 0.085,
+        autoRaf: false,
+        lerp: 0.13,
         smoothWheel: true,
       });
       lenis.current = engine;
       engine.on("scroll", ScrollTrigger.update);
+      // Read scroll before the scene/label ticker rather than on a second RAF.
+      advanceScroll=time=>engine.raf(time*1000);
+      gsap.ticker.add(advanceScroll,false,true);
     }
     const pop = () => {
       setPath(window.location.pathname);
@@ -289,6 +293,7 @@ export default function App() {
       window.removeEventListener("popstate", pop);
       window.removeEventListener("keydown",jump);
       clearTimeout(transitionTimer.current);
+      if(advanceScroll)gsap.ticker.remove(advanceScroll);
       lenis.current?.destroy();
       lenis.current = null;
     };

@@ -50,6 +50,14 @@ export default function Experience({ scrollTo, onPhase }) {
     let lastPercent = -1;
     let lastCard = false;
     let requestedPage=0,displayPage=0,initialized=false;
+    const mobileQuery=matchMedia("(max-width: 600px), (max-width: 900px) and (max-aspect-ratio: 6/5), (max-width: 900px) and (max-height: 520px)");
+    let height=stage.clientHeight,width=stage.clientWidth,sectionHeight=target.clientHeight;
+    const measure=()=>{height=stage.clientHeight;width=stage.clientWidth;sectionHeight=target.clientHeight;};
+    const reveal=(element,alpha,x=0,y=0)=>{
+      element.style.opacity=alpha;
+      element.style.visibility=alpha>0?'visible':'hidden';
+      element.style.transform=`translate3d(${x}px,${y}px,0)`;
+    };
     let settleScroll;
     const context = gsap.context(() => {
       if (!reduced)
@@ -61,11 +69,8 @@ export default function Experience({ scrollTo, onPhase }) {
           delay: 0.12,
           ease: "power3.out",
         });
-      const renderPage = (page) => {
-        const mobile = matchMedia(
-          "(max-width: 600px), (max-width: 900px) and (max-aspect-ratio: 6/5), (max-width: 900px) and (max-height: 520px)",
-        ).matches;
-        const height = stage.clientHeight;
+      const renderPage = (page,stageBounds=stage.getBoundingClientRect()) => {
+        const mobile=mobileQuery.matches;
         const walk = smooth(0.08, 0.94, page);
         const scan = clamp(
           (page - (mobile ? 0.6 : 0.7)) / (mobile ? 1.7 : 1.65),
@@ -82,7 +87,6 @@ export default function Experience({ scrollTo, onPhase }) {
           lastCard = nextCard;
         }
         const phase = page > 0.28 ? "about" : "";
-        const stageBounds = stage.getBoundingClientRect();
         if (
           stageBounds.bottom > height * 0.6 &&
           stageBounds.top < height * 0.35
@@ -91,42 +95,32 @@ export default function Experience({ scrollTo, onPhase }) {
         }
         const roomDeparture=smooth(.44,1.10,page);
         const roomShift=-roomDeparture*height*1.08;
-        gsap.set(room, {
-          y: roomShift,
-          rotation: reduced ? 0 : roomDeparture * 3,
-          scale: 1 - roomDeparture * (mobile ? 0.16 : 0.055),
-          borderRadius: roomDeparture * 48,
-        });
-        timeline.current.roomBottom = clamp((room.getBoundingClientRect().bottom-stageBounds.top)/height);
-        gsap.set(title, { opacity: 1 - smooth(0.25, 0.76, page) });
-        gsap.set(cue, { opacity: 1 - smooth(0.02, 0.2, page) });
-        gsap.set(greetingButton, {autoAlpha: page < .12 ? 1 : 0});
+        const rotation=reduced?0:roomDeparture*3;
+        const scale=1-roomDeparture*(mobile?.16:.055);
+        // Calculate the transformed card edge without reading layout after
+        // writing transforms. Canvas clipping stays on the same scroll clock.
+        const radians=rotation*Math.PI/180;
+        timeline.current.roomBottom=clamp((height/2+roomShift+scale*(height*Math.cos(radians)+width*Math.abs(Math.sin(radians)))/2)/height);
+        room.style.transform=`translate3d(0,${roomShift}px,0) rotate(${rotation}deg) scale(${scale})`;
+        room.style.borderRadius=`${roomDeparture*48}px`;
+        title.style.opacity=1-smooth(.25,.76,page);
+        cue.style.opacity=1-smooth(.02,.2,page);
+        greetingButton.style.visibility=page<.12?'visible':'hidden';
         const identityReveal = smooth(0.76, 1.04, page);
         const bioReveal = smooth(1.18, 1.48, page);
         const stackReveal = smooth(1.62, 1.98, page);
-        gsap.set(identity, {
-          autoAlpha: identityReveal,
-          x: reduced ? 0 : (1 - identityReveal) * -18,
-        });
-        gsap.set(bio, {
-          autoAlpha: bioReveal,
-          x: reduced ? 0 : (1 - bioReveal) * -18,
-        });
-        gsap.set(stack, {
-          autoAlpha: stackReveal,
-          x: reduced ? 0 : (1 - stackReveal) * 18,
-        });
-        gsap.set(mobileCard, {
-          autoAlpha: identityReveal,
-          y: reduced ? 0 : (1 - identityReveal) * 16,
-        });
-        gsap.set(status, { opacity: smooth(0.75, 1.02, page) });
-        stage.dataset.phase = page < 0.75 ? "workspace" : "hologram";
+        reveal(identity,identityReveal,reduced?0:(1-identityReveal)*-18);
+        reveal(bio,bioReveal,reduced?0:(1-bioReveal)*-18);
+        reveal(stack,stackReveal,reduced?0:(1-stackReveal)*18);
+        reveal(mobileCard,identityReveal,0,reduced?0:(1-identityReveal)*16);
+        status.style.opacity=smooth(.75,1.02,page);
+        const stagePhase=page<.75?'workspace':'hologram';
+        if(stage.dataset.phase!==stagePhase)stage.dataset.phase=stagePhase;
         stage.dataset.scrollLag=Math.abs(requestedPage-page).toFixed(3);
       };
       const update=(self, instant=false)=>{
         const previousRequest=requestedPage;
-        requestedPage=Math.min((self.progress*target.clientHeight)/stage.clientHeight,target.clientHeight/stage.clientHeight-1);
+        requestedPage=Math.min((self.progress*sectionHeight)/height,sectionHeight/height-1);
         if(instant||reduced||!initialized||Math.abs(requestedPage-previousRequest)>1.25){displayPage=requestedPage;initialized=true;renderPage(displayPage);}
       };
       settleScroll=(_time,deltaMs)=>{
@@ -137,7 +131,7 @@ export default function Experience({ scrollTo, onPhase }) {
         displayPage=bounds.bottom<=0||bounds.top>=window.innerHeight
           ? requestedPage
           : advanceScrollPage(displayPage,requestedPage,deltaMs);
-        renderPage(displayPage);
+        renderPage(displayPage,bounds);
       };
       gsap.ticker.add(settleScroll);
       const trigger = ScrollTrigger.create({
@@ -145,7 +139,7 @@ export default function Experience({ scrollTo, onPhase }) {
         start: "top top",
         end: "bottom top",
         onUpdate: update,
-        onRefresh: self=>update(self,true),
+        onRefresh: self=>{measure();update(self,true);},
       });
       update(trigger);
     }, target);

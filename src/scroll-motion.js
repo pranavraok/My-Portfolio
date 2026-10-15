@@ -8,8 +8,8 @@ export function advanceScrollPage(current, target, deltaMs) {
   const delta = clamp(deltaMs, 0, 50) / 1000;
   let step = gap * (1 - Math.exp(-delta * 10));
   if (target <= 1.15 && current <= .94) {
-    const baseSpeed = current > .18 && current < .46 ? .14 : .18;
-    const urgency = clamp((Math.abs(gap) - .10) / .45, 0, 1);
+    const baseSpeed = current > .18 && current < .46 ? .30 : .38;
+    const urgency = clamp((Math.abs(gap) - .08) / .35, 0, 1);
     const blend = urgency * urgency * (3 - 2 * urgency);
     const speed = baseSpeed + (1.8 - baseSpeed) * blend;
     step = clamp(step, -delta * speed, delta * speed);
