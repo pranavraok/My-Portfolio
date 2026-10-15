@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from './Icons.jsx';
-import { ambientTrack, speakerState } from '../music.js';
+import { ambientTrack, backgroundMusicVolume, speakerState } from '../music.js';
 import '../music-player.css';
 
 const storageKey='pranav-background-music-v1';
 function preferences(){
-  try{const saved=JSON.parse(localStorage.getItem(storageKey)||localStorage.getItem('pranav-radio-v3')||'{}');return {paused:saved.paused===true,volume:Number.isFinite(saved.volume)?Math.max(0,Math.min(.35,saved.volume)):.14};}
-  catch{return {paused:false,volume:.14};}
+  try{const saved=JSON.parse(localStorage.getItem(storageKey)||localStorage.getItem('pranav-radio-v3')||'{}');return {paused:saved.paused===true,volume:Number.isFinite(saved.volume)?Math.max(0,Math.min(backgroundMusicVolume,saved.volume)):backgroundMusicVolume};}
+  catch{return {paused:false,volume:backgroundMusicVolume};}
 }
 
 export default function MusicPlayer(){

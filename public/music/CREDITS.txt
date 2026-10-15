@@ -1,4 +1,19 @@
-Current background music: Tera Mera Rishta Purana (Slowed + Reverb)
+Current background music: Pranav's Melody — soft mix
+Local file: pranav-soft-melody.mp3
+
+The portfolio owner supplied the recording, approved the finished mix, and
+selected it as the website's background music. This is the final polished
+mix, with the original performance preserved and a soft accompaniment.
+The delivered 320 kbps stereo MP3 is hosted locally and played quietly,
+with the small play/pause control and the clickable desk speaker.
+
+Accompaniment rendered with FluidSynth and the GeneralUser GS 2.0.3
+SoundFont, by S. Christian Collins. The SoundFont license permits music
+creation for private and commercial use.
+https://github.com/mrbumpy409/GeneralUser-GS
+https://github.com/mrbumpy409/GeneralUser-GS/blob/main/documentation/LICENSE.txt
+
+Archived, inactive track: Tera Mera Rishta Purana (Slowed + Reverb)
 Performer: Mustafa Zahid
 Selected upload: Curova Lofi
 Source: https://www.youtube.com/watch?v=g7wCkTvU_VY

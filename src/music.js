@@ -1,9 +1,11 @@
+export const backgroundMusicVolume = 0.08;
+
 export const ambientTrack = {
-  id: "tera-mera-rishta-lofi",
-  title: "Tera Mera Rishta",
-  artist: "Mustafa Zahid · Curova Lofi",
-  kind: "lofi",
-  src: "/music/tera-mera-rishta-lofi.mp3",
+  id: "pranav-soft-melody",
+  title: "Pranav's Melody",
+  artist: "Pranav · Soft mix",
+  kind: "ambient",
+  src: "/music/pranav-soft-melody.mp3",
   loop: true,
 };
 
@@ -14,7 +16,7 @@ export const speakerState = {
   artist: ambientTrack.artist,
   level: 0,
   bands: Array(8).fill(0),
-  volume: 0.22,
+  volume: backgroundMusicVolume,
 };
 
 export function toggleBackgroundMusic(){window.dispatchEvent(new Event('portfolio-toggle-audio'));}
