@@ -1,6 +1,6 @@
-export const backgroundMusicVolume = 10 ** (-24 / 20);
+export const backgroundMusicVolume = 0.09;
 
-export const ambientTrack = {
+export const morningTrack = {
   id: "pranav-soft-melody",
   title: "Pranav's Melody",
   artist: "Pranav · Soft mix",
@@ -10,6 +10,20 @@ export const ambientTrack = {
   loopDuration: 66.9,
   loop: true,
 };
+
+export const nightTrack = {
+  id: "after-hours-selected-excerpt",
+  title: "After Hours",
+  artist: "Selected evening soundtrack",
+  kind: "ambient",
+  bufferSources: ["/music/after-hours-loop.ogg", "/music/after-hours-loop.mp3"],
+  nativeSrc: "/music/after-hours-loop-soft.mp3",
+  loopDuration: 65.5,
+  loop: true,
+};
+
+export const musicTracks = { morning: morningTrack, night: nightTrack };
+export const ambientTrack = morningTrack;
 
 // Shared with the desk monitor. Audio analysis stays out of React's render loop.
 export const speakerState = {

@@ -1,4 +1,4 @@
-Current background music: Pranav's Melody — soft mix
+Morning Calm: Pranav's Melody — soft mix
 Loop files: pranav-melody-loop.ogg / pranav-melody-loop.mp3
 Quiet native fallback: pranav-melody-loop-soft.mp3
 
@@ -7,12 +7,21 @@ selected it as the website's background music. This is the final polished
 mix, with the original performance preserved and a soft accompaniment.
 The website version blends the ending into the instrumental intro over
 2.5 seconds, preserving the complete lead melody. It loops for 66.9 seconds
-using the audio clock, with a gentle playback entry and quiet -24 dB gain.
+using the audio clock, with a gentle playback entry and quiet 9% gain.
 The native fallback is attenuated in the file itself. Playback uses the
 small play/pause control and the clickable desk speaker. The earlier
 pranav-soft-melody.mp3 is retained as an inactive full-length copy.
 
-Accompaniment rendered with FluidSynth and the GeneralUser GS 2.0.3
+After Hours: selected evening soundtrack
+Files: after-hours-loop.ogg / after-hours-loop.mp3
+Quiet native fallback: after-hours-loop-soft.mp3
+The owner supplied this second recording and selected the excerpt from
+1:38 to 2:45. Only that range is used. Its loudness is matched to the
+morning track, with a 1.5-second blend for a smooth 65.5-second loop.
+The evening track is not presented as the owner's original composition.
+Each mood plays its own soundtrack; the two recordings are not mixed.
+
+The Morning Calm accompaniment was rendered with FluidSynth and the GeneralUser GS 2.0.3
 SoundFont, by S. Christian Collins. The SoundFont license permits music
 creation for private and commercial use.
 https://github.com/mrbumpy409/GeneralUser-GS
