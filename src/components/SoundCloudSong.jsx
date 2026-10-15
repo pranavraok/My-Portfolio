@@ -28,7 +28,7 @@ const SoundCloudSong = forwardRef(function SoundCloudSong({ href, title, volume,
     let disposed = false, ready = false, started = false, restarting = false, blockedTimer;
     const container = host.current;
     const iframe = document.createElement('iframe');
-    iframe.title = `${title} — SoundCloud music player`;
+    iframe.title = `${title} - SoundCloud music player`;
     iframe.width = '100%'; iframe.height = '166'; iframe.allow = 'autoplay';
     iframe.setAttribute('scrolling', 'no');
     iframe.src = `https://w.soundcloud.com/player/?${new URLSearchParams({ url: href, auto_play: 'false', visual: 'false', color: '#e8787c', show_user: 'true', show_artwork: 'false', show_comments: 'false', show_reposts: 'false', show_teaser: 'false', hide_related: 'true' })}`;

@@ -26,7 +26,7 @@ export const workExperience = [
     period: "Mar 2025 – Apr 2025",
     logo: "/media/companies/fox-trading-solutions.png",
     paragraphs: [
-      "From data preparation to model training and evaluation — applying machine learning to practical problems.",
+      "From data preparation to model training and evaluation - applying machine learning to practical problems.",
     ],
     areas: ["Data preparation", "Model training", "Model evaluation"],
   },

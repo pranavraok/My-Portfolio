@@ -30,7 +30,7 @@ export const projects = [
     "images": [
       {
         "src": "/media/projects/aromazen-ai-1920.webp",
-        "alt": "AromaZen AI Portal - Enterprise Business Automation — project preview",
+        "alt": "AromaZen AI Portal - Enterprise Business Automation - project preview",
         "width": 1920,
         "height": 1061,
         "srcSet": "/media/projects/aromazen-ai-480.webp 480w, /media/projects/aromazen-ai-960.webp 960w, /media/projects/aromazen-ai-1280.webp 1280w, /media/projects/aromazen-ai-1920.webp 1920w"
@@ -73,7 +73,7 @@ export const projects = [
     "images": [
       {
         "src": "/media/projects/electro-operations-1920.webp",
-        "alt": "Electro Group of Industries - Operations & Automation Portal — project preview",
+        "alt": "Electro Group of Industries - Operations & Automation Portal - project preview",
         "width": 1920,
         "height": 1061,
         "srcSet": "/media/projects/electro-operations-480.webp 480w, /media/projects/electro-operations-960.webp 960w, /media/projects/electro-operations-1280.webp 1280w, /media/projects/electro-operations-1920.webp 1920w"
@@ -116,7 +116,7 @@ export const projects = [
     "images": [
       {
         "src": "/media/projects/my-portfolio-1905.webp",
-        "alt": "My-Portfolio — project preview",
+        "alt": "My-Portfolio - project preview",
         "width": 1905,
         "height": 1053,
         "srcSet": "/media/projects/my-portfolio-480.webp 480w, /media/projects/my-portfolio-960.webp 960w, /media/projects/my-portfolio-1280.webp 1280w, /media/projects/my-portfolio-1905.webp 1905w"
@@ -163,7 +163,7 @@ export const projects = [
     "images": [
       {
         "src": "/media/projects/activbite-1905.webp",
-        "alt": "ActivBite - E-Commerce & Digital Ordering Platform — project preview",
+        "alt": "ActivBite - E-Commerce & Digital Ordering Platform - project preview",
         "width": 1905,
         "height": 1053,
         "srcSet": "/media/projects/activbite-480.webp 480w, /media/projects/activbite-960.webp 960w, /media/projects/activbite-1280.webp 1280w, /media/projects/activbite-1905.webp 1905w"
@@ -210,7 +210,7 @@ export const projects = [
     "images": [
       {
         "src": "/media/projects/tradeledger-1905.webp",
-        "alt": "TradeLedger - AI-Powered Trading Journal — project preview",
+        "alt": "TradeLedger - AI-Powered Trading Journal - project preview",
         "width": 1905,
         "height": 1053,
         "srcSet": "/media/projects/tradeledger-480.webp 480w, /media/projects/tradeledger-960.webp 960w, /media/projects/tradeledger-1280.webp 1280w, /media/projects/tradeledger-1905.webp 1905w"
@@ -257,7 +257,7 @@ export const projects = [
     "images": [
       {
         "src": "/media/projects/hostelvoice-1905.webp",
-        "alt": "HostelVoice - Smart Hostel Management — project preview",
+        "alt": "HostelVoice - Smart Hostel Management - project preview",
         "width": 1905,
         "height": 1053,
         "srcSet": "/media/projects/hostelvoice-480.webp 480w, /media/projects/hostelvoice-960.webp 960w, /media/projects/hostelvoice-1280.webp 1280w, /media/projects/hostelvoice-1905.webp 1905w"
@@ -284,7 +284,7 @@ export const projects = [
     "year": "2025–2026",
     "period": "Nov 2025 – Jan 2026",
     "description": "Free AI career guidance with personalized roadmaps, resume feedback, and gamified learning.",
-    "story": "Mentora democratizes career guidance through AI, combining personalized learning paths, instant resume feedback, and gamified motivation—all completely free.\n\n✅ AI-Generated Roadmaps - Custom learning paths tailored to your goals and timeline\n✅ ATS Resume Analyzer - Instant 6-dimensional scoring with actionable improvements\n✅ Gamification - XP, levels, achievements, and leaderboards keep you motivated\n✅ Progress Tracking - Visual analytics and skill gap analysis",
+    "story": "Mentora democratizes career guidance through AI, combining personalized learning paths, instant resume feedback, and gamified motivation-all completely free.\n\n✅ AI-Generated Roadmaps - Custom learning paths tailored to your goals and timeline\n✅ ATS Resume Analyzer - Instant 6-dimensional scoring with actionable improvements\n✅ Gamification - XP, levels, achievements, and leaderboards keep you motivated\n✅ Progress Tracking - Visual analytics and skill gap analysis",
     "stack": [
       "Flutter",
       "Dart",
@@ -308,7 +308,7 @@ export const projects = [
     "images": [
       {
         "src": "/media/projects/mentora-1905.webp",
-        "alt": "Mentora - AI-Powered Career Mentorship & Gamified Learning App — project preview",
+        "alt": "Mentora - AI-Powered Career Mentorship & Gamified Learning App - project preview",
         "width": 1905,
         "height": 1053,
         "srcSet": "/media/projects/mentora-480.webp 480w, /media/projects/mentora-960.webp 960w, /media/projects/mentora-1280.webp 1280w, /media/projects/mentora-1905.webp 1905w"
@@ -354,7 +354,7 @@ export const projects = [
     "images": [
       {
         "src": "/media/projects/nutrigo-1280.webp",
-        "alt": "NutriGo - AI-Powered Nutrition Analysis Platform — project preview",
+        "alt": "NutriGo - AI-Powered Nutrition Analysis Platform - project preview",
         "width": 1280,
         "height": 720,
         "srcSet": "/media/projects/nutrigo-480.webp 480w, /media/projects/nutrigo-960.webp 960w, /media/projects/nutrigo-1280.webp 1280w"
@@ -378,7 +378,7 @@ export const projects = [
     "year": "2024–2025",
     "period": "Dec 2024 – Oct 2025",
     "description": "Technical and fundamental insights for Indian stocks, brought together with AI-powered analysis.",
-    "story": "Stock Analysis Pro is a full-stack web application that delivers AI-powered stock market analysis for Indian equity investors. It provides real-time insights into NSE/BSE-listed stocks, integrating both technical and fundamental analysis to generate intelligent Buy/Sell/Hold recommendations with confidence scores.\n\nThe platform’s sleek, glassmorphic interface and dopamine-driven design system embody cutting-edge 2025 UI trends—offering an experience that’s not just informative, but emotionally engaging and visually immersive.",
+    "story": "Stock Analysis Pro is a full-stack web application that delivers AI-powered stock market analysis for Indian equity investors. It provides real-time insights into NSE/BSE-listed stocks, integrating both technical and fundamental analysis to generate intelligent Buy/Sell/Hold recommendations with confidence scores.\n\nThe platform’s sleek, glassmorphic interface and dopamine-driven design system embody cutting-edge 2025 UI trends-offering an experience that’s not just informative, but emotionally engaging and visually immersive.",
     "stack": [
       "Pandas",
       "AI",
@@ -403,7 +403,7 @@ export const projects = [
     "images": [
       {
         "src": "/media/projects/stock-analysis-pro-1280.webp",
-        "alt": "Stock Analysis Pro - AI Powered Equity Research Platform — project preview",
+        "alt": "Stock Analysis Pro - AI Powered Equity Research Platform - project preview",
         "width": 1280,
         "height": 720,
         "srcSet": "/media/projects/stock-analysis-pro-480.webp 480w, /media/projects/stock-analysis-pro-960.webp 960w, /media/projects/stock-analysis-pro-1280.webp 1280w"
@@ -427,7 +427,7 @@ export const projects = [
     "year": "2025",
     "period": "Jul 2025 – Aug 2025",
     "description": "An AI workflow that sorts incoming email and reports what it finds.",
-    "story": "Built an AI-driven email management workflow using n8n, Gmail API, and Google Gemini AI Agent to automatically classify incoming emails into Important, Spam, or Nothing.\n\nSpam → Deleted instantly\nImportant → Moved to Important folder\nNothing → Left untouched\nGenerates an automated email report summarizing the counts for each category.\n\nSuccessfully tested with 6 important, 2 spam, and 2 nothing emails — achieving 100% accuracy.",
+    "story": "Built an AI-driven email management workflow using n8n, Gmail API, and Google Gemini AI Agent to automatically classify incoming emails into Important, Spam, or Nothing.\n\nSpam → Deleted instantly\nImportant → Moved to Important folder\nNothing → Left untouched\nGenerates an automated email report summarizing the counts for each category.\n\nSuccessfully tested with 6 important, 2 spam, and 2 nothing emails - achieving 100% accuracy.",
     "stack": [
       "n8n",
       "Gmail API",
@@ -450,7 +450,7 @@ export const projects = [
     "images": [
       {
         "src": "/media/projects/email-classifier-1280.webp",
-        "alt": "AI-Powered Email Classification & Management Automation — project preview",
+        "alt": "AI-Powered Email Classification & Management Automation - project preview",
         "width": 1280,
         "height": 690,
         "srcSet": "/media/projects/email-classifier-480.webp 480w, /media/projects/email-classifier-960.webp 960w, /media/projects/email-classifier-1280.webp 1280w"
@@ -495,7 +495,7 @@ export const projects = [
     "images": [
       {
         "src": "/media/projects/saanvi-1280.webp",
-        "alt": "SAANVI - Voice Agent For Dental Clinic — project preview",
+        "alt": "SAANVI - Voice Agent For Dental Clinic - project preview",
         "width": 1280,
         "height": 720,
         "srcSet": "/media/projects/saanvi-480.webp 480w, /media/projects/saanvi-960.webp 960w, /media/projects/saanvi-1280.webp 1280w"
@@ -539,7 +539,7 @@ export const projects = [
     "images": [
       {
         "src": "/media/projects/cgi-car-animation-1080.webp",
-        "alt": "Hyper-Realistic CGI Car Animation – Speed Meets Art! — project preview",
+        "alt": "Hyper-Realistic CGI Car Animation – Speed Meets Art! - project preview",
         "width": 1080,
         "height": 1920,
         "srcSet": "/media/projects/cgi-car-animation-480.webp 480w, /media/projects/cgi-car-animation-960.webp 960w, /media/projects/cgi-car-animation-1080.webp 1080w"

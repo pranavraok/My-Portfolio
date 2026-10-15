@@ -222,11 +222,11 @@ export default function App() {
   const root = useRef(null);
   const project = projects.find((p) => path === `/project/${p.slug}`);
   const home = path === "/";
-  useEffect(()=>{if(!home)finishStartup();},[home]);
-  const onExperiencePhase = useCallback((phase,dark) => {
+  useEffect(() => { if (!home) finishStartup(); }, [home]);
+  const onExperiencePhase = useCallback((phase, dark) => {
     setActive(phase);
     setSceneBlue(dark);
-  },[]);
+  }, []);
   function scrollTo(id) {
     setMenuOpen(false);
     const el = document.getElementById(id);
@@ -273,8 +273,8 @@ export default function App() {
       lenis.current = engine;
       engine.on("scroll", ScrollTrigger.update);
       // Read scroll before the scene/label ticker rather than on a second RAF.
-      advanceScroll=time=>engine.raf(time*1000);
-      gsap.ticker.add(advanceScroll,false,true);
+      advanceScroll = time => engine.raf(time * 1000);
+      gsap.ticker.add(advanceScroll, false, true);
     }
     const pop = () => {
       setPath(window.location.pathname);
@@ -283,17 +283,17 @@ export default function App() {
     };
     window.addEventListener("popstate", pop);
     const jump = event => {
-      if(document.querySelector("dialog[open]") || !lenis.current || !["Home","End"].includes(event.key) || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
+      if (document.querySelector("dialog[open]") || !lenis.current || !["Home", "End"].includes(event.key) || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
       event.preventDefault();
       lenis.current.resize();
-      lenis.current.scrollTo(event.key === "Home" ? 0 : document.documentElement.scrollHeight, {immediate:true});
+      lenis.current.scrollTo(event.key === "Home" ? 0 : document.documentElement.scrollHeight, { immediate: true });
     };
-    window.addEventListener("keydown",jump);
+    window.addEventListener("keydown", jump);
     return () => {
       window.removeEventListener("popstate", pop);
-      window.removeEventListener("keydown",jump);
+      window.removeEventListener("keydown", jump);
       clearTimeout(transitionTimer.current);
-      if(advanceScroll)gsap.ticker.remove(advanceScroll);
+      if (advanceScroll) gsap.ticker.remove(advanceScroll);
       lenis.current?.destroy();
       lenis.current = null;
     };
@@ -354,8 +354,8 @@ export default function App() {
   }, []);
   useEffect(() => {
     document.title = project
-      ? `${project.title} — Pranav Rao K`
-      : "Pranav Rao K — Developer & Product Builder";
+      ? `${project.title} - Pranav Rao K`
+      : "Pranav Rao K - Developer & Product Builder";
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const context = gsap.context(() => {
       if (!reduced) {

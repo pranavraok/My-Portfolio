@@ -1,4 +1,4 @@
-# Pranav Rao K — React portfolio
+# Pranav Rao K - React portfolio
 
 **Live website: [pranavraok.is-a.dev](https://pranavraok.is-a.dev/)**
 
