@@ -5,20 +5,7 @@ import { musicTracks, backgroundMusicVolume, speakerState } from '../music.js';
 import { getSiteMode } from '../site-mode.js';
 import '../music-player.css';
 
-const storageKey = 'pranav-background-music-session-v1';
-function preferences() {
-  try {
-    const saved = JSON.parse(sessionStorage.getItem(storageKey) || '{}');
-    return { paused: saved.paused === true };
-  } catch { return { paused: false }; }
-}
-function save(paused) {
-  try { sessionStorage.setItem(storageKey, JSON.stringify({ paused, volume: backgroundMusicVolume })); }
-  catch { /* Playback still works when storage is disabled. */ }
-}
-
 export default function MusicPlayer() {
-  const [initial] = useState(preferences);
   const [state, setState] = useState({ playing: false, status: 'ready', mode: 'buffer' });
   const audio = useRef(null), button = useRef(null), host = useRef(null), player = useRef(null);
   const wanted = useRef(false);
@@ -32,7 +19,8 @@ export default function MusicPlayer() {
     }
     const track = musicTracks[getSiteMode()];
     describe(track);
-    wanted.current = !initial.paused;
+    // A fresh opening always requests music; pause lasts for this visit only.
+    wanted.current = true;
     const controller = createBackgroundAudio({
       audio: audio.current, track, volume: backgroundMusicVolume,
       onState(next) {
@@ -45,8 +33,7 @@ export default function MusicPlayer() {
       },
     });
     player.current = controller;
-    if (wanted.current) controller.start();
-    else controller.pause();
+    controller.start();
     function meter() {
       const current = controller.snapshot();
       if (host.current) {
@@ -78,11 +65,11 @@ export default function MusicPlayer() {
       if (!controller) return;
       const current = controller.snapshot();
       if (current.playing || current.status === 'loading') {
-        wanted.current = false; save(true); controller.pause();
-      } else { wanted.current = true; save(false); controller.start(); }
+        wanted.current = false; controller.pause();
+      } else { wanted.current = true; controller.start(); }
     };
     const retry = () => { if (!document.hidden && wanted.current) controller?.start(); };
-    const gestures = ['pointerup', 'touchend', 'click', 'keydown'];
+    const gestures = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'];
     for (const name of gestures) document.addEventListener(name, unlock, { passive: true });
     window.addEventListener('portfolio-toggle-audio', toggle);
     window.addEventListener('portfolio-mode-change', chooseMode);
@@ -98,13 +85,13 @@ export default function MusicPlayer() {
       cancelAnimationFrame(frame); controller?.dispose(); player.current = null;
       speakerState.playing = false; speakerState.level = 0; speakerState.progress = 0;
     };
-  }, [initial]);
+  }, []);
 
   const requested = state.playing || state.status === 'loading';
   return <div ref={host} className="music-shell" data-provider="local-audio" data-playing={state.playing} data-status={state.status} data-playback={state.mode} data-mood={state.mood || 'pending'} data-track={state.track}>
     <button ref={button} className={`sound-button music-toggle ${state.playing ? 'is-playing' : ''}`} aria-label={requested ? 'Pause background music' : 'Play background music'} aria-pressed={state.playing} title={requested ? 'Pause background music' : 'Play background music'} onClick={() => {
-      if (requested) { wanted.current = false; save(true); player.current?.pause(); }
-      else { wanted.current = true; save(false); player.current?.start(); }
+      if (requested) { wanted.current = false; player.current?.pause(); }
+      else { wanted.current = true; player.current?.start(); }
     }}><Icon name={requested ? 'pause' : 'play'} size={18}/><span className="music-power" aria-hidden="true"/></button>
     <audio ref={audio} preload="none" loop playsInline />
   </div>;
