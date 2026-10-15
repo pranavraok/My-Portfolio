@@ -1,11 +1,13 @@
-export const backgroundMusicVolume = 0.08;
+export const backgroundMusicVolume = 10 ** (-24 / 20);
 
 export const ambientTrack = {
   id: "pranav-soft-melody",
   title: "Pranav's Melody",
   artist: "Pranav · Soft mix",
   kind: "ambient",
-  src: "/music/pranav-soft-melody.mp3",
+  bufferSources: ["/music/pranav-melody-loop.ogg", "/music/pranav-melody-loop.mp3"],
+  nativeSrc: "/music/pranav-melody-loop-soft.mp3",
+  loopDuration: 66.9,
   loop: true,
 };
 
@@ -15,6 +17,7 @@ export const speakerState = {
   title: ambientTrack.title,
   artist: ambientTrack.artist,
   level: 0,
+  progress: 0,
   bands: Array(8).fill(0),
   volume: backgroundMusicVolume,
 };
@@ -89,7 +92,7 @@ export function drawComputerRadio(ctx, width, height, time = 0) {
   ctx.fillRect(
     37,
     276,
-    s.playing ? (Math.sin(time * 0.05) * 0.5 + 0.5) * (width - 74) : 0,
+    s.progress * (width - 74),
     3,
   );
   ctx.fillStyle = "#8bac9b";

@@ -1,50 +1,93 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from './Icons.jsx';
+import { createBackgroundAudio } from '../background-audio.js';
 import { ambientTrack, backgroundMusicVolume, speakerState } from '../music.js';
 import '../music-player.css';
 
-const storageKey='pranav-background-music-v1';
-function preferences(){
-  try{const saved=JSON.parse(localStorage.getItem(storageKey)||localStorage.getItem('pranav-radio-v3')||'{}');return {paused:saved.paused===true,volume:Number.isFinite(saved.volume)?Math.max(0,Math.min(backgroundMusicVolume,saved.volume)):backgroundMusicVolume};}
-  catch{return {paused:false,volume:backgroundMusicVolume};}
+const storageKey = 'pranav-background-music-v1';
+function preferences() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey) || localStorage.getItem('pranav-radio-v3') || '{}');
+    return { paused: saved.paused === true };
+  } catch { return { paused: false }; }
+}
+function save(paused) {
+  try { localStorage.setItem(storageKey, JSON.stringify({ paused, volume: backgroundMusicVolume })); }
+  catch { /* Playback still works when storage is disabled. */ }
 }
 
-export default function MusicPlayer(){
-  const initial=useRef(null);if(!initial.current)initial.current=preferences();
-  const audio=useRef(null),button=useRef(null),wanted=useRef(!initial.current.paused),playingRef=useRef(false),analysis=useRef(null),frame=useRef(null),generation=useRef(0);
-  const [playing,setPlaying]=useState(false),[status,setStatus]=useState('ready');
-  const save=()=>{try{localStorage.setItem(storageKey,JSON.stringify({paused:!wanted.current,volume:initial.current.volume}));}catch{/* Storage can be disabled by the visitor. */}};
-  function playback(value){
-    const changed=playingRef.current!==value;
-    playingRef.current=value;setPlaying(value);speakerState.playing=value;cancelAnimationFrame(frame.current);
-    if(changed)window.dispatchEvent(new CustomEvent('portfolio-audio-state',{detail:{playing:value}}));
-    if(!value){speakerState.level=0;speakerState.bands.fill(0);return;}
-    const meter=()=>{if(!playingRef.current)return;const analyser=analysis.current?.analyser;if(analyser){analyser.getByteTimeDomainData(analysis.current.wave);let sum=0;for(const v of analysis.current.wave)sum+=((v-128)/128)**2;speakerState.level=Math.min(.45,Math.sqrt(sum/analysis.current.wave.length)*5);}for(let i=0;i<8;i++)speakerState.bands[i]=Math.max(.03,speakerState.level*(1.5+Math.sin(performance.now()*.001+i*.8)));frame.current=requestAnimationFrame(meter);};
-    frame.current=requestAnimationFrame(meter);
-  }
-  function attachAnalysis(){
-    if(analysis.current)return;
-    try{const ctx=new (window.AudioContext||window.webkitAudioContext)(),analyser=ctx.createAnalyser();analyser.fftSize=256;ctx.createMediaElementSource(audio.current).connect(analyser);analyser.connect(ctx.destination);analysis.current={ctx,analyser,wave:new Uint8Array(256)};}
-    catch{/* Native playback remains available without speaker visualization. */}
-  }
-  async function start(fromGesture=false){
-    if(!audio.current)return;const request=++generation.current;wanted.current=true;save();
-    if(fromGesture){attachAnalysis();try{await analysis.current?.ctx.resume();}catch{/* Keep native playback available. */}}
-    try{await audio.current.play();if(request!==generation.current||!wanted.current)return;if(analysis.current?.ctx.state==='suspended'){playback(false);setStatus('waiting-for-tap');return;}playback(true);setStatus('playing');}
-    catch{if(request===generation.current){playback(false);setStatus('waiting-for-tap');}}
-  }
-  function pause(){++generation.current;wanted.current=false;save();audio.current?.pause();playback(false);setStatus('paused');}
-  useEffect(()=>{
-    speakerState.title=ambientTrack.title;speakerState.artist=ambientTrack.artist;speakerState.volume=initial.current.volume;audio.current.volume=initial.current.volume;
-    if(wanted.current)start(false);
-    const unlock=event=>{if(button.current?.contains(event.target)||event.target?.closest?.('.speaker-toggle'))return;if(wanted.current&&!playingRef.current)start(true);};
-    const toggle=()=>playingRef.current?pause():start(true);
-    document.addEventListener('pointerdown',unlock);document.addEventListener('keydown',unlock);
-    window.addEventListener('portfolio-toggle-audio',toggle);
-    return()=>{++generation.current;document.removeEventListener('pointerdown',unlock);document.removeEventListener('keydown',unlock);window.removeEventListener('portfolio-toggle-audio',toggle);cancelAnimationFrame(frame.current);audio.current?.pause();analysis.current?.ctx.close();analysis.current=null;speakerState.playing=false;speakerState.level=0;};
-  },[]);
-  return <div className="music-shell" data-provider="local-audio" data-playing={playing} data-status={status}>
-    <button ref={button} className={`sound-button music-toggle ${playing?'is-playing':''}`} aria-label={playing?'Pause background music':'Play background music'} aria-pressed={playing} title={playing?'Pause background music':'Play background music'} onClick={()=>playingRef.current?pause():start(true)}><Icon name={playing?'pause':'play'} size={18}/><span className="music-power" aria-hidden="true"/></button>
-    <audio ref={audio} src={ambientTrack.src} preload="metadata" loop onPlaying={()=>{if(!wanted.current){audio.current?.pause();return;}if(analysis.current?.ctx.state!=='suspended'){playback(true);setStatus('playing');}}} onPause={()=>{playback(false);if(!wanted.current)setStatus('paused');}} onError={()=>{playback(false);setStatus('unavailable');}}/>
+export default function MusicPlayer() {
+  const [initial] = useState(preferences);
+  const [state, setState] = useState({ playing: false, status: 'ready', mode: 'buffer' });
+  const audio = useRef(null), button = useRef(null), host = useRef(null), player = useRef(null);
+  const wanted = useRef(!initial.paused);
+
+  useEffect(() => {
+    let frame, disposed = false;
+    speakerState.title = ambientTrack.title;
+    speakerState.artist = ambientTrack.artist;
+    speakerState.volume = backgroundMusicVolume;
+    const controller = createBackgroundAudio({
+      audio: audio.current, track: ambientTrack, volume: backgroundMusicVolume,
+      onState(next) {
+        if (disposed) return;
+        const changed = speakerState.playing !== next.playing;
+        speakerState.playing = next.playing;
+        if (!next.playing) { speakerState.level = 0; speakerState.bands.fill(0); }
+        setState({ playing: next.playing, status: next.status, mode: next.mode });
+        if (changed) window.dispatchEvent(new CustomEvent('portfolio-audio-state', { detail: { playing: next.playing } }));
+      },
+    });
+    player.current = controller;
+    function meter() {
+      const current = controller.snapshot();
+      if (host.current) {
+        host.current.dataset.position = current.position.toFixed(3);
+        host.current.dataset.loopDuration = String(current.duration);
+        host.current.dataset.volume = String(current.volume);
+      }
+      speakerState.progress = current.duration ? current.position / current.duration : 0;
+      if (current.playing) {
+        speakerState.level = controller.meter();
+        for (let i = 0; i < 8; i++) speakerState.bands[i] = Math.max(.03, speakerState.level * (1.5 + Math.sin(performance.now() * .001 + i * .8)));
+      }
+      frame = requestAnimationFrame(meter);
+    }
+    frame = requestAnimationFrame(meter);
+    if (wanted.current) controller.start();
+    const unlock = event => {
+      if (button.current?.contains(event.target) || event.target?.closest?.('.speaker-toggle')) return;
+      if (wanted.current && !controller.snapshot().playing) controller.start();
+    };
+    const toggle = () => {
+      const current = controller.snapshot();
+      if (current.playing || current.status === 'loading') {
+        wanted.current = false; save(true); controller.pause();
+      } else { wanted.current = true; save(false); controller.start(); }
+    };
+    const retry = () => { if (!document.hidden && wanted.current) controller.start(); };
+    const gestures = ['pointerup', 'touchend', 'click', 'keydown'];
+    for (const name of gestures) document.addEventListener(name, unlock, { passive: true });
+    window.addEventListener('portfolio-toggle-audio', toggle);
+    window.addEventListener('pageshow', retry);
+    document.addEventListener('visibilitychange', retry);
+    return () => {
+      disposed = true;
+      for (const name of gestures) document.removeEventListener(name, unlock);
+      window.removeEventListener('portfolio-toggle-audio', toggle);
+      window.removeEventListener('pageshow', retry);
+      document.removeEventListener('visibilitychange', retry);
+      cancelAnimationFrame(frame); controller.dispose(); player.current = null;
+      speakerState.playing = false; speakerState.level = 0; speakerState.progress = 0;
+    };
+  }, [initial]);
+
+  const requested = state.playing || state.status === 'loading';
+  return <div ref={host} className="music-shell" data-provider="local-audio" data-playing={state.playing} data-status={state.status} data-playback={state.mode}>
+    <button ref={button} className={`sound-button music-toggle ${state.playing ? 'is-playing' : ''}`} aria-label={requested ? 'Pause background music' : 'Play background music'} aria-pressed={state.playing} title={requested ? 'Pause background music' : 'Play background music'} onClick={() => {
+      if (requested) { wanted.current = false; save(true); player.current?.pause(); }
+      else { wanted.current = true; save(false); player.current?.start(); }
+    }}><Icon name={requested ? 'pause' : 'play'} size={18}/><span className="music-power" aria-hidden="true"/></button>
+    <audio ref={audio} preload="none" loop playsInline />
   </div>;
 }

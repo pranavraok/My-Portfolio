@@ -1,11 +1,16 @@
 Current background music: Pranav's Melody — soft mix
-Local file: pranav-soft-melody.mp3
+Loop files: pranav-melody-loop.ogg / pranav-melody-loop.mp3
+Quiet native fallback: pranav-melody-loop-soft.mp3
 
 The portfolio owner supplied the recording, approved the finished mix, and
 selected it as the website's background music. This is the final polished
 mix, with the original performance preserved and a soft accompaniment.
-The delivered 320 kbps stereo MP3 is hosted locally and played quietly,
-with the small play/pause control and the clickable desk speaker.
+The website version blends the ending into the instrumental intro over
+2.5 seconds, preserving the complete lead melody. It loops for 66.9 seconds
+using the audio clock, with a gentle playback entry and quiet -24 dB gain.
+The native fallback is attenuated in the file itself. Playback uses the
+small play/pause control and the clickable desk speaker. The earlier
+pranav-soft-melody.mp3 is retained as an inactive full-length copy.
 
 Accompaniment rendered with FluidSynth and the GeneralUser GS 2.0.3
 SoundFont, by S. Christian Collins. The SoundFont license permits music
