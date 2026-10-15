@@ -4,15 +4,15 @@ import { createBackgroundAudio } from '../background-audio.js';
 import { ambientTrack, backgroundMusicVolume, speakerState } from '../music.js';
 import '../music-player.css';
 
-const storageKey = 'pranav-background-music-v1';
+const storageKey = 'pranav-background-music-session-v1';
 function preferences() {
   try {
-    const saved = JSON.parse(localStorage.getItem(storageKey) || localStorage.getItem('pranav-radio-v3') || '{}');
+    const saved = JSON.parse(sessionStorage.getItem(storageKey) || '{}');
     return { paused: saved.paused === true };
   } catch { return { paused: false }; }
 }
 function save(paused) {
-  try { localStorage.setItem(storageKey, JSON.stringify({ paused, volume: backgroundMusicVolume })); }
+  try { sessionStorage.setItem(storageKey, JSON.stringify({ paused, volume: backgroundMusicVolume })); }
   catch { /* Playback still works when storage is disabled. */ }
 }
 
